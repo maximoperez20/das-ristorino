@@ -25,7 +25,7 @@ public class ReservaRepository {
     }
     
     // Obtener reserva por ID
-    public Optional<ReservaResponseDto> findById(Long id) {
+    public Optional<ReservaResponseDto> findById(String id) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("id", id);
         List<ReservaResponseDto> reservas = jdbcCallFactory.executeQuery("sp_ObtenerReservaPorId", "dbo", params, "reservas", ReservaResponseDto.class);
@@ -41,10 +41,10 @@ public class ReservaRepository {
                 .addValue("fecha_hora", java.sql.Timestamp.valueOf(crearReservaDto.getFechaHora()))
                 .addValue("cantidad_personas", crearReservaDto.getCantidadPersonas())
                 .addValue("observaciones", crearReservaDto.getObservaciones())
-                .addValue("nuevo_id", null, Types.BIGINT); // OUTPUT
+                .addValue("nuevo_id", null, Types.VARCHAR); // OUTPUT
         
         Map<String, Object> result = jdbcCallFactory.executeWithOutputs("sp_CrearReserva", "dbo", params);
-        Long nuevoId = Long.valueOf(result.get("nuevo_id").toString());
+        String nuevoId = result.get("nuevo_id").toString();
         return findById(nuevoId).orElse(null);
     }
     
