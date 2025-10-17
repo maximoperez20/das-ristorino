@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 public class ReservaResponseDto {
     
     @JsonProperty("id")
-    private Long id;
+    private String id;
     
     @JsonProperty("nombre_cliente")
     private String nombreCliente;
@@ -38,7 +38,7 @@ public class ReservaResponseDto {
     // Constructores
     public ReservaResponseDto() {}
     
-    public ReservaResponseDto(Long id, String nombreCliente, String email, String telefono, 
+    public ReservaResponseDto(String id, String nombreCliente, String email, String telefono, 
                              LocalDateTime fechaHora, Integer cantidadPersonas, String estado, 
                              String observaciones, LocalDateTime fechaCreacion, LocalDateTime fechaActualizacion) {
         this.id = id;
@@ -54,11 +54,11 @@ public class ReservaResponseDto {
     }
     
     // Getters y Setters
-    public Long getId() {
+    public String getId() {
         return id;
     }
     
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
     

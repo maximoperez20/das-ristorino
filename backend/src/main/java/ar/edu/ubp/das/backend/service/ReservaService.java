@@ -22,7 +22,7 @@ public class ReservaService {
     }
     
     // Obtener reserva por ID
-    public Optional<ReservaResponseDto> obtenerReservaPorId(Long id) {
+    public Optional<ReservaResponseDto> obtenerReservaPorId(String id) {
         return reservaRepository.findById(id);
     }
     
@@ -32,12 +32,12 @@ public class ReservaService {
     }
     
     // Actualizar reserva existente
-    public boolean actualizarReserva(Long id, ActualizarReservaDto actualizarReservaDto) {
+    public boolean actualizarReserva(String id, ActualizarReservaDto actualizarReservaDto) {
         return reservaRepository.update(actualizarReservaDto, id);
     }
     
     // Eliminar reserva
-    public boolean eliminarReserva(Long id) {
+    public boolean eliminarReserva(String id) {
         return reservaRepository.deleteById(id);
     }
     
@@ -47,7 +47,7 @@ public class ReservaService {
     }
     
     // Cambiar estado de una reserva
-    public boolean cambiarEstadoReserva(Long id, String nuevoEstado) {
+    public boolean cambiarEstadoReserva(String id, String nuevoEstado) {
         return reservaRepository.updateEstado(id, nuevoEstado);
     }
     
@@ -67,7 +67,7 @@ public class ReservaService {
     }
     
     // Verificar si existe una reserva con el ID dado
-    public boolean existeReserva(Long id) {
+    public boolean existeReserva(String id) {
         return reservaRepository.existsById(id);
     }
     

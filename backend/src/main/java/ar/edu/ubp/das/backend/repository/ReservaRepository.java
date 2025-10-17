@@ -49,7 +49,7 @@ public class ReservaRepository {
     }
     
     // Actualizar reserva existente
-    public boolean update(ar.edu.ubp.das.backend.dto.ActualizarReservaDto actualizarReservaDto, Long id) {
+    public boolean update(ar.edu.ubp.das.backend.dto.ActualizarReservaDto actualizarReservaDto, String id) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("id", id)
                 .addValue("nombre_cliente", actualizarReservaDto.getNombreCliente())
@@ -65,7 +65,7 @@ public class ReservaRepository {
     }
     
     // Eliminar reserva
-    public boolean deleteById(Long id) {
+    public boolean deleteById(String id) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("id", id);
         
@@ -81,7 +81,7 @@ public class ReservaRepository {
     }
     
     // Cambiar estado de una reserva
-    public boolean updateEstado(Long id, String nuevoEstado) {
+    public boolean updateEstado(String id, String nuevoEstado) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("id", id)
                 .addValue("nuevo_estado", nuevoEstado);
@@ -112,13 +112,13 @@ public class ReservaRepository {
     }
     
     // Verificar si existe una reserva
-    public boolean existsById(Long id) {
+    public boolean existsById(String id) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("id", id);
         
         Map<String, Object> result = jdbcCallFactory.executeWithOutputs("sp_ExisteReserva", "dbo", params);
-        if (result != null && result.containsKey("id")) {
-            Integer count = (Integer) result.get("id");
+        if (result != null && result.containsKey("existe")) {
+            Integer count = (Integer) result.get("existe");
             return count != null && count > 0;
         }
         return false;
@@ -127,8 +127,8 @@ public class ReservaRepository {
     // Contar total de reservas
     public long count() {
         Map<String, Object> result = jdbcCallFactory.executeWithOutputs("sp_ContarReservas", "dbo", new MapSqlParameterSource());
-        if (result != null && result.containsKey("id")) {
-            return ((Number) result.get("id")).longValue();
+        if (result != null && result.containsKey("total_reservas")) {
+            return ((Number) result.get("total_reservas")).longValue();
         }
         return 0;
     }

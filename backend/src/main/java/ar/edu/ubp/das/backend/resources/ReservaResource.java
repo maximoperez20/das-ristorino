@@ -30,7 +30,7 @@ public class ReservaResource {
 
     // GET /api/reservas/{id} - Obtener una reserva por ID
     @GetMapping("/{id}")
-    public ResponseEntity<ReservaResponseDto> getReservaById(@PathVariable Long id) {
+    public ResponseEntity<ReservaResponseDto> getReservaById(@PathVariable String id) {
         Optional<ReservaResponseDto> reserva = reservaService.obtenerReservaPorId(id);
         if (reserva.isPresent()) {
             return ResponseEntity.ok(reserva.get());
@@ -56,7 +56,7 @@ public class ReservaResource {
 
     // PUT /api/reservas/{id} - Actualizar una reserva existente
     @PutMapping("/{id}")
-    public ResponseEntity<ReservaResponseDto> updateReserva(@PathVariable Long id, @Valid @RequestBody ActualizarReservaDto actualizarReservaDto) {
+    public ResponseEntity<ReservaResponseDto> updateReserva(@PathVariable String id, @Valid @RequestBody ActualizarReservaDto actualizarReservaDto) {
         if (!reservaService.existeReserva(id)) {
             return ResponseEntity.notFound().build();
         }
@@ -76,7 +76,7 @@ public class ReservaResource {
 
     // DELETE /api/reservas/{id} - Eliminar una reserva
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReserva(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteReserva(@PathVariable String id) {
         if (!reservaService.existeReserva(id)) {
             return ResponseEntity.notFound().build();
         }
@@ -98,7 +98,7 @@ public class ReservaResource {
 
     // PUT /api/reservas/{id}/estado - Cambiar estado de una reserva
     @PutMapping("/{id}/estado")
-    public ResponseEntity<ReservaResponseDto> updateEstadoReserva(@PathVariable Long id, @Valid @RequestBody CambiarEstadoDto cambiarEstadoDto) {
+    public ResponseEntity<ReservaResponseDto> updateEstadoReserva(@PathVariable String id, @Valid @RequestBody CambiarEstadoDto cambiarEstadoDto) {
         if (!reservaService.existeReserva(id)) {
             return ResponseEntity.notFound().build();
         }
