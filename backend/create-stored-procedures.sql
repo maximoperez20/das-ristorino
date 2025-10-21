@@ -5,11 +5,7 @@ USE das_ristorino;
 GO
 
 -- 1. Obtener todas las reservas
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'sp_ObtenerTodasLasReservas') 
-    DROP PROCEDURE sp_ObtenerTodasLasReservas;
-GO
-
-CREATE PROCEDURE sp_ObtenerTodasLasReservas
+CREATE OR ALTER PROCEDURE sp_ObtenerTodasLasReservas
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -36,11 +32,7 @@ END;
 GO
 
 -- 2. Obtener reserva por ID
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'sp_ObtenerReservaPorId') 
-    DROP PROCEDURE sp_ObtenerReservaPorId;
-GO
-
-CREATE PROCEDURE sp_ObtenerReservaPorId
+CREATE OR ALTER PROCEDURE sp_ObtenerReservaPorId
     @id VARCHAR(36)
 AS
 BEGIN
@@ -68,11 +60,7 @@ END;
 GO
 
 -- 3. Crear nueva reserva (simplificado para demo)
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'sp_CrearReserva') 
-    DROP PROCEDURE sp_CrearReserva;
-GO
-
-CREATE PROCEDURE sp_CrearReserva
+CREATE OR ALTER PROCEDURE sp_CrearReserva
     @nombre_cliente NVARCHAR(100),
     @email NVARCHAR(100),
     @telefono NVARCHAR(20),
@@ -122,11 +110,7 @@ END;
 GO
 
 -- 4. Actualizar reserva existente
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'sp_ActualizarReserva') 
-    DROP PROCEDURE sp_ActualizarReserva;
-GO
-
-CREATE PROCEDURE sp_ActualizarReserva
+CREATE OR ALTER PROCEDURE sp_ActualizarReserva
     @id VARCHAR(36),
     @nombre_cliente NVARCHAR(100),
     @email NVARCHAR(100),
@@ -161,11 +145,7 @@ END;
 GO
 
 -- 5. Eliminar reserva
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'sp_EliminarReserva') 
-    DROP PROCEDURE sp_EliminarReserva;
-GO
-
-CREATE PROCEDURE sp_EliminarReserva
+CREATE OR ALTER PROCEDURE sp_EliminarReserva
     @id VARCHAR(36)
 AS
 BEGIN
@@ -176,11 +156,7 @@ END;
 GO
 
 -- 6. Obtener reservas por estado
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'sp_ObtenerReservasPorEstado') 
-    DROP PROCEDURE sp_ObtenerReservasPorEstado;
-GO
-
-CREATE PROCEDURE sp_ObtenerReservasPorEstado
+CREATE OR ALTER PROCEDURE sp_ObtenerReservasPorEstado
     @estado NVARCHAR(20)
 AS
 BEGIN
@@ -212,11 +188,7 @@ END;
 GO
 
 -- 7. Cambiar estado de una reserva
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'sp_CambiarEstadoReserva') 
-    DROP PROCEDURE sp_CambiarEstadoReserva;
-GO
-
-CREATE PROCEDURE sp_CambiarEstadoReserva
+CREATE OR ALTER PROCEDURE sp_CambiarEstadoReserva
     @id VARCHAR(36),
     @nuevo_estado NVARCHAR(20)
 AS
@@ -241,11 +213,7 @@ END;
 GO
 
 -- 8. Obtener reservas por email del cliente
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'sp_ObtenerReservasPorCliente') 
-    DROP PROCEDURE sp_ObtenerReservasPorCliente;
-GO
-
-CREATE PROCEDURE sp_ObtenerReservasPorCliente
+CREATE OR ALTER PROCEDURE sp_ObtenerReservasPorCliente
     @email NVARCHAR(100)
 AS
 BEGIN
@@ -274,11 +242,7 @@ END;
 GO
 
 -- 9. Contar total de reservas
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'sp_ContarReservas') 
-    DROP PROCEDURE sp_ContarReservas;
-GO
-
-CREATE PROCEDURE sp_ContarReservas
+CREATE OR ALTER PROCEDURE sp_ContarReservas
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -287,11 +251,7 @@ END;
 GO
 
 -- 10. Verificar si existe una reserva
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'sp_ExisteReserva') 
-    DROP PROCEDURE sp_ExisteReserva;
-GO
-
-CREATE PROCEDURE sp_ExisteReserva
+CREATE OR ALTER PROCEDURE sp_ExisteReserva
     @id VARCHAR(36)
 AS
 BEGIN
@@ -301,11 +261,7 @@ END;
 GO
 
 -- 11. Obtener reservas por rango de fechas
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'sp_ObtenerReservasPorRangoFechas') 
-    DROP PROCEDURE sp_ObtenerReservasPorRangoFechas;
-GO
-
-CREATE PROCEDURE sp_ObtenerReservasPorRangoFechas
+CREATE OR ALTER PROCEDURE sp_ObtenerReservasPorRangoFechas
     @fecha_inicio DATETIME2,
     @fecha_fin DATETIME2
 AS
@@ -335,11 +291,7 @@ END;
 GO
 
 -- 12. Obtener estadísticas de reservas
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'sp_ObtenerEstadisticasReservas') 
-    DROP PROCEDURE sp_ObtenerEstadisticasReservas;
-GO
-
-CREATE PROCEDURE sp_ObtenerEstadisticasReservas
+CREATE OR ALTER PROCEDURE sp_ObtenerEstadisticasReservas
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -354,4 +306,130 @@ BEGIN
 END;
 GO
 
-PRINT 'Stored procedures creados exitosamente!';
+-- =============================
+-- Restaurantes (SPs mínimos)
+-- =============================
+CREATE OR ALTER PROCEDURE sp_ObtenerTodosLosRestaurantes
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    ;WITH datos AS (
+        SELECT 
+            r.nro_restaurante,
+            r.razon_social,
+            MIN(s.calle) AS calle,
+            MIN(s.nro_calle) AS nro_calle,
+            MIN(s.barrio) AS barrio,
+            MIN(s.telefonos) AS telefono,
+            MAX(s.total_comensales) AS capacidad,
+            MIN(t.hora_desde) AS horario_apertura,
+            MAX(t.hora_hasta) AS horario_cierre
+        FROM restaurantes r
+        LEFT JOIN sucursales_restaurantes s ON s.nro_restaurante = r.nro_restaurante
+        LEFT JOIN turnos_sucursales_restaurantes t ON t.nro_restaurante = r.nro_restaurante
+        GROUP BY r.nro_restaurante, r.razon_social
+    )
+    SELECT 
+        CAST(ROW_NUMBER() OVER (ORDER BY razon_social) AS BIGINT) AS id,
+        razon_social AS nombre,
+        LTRIM(RTRIM(
+            ISNULL(calle,'') +
+            CASE WHEN nro_calle IS NOT NULL THEN ' ' + CAST(nro_calle AS VARCHAR(10)) ELSE '' END +
+            CASE WHEN barrio IS NOT NULL THEN ', ' + barrio ELSE '' END
+        )) AS direccion,
+        telefono AS telefono,
+        CAST(NULL AS VARCHAR(100)) AS email,
+        ISNULL(capacidad, 0) AS capacidad,
+        ISNULL(horario_apertura, CAST('08:00:00' AS TIME(0))) AS horario_apertura,
+        ISNULL(horario_cierre,  CAST('23:00:00' AS TIME(0))) AS horario_cierre,
+        CAST(NULL AS VARCHAR(500)) AS descripcion,
+        CAST(NULL AS VARCHAR(100)) AS categoria,
+        CAST(4.0 AS FLOAT) AS calificacion,
+        CAST(1 AS BIT) AS activo,
+        CAST(NULL AS VARCHAR(255)) AS imagen_url
+    FROM datos
+    ORDER BY nombre;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_ObtenerRestaurantePorId
+    @id BIGINT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    ;WITH datos AS (
+        SELECT 
+            r.nro_restaurante,
+            r.razon_social,
+            MIN(s.calle) AS calle,
+            MIN(s.nro_calle) AS nro_calle,
+            MIN(s.barrio) AS barrio,
+            MIN(s.telefonos) AS telefono,
+            MAX(s.total_comensales) AS capacidad,
+            MIN(t.hora_desde) AS horario_apertura,
+            MAX(t.hora_hasta) AS horario_cierre
+        FROM restaurantes r
+        LEFT JOIN sucursales_restaurantes s ON s.nro_restaurante = r.nro_restaurante
+        LEFT JOIN turnos_sucursales_restaurantes t ON t.nro_restaurante = r.nro_restaurante
+        GROUP BY r.nro_restaurante, r.razon_social
+    ), enumerado AS (
+        SELECT 
+            CAST(ROW_NUMBER() OVER (ORDER BY razon_social) AS BIGINT) AS id,
+            *
+        FROM datos
+    )
+    SELECT 
+        e.id,
+        e.razon_social AS nombre,
+        LTRIM(RTRIM(
+            ISNULL(e.calle,'') +
+            CASE WHEN e.nro_calle IS NOT NULL THEN ' ' + CAST(e.nro_calle AS VARCHAR(10)) ELSE '' END +
+            CASE WHEN e.barrio IS NOT NULL THEN ', ' + e.barrio ELSE '' END
+        )) AS direccion,
+        e.telefono AS telefono,
+        CAST(NULL AS VARCHAR(100)) AS email,
+        ISNULL(e.capacidad, 0) AS capacidad,
+        ISNULL(e.horario_apertura, CAST('08:00:00' AS TIME(0))) AS horario_apertura,
+        ISNULL(e.horario_cierre,  CAST('23:00:00' AS TIME(0))) AS horario_cierre,
+        CAST(NULL AS VARCHAR(500)) AS descripcion,
+        CAST(NULL AS VARCHAR(100)) AS categoria,
+        CAST(4.0 AS FLOAT) AS calificacion,
+        CAST(1 AS BIT) AS activo,
+        CAST(NULL AS VARCHAR(255)) AS imagen_url
+    FROM enumerado e
+    WHERE e.id = @id;
+END;
+GO
+
+-- =============================
+-- Promociones (mínimo para listar)
+-- =============================
+CREATE OR ALTER PROCEDURE sp_ObtenerTodasLasPromociones
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT 
+        CAST(ROW_NUMBER() OVER (ORDER BY cr.nro_restaurante, cr.nro_contenido) AS BIGINT) AS id,
+        CAST(0 AS BIGINT) AS restaurante_id,
+        LEFT(ISNULL(cr.contenido_promocional, cr.contenido_a_publicar), 100) AS titulo,
+        ISNULL(cr.contenido_promocional, cr.contenido_a_publicar) AS descripcion,
+        CAST(NULL AS DECIMAL(10,2)) AS descuento_porcentaje,
+        CAST(NULL AS DECIMAL(10,2)) AS descuento_fijo,
+        CAST(cr.fecha_ini_vigencia AS DATETIME2) AS fecha_inicio,
+        CAST(cr.fecha_fin_vigencia AS DATETIME2) AS fecha_fin,
+        CASE 
+            WHEN cr.fecha_ini_vigencia IS NOT NULL AND cr.fecha_fin_vigencia IS NOT NULL 
+                 AND CAST(GETDATE() AS DATE) BETWEEN cr.fecha_ini_vigencia AND cr.fecha_fin_vigencia 
+            THEN 'ACTIVA' ELSE 'INACTIVA' END AS estado,
+        CAST(NULL AS NVARCHAR(255)) AS imagen_url,
+        CAST(NULL AS INT) AS min_personas,
+        CAST(NULL AS INT) AS max_personas,
+        cr.cod_contenido_restaurante AS codigo_promocion,
+        CAST(0 AS BIT) AS requiere_codigo
+    FROM contenidos_restaurantes cr;
+END;
+GO
+
+PRINT 'Stored procedures creados/actualizados exitosamente!';
