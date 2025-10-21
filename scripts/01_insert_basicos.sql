@@ -1,9 +1,9 @@
--- Inserta cat醠ogos base: provincias, localidades y idiomas (idempotente)
+-- Inserta cat贸logos base: provincias, localidades y idiomas (idempotente)
 SET NOCOUNT ON;
 
 /* Provincias */
-IF NOT EXISTS (SELECT 1 FROM provincias WHERE nom_provincia = N'C髍doba')
-  INSERT INTO provincias (nom_provincia) VALUES (N'C髍doba');
+IF NOT EXISTS (SELECT 1 FROM provincias WHERE nom_provincia = N'C贸rdoba')
+  INSERT INTO provincias (nom_provincia) VALUES (N'C贸rdoba');
 IF NOT EXISTS (SELECT 1 FROM provincias WHERE nom_provincia = N'Buenos Aires')
   INSERT INTO provincias (nom_provincia) VALUES (N'Buenos Aires');
 IF NOT EXISTS (SELECT 1 FROM provincias WHERE nom_provincia = N'Santa Fe')
@@ -11,16 +11,16 @@ IF NOT EXISTS (SELECT 1 FROM provincias WHERE nom_provincia = N'Santa Fe')
 
 /* Localidades (ligadas a su provincia por nombre) */
 DECLARE @cod_cba VARCHAR(36), @cod_ba VARCHAR(36), @cod_sf VARCHAR(36);
-SELECT @cod_cba = cod_provincia FROM provincias WHERE nom_provincia = N'C髍doba';
+SELECT @cod_cba = cod_provincia FROM provincias WHERE nom_provincia = N'C贸rdoba';
 SELECT @cod_ba  = cod_provincia FROM provincias WHERE nom_provincia = N'Buenos Aires';
 SELECT @cod_sf  = cod_provincia FROM provincias WHERE nom_provincia = N'Santa Fe';
 
-IF NOT EXISTS (SELECT 1 FROM localidades WHERE nom_localidad=N'C髍doba' AND cod_provincia=@cod_cba)
-  INSERT INTO localidades (nom_localidad, cod_provincia) VALUES (N'C髍doba', @cod_cba);
+IF NOT EXISTS (SELECT 1 FROM localidades WHERE nom_localidad=N'C贸rdoba' AND cod_provincia=@cod_cba)
+  INSERT INTO localidades (nom_localidad, cod_provincia) VALUES (N'C贸rdoba', @cod_cba);
 IF NOT EXISTS (SELECT 1 FROM localidades WHERE nom_localidad=N'Villa Carlos Paz' AND cod_provincia=@cod_cba)
   INSERT INTO localidades (nom_localidad, cod_provincia) VALUES (N'Villa Carlos Paz', @cod_cba);
-IF NOT EXISTS (SELECT 1 FROM localidades WHERE nom_localidad=N'R韔 Cuarto' AND cod_provincia=@cod_cba)
-  INSERT INTO localidades (nom_localidad, cod_provincia) VALUES (N'R韔 Cuarto', @cod_cba);
+IF NOT EXISTS (SELECT 1 FROM localidades WHERE nom_localidad=N'R贸o Cuarto' AND cod_provincia=@cod_cba)
+  INSERT INTO localidades (nom_localidad, cod_provincia) VALUES (N'R贸o Cuarto', @cod_cba);
 
 IF NOT EXISTS (SELECT 1 FROM localidades WHERE nom_localidad=N'La Plata' AND cod_provincia=@cod_ba)
   INSERT INTO localidades (nom_localidad, cod_provincia) VALUES (N'La Plata', @cod_ba);
@@ -32,8 +32,8 @@ IF NOT EXISTS (SELECT 1 FROM localidades WHERE nom_localidad=N'Rosario' AND cod_
 
 /* Idiomas */
 IF NOT EXISTS (SELECT 1 FROM idiomas WHERE cod_idioma=N'es-AR')
-  INSERT INTO idiomas (nom_idioma, cod_idioma) VALUES (N'Espa駉l (Argentina)', N'es-AR');
+  INSERT INTO idiomas (nom_idioma, cod_idioma) VALUES (N'Espa贸ol (Argentina)', N'es-AR');
 IF NOT EXISTS (SELECT 1 FROM idiomas WHERE cod_idioma=N'en-US')
   INSERT INTO idiomas (nom_idioma, cod_idioma) VALUES (N'English (United States)', N'en-US');
 IF NOT EXISTS (SELECT 1 FROM idiomas WHERE cod_idioma=N'pt-BR')
-  INSERT INTO idiomas (nom_idioma, cod_idioma) VALUES (N'Portugu阺 (Brasil)', N'pt-BR');
+  INSERT INTO idiomas (nom_idioma, cod_idioma) VALUES (N'Portugu贸s (Brasil)', N'pt-BR');
