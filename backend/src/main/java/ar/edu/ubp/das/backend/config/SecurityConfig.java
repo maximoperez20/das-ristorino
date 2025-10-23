@@ -31,7 +31,12 @@ public class SecurityConfig {
                     "/public/**",
                     "/actuator/health",
                     "/api/restaurantes/**",
-                    "/api/promociones/**"
+                    "/api/promociones/**",
+                    // Swagger UI (documentación API)
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/v3/api-docs/**",
+                    "/webjars/**"
                 ).permitAll()
                 // Endpoints protegidos (requieren token)
                 .requestMatchers(
