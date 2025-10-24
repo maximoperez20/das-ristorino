@@ -5,79 +5,64 @@ import ar.edu.ubp.das.backend.repository.ReservaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Servicio para gestión de reservas
+ */
 @Service
 public class ReservaService {
     
     @Autowired
     private ReservaRepository reservaRepository;
     
-    // Obtener todas las reservas
+    /**
+     * Obtener todas las reservas
+     */
     public List<ReservaResponseDto> obtenerTodasLasReservas() {
         return reservaRepository.findAll();
     }
     
-    // Obtener reserva por ID
+    /**
+     * Obtener reserva por ID
+     */
     public Optional<ReservaResponseDto> obtenerReservaPorId(String id) {
         return reservaRepository.findById(id);
     }
     
-    // Crear nueva reserva
+    /**
+     * Crear nueva reserva
+     */
     public ReservaResponseDto crearReserva(CrearReservaDto crearReservaDto) {
         return reservaRepository.save(crearReservaDto);
     }
     
-    // Actualizar reserva existente
+    /**
+     * Actualizar reserva existente
+     */
     public boolean actualizarReserva(String id, ActualizarReservaDto actualizarReservaDto) {
         return reservaRepository.update(actualizarReservaDto, id);
     }
     
-    // Eliminar reserva
+    /**
+     * Eliminar (cancelar) reserva
+     */
     public boolean eliminarReserva(String id) {
         return reservaRepository.deleteById(id);
     }
     
-    // Obtener reservas por estado
-    public List<ReservaResponseDto> obtenerReservasPorEstado(String estado) {
-        return reservaRepository.findByEstado(estado);
-    }
-    
-    // Cambiar estado de una reserva
+    /**
+     * Cambiar estado de una reserva
+     */
     public boolean cambiarEstadoReserva(String id, String nuevoEstado) {
         return reservaRepository.updateEstado(id, nuevoEstado);
     }
     
-    // Obtener reservas por email del cliente
-    public List<ReservaResponseDto> obtenerReservasPorCliente(String email) {
-        return reservaRepository.findByEmail(email);
-    }
-    
-    // Obtener reservas por restaurante
-    public List<ReservaResponseDto> obtenerReservasPorRestaurante(Long restauranteId) {
-        return reservaRepository.findByRestauranteId(restauranteId);
-    }
-    
-    // Contar total de reservas
-    public long contarReservas() {
-        return reservaRepository.count();
-    }
-    
-    // Verificar si existe una reserva con el ID dado
+    /**
+     * Verificar si existe una reserva con el ID dado
+     */
     public boolean existeReserva(String id) {
         return reservaRepository.existsById(id);
-    }
-    
-    // Obtener reservas por rango de fechas
-    public List<ReservaResponseDto> obtenerReservasPorRangoFechas(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
-        return reservaRepository.findByFechaHoraBetween(fechaInicio, fechaFin);
-    }
-    
-    // Obtener estadísticas de reservas
-    public Map<String, Object> obtenerEstadisticasReservas() {
-        return reservaRepository.getEstadisticas();
     }
 }

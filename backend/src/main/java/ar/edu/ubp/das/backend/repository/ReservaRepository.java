@@ -8,7 +8,6 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Types;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -73,14 +72,9 @@ public class ReservaRepository {
         return result != null && result.size() > 0;
     }
     
-    // Obtener reservas por estado
-    public List<ReservaResponseDto> findByEstado(String estado) {
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("estado", estado);
-        return jdbcCallFactory.executeQuery("sp_ObtenerReservasPorEstado", "dbo", params, "reservas", ReservaResponseDto.class);
-    }
-    
-    // Cambiar estado de una reserva
+    /**
+     * Cambiar estado de una reserva
+     */
     public boolean updateEstado(String id, String nuevoEstado) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("id", id)
@@ -90,28 +84,9 @@ public class ReservaRepository {
         return result != null && result.size() > 0;
     }
     
-    // Obtener reservas por email del cliente
-    public List<ReservaResponseDto> findByEmail(String email) {
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("email", email);
-        return jdbcCallFactory.executeQuery("sp_ObtenerReservasPorCliente", "dbo", params, "reservas", ReservaResponseDto.class);
-    }
-    
-    // Obtener reservas por restaurante (temporalmente retorna todas las reservas)
-    public List<ReservaResponseDto> findByRestauranteId(Long restauranteId) {
-        // TODO: Implementar cuando se agregue la columna restaurante_id a la tabla
-        return findAll();
-    }
-    
-    // Obtener reservas por rango de fechas
-    public List<ReservaResponseDto> findByFechaHoraBetween(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("fecha_inicio", java.sql.Timestamp.valueOf(fechaInicio))
-                .addValue("fecha_fin", java.sql.Timestamp.valueOf(fechaFin));
-        return jdbcCallFactory.executeQuery("sp_ObtenerReservasPorRangoFechas", "dbo", params, "reservas", ReservaResponseDto.class);
-    }
-    
-    // Verificar si existe una reserva
+    /**
+     * Verificar si existe una reserva
+     */
     public boolean existsById(String id) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("id", id);
@@ -122,19 +97,5 @@ public class ReservaRepository {
             return count != null && count > 0;
         }
         return false;
-    }
-    
-    // Contar total de reservas
-    public long count() {
-        Map<String, Object> result = jdbcCallFactory.executeWithOutputs("sp_ContarReservas", "dbo", new MapSqlParameterSource());
-        if (result != null && result.containsKey("total_reservas")) {
-            return ((Number) result.get("total_reservas")).longValue();
-        }
-        return 0;
-    }
-    
-    // Obtener estadísticas de reservas
-    public Map<String, Object> getEstadisticas() {
-        return jdbcCallFactory.executeWithOutputs("sp_ObtenerEstadisticasReservas", "dbo", new MapSqlParameterSource());
     }
 }

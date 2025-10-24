@@ -89,13 +89,6 @@ public class ReservaResource {
         }
     }
 
-    // GET /api/reservas/estado/{estado} - Obtener reservas por estado
-    @GetMapping("/estado/{estado}")
-    public ResponseEntity<List<ReservaResponseDto>> getReservasByEstado(@PathVariable String estado) {
-        List<ReservaResponseDto> reservas = reservaService.obtenerReservasPorEstado(estado);
-        return ResponseEntity.ok(reservas);
-    }
-
     // PUT /api/reservas/{id}/estado - Cambiar estado de una reserva
     @PutMapping("/{id}/estado")
     public ResponseEntity<ReservaResponseDto> updateEstadoReserva(@PathVariable String id, @Valid @RequestBody CambiarEstadoDto cambiarEstadoDto) {
@@ -110,35 +103,5 @@ public class ReservaResource {
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-    }
-
-    // GET /api/reservas/cliente/{email} - Obtener reservas por email del cliente
-    @GetMapping("/cliente/{email}")
-    public ResponseEntity<List<ReservaResponseDto>> getReservasByCliente(@PathVariable String email) {
-        List<ReservaResponseDto> reservas = reservaService.obtenerReservasPorCliente(email);
-        return ResponseEntity.ok(reservas);
-    }
-    
-    // GET /api/reservas/count - Obtener el total de reservas
-    @GetMapping("/count")
-    public ResponseEntity<Map<String, Long>> getReservasCount() {
-        long count = reservaService.contarReservas();
-        return ResponseEntity.ok(Map.of("total", count));
-    }
-    
-    // GET /api/reservas/rango-fechas - Obtener reservas por rango de fechas
-    @GetMapping("/rango-fechas")
-    public ResponseEntity<List<ReservaResponseDto>> getReservasPorRangoFechas(
-            @RequestParam LocalDateTime fechaInicio, 
-            @RequestParam LocalDateTime fechaFin) {
-        List<ReservaResponseDto> reservas = reservaService.obtenerReservasPorRangoFechas(fechaInicio, fechaFin);
-        return ResponseEntity.ok(reservas);
-    }
-    
-    // GET /api/reservas/estadisticas - Obtener estadísticas de reservas
-    @GetMapping("/estadisticas")
-    public ResponseEntity<Map<String, Object>> getEstadisticasReservas() {
-        Map<String, Object> estadisticas = reservaService.obtenerEstadisticasReservas();
-        return ResponseEntity.ok(estadisticas);
     }
 }
