@@ -1,47 +1,29 @@
 package ar.edu.ubp.das.backend.dto;
 
-import jakarta.validation.constraints.*;
-
 /**
- * DTO para usuarios/clientes del sistema
- * Mapea la tabla clientes de la base de datos
+ * DTO para respuesta de cliente creado (sin exponer la contraseña)
  */
-public class UsuarioDto {
+public class ClienteResponseDto {
     
-    private String nroCliente; // UUID generado por la BD
-    
-    @NotBlank(message = "El apellido es obligatorio")
-    @Size(max = 120, message = "El apellido no puede exceder 120 caracteres")
+    private String nroCliente;
     private String apellido;
-    
-    @NotBlank(message = "El nombre es obligatorio")
-    @Size(max = 120, message = "El nombre no puede exceder 120 caracteres")
     private String nombre;
-    
-    private String clave; // Hash de la contraseña (no se expone en responses)
-    
-    @NotBlank(message = "El correo es obligatorio")
-    @Email(message = "El formato del correo no es válido")
-    @Size(max = 150, message = "El correo no puede exceder 150 caracteres")
     private String correo;
-    
-    @Size(max = 120, message = "El teléfono no puede exceder 120 caracteres")
     private String telefonos;
-    
-    @NotBlank(message = "La localidad es obligatoria")
-    private String nroLocalidad; // FK a localidades
-    
-    private Boolean habilitado = true;
+    private String nroLocalidad;
+    private Boolean habilitado;
     
     // Constructores
-    public UsuarioDto() {}
+    public ClienteResponseDto() {}
     
-    public UsuarioDto(String nombre, String apellido, String correo, String telefonos, String nroLocalidad) {
-        this.nombre = nombre;
+    public ClienteResponseDto(String nroCliente, String apellido, String nombre, String correo, String telefonos, String nroLocalidad, Boolean habilitado) {
+        this.nroCliente = nroCliente;
         this.apellido = apellido;
+        this.nombre = nombre;
         this.correo = correo;
         this.telefonos = telefonos;
         this.nroLocalidad = nroLocalidad;
+        this.habilitado = habilitado;
     }
     
     // Getters y Setters
@@ -67,14 +49,6 @@ public class UsuarioDto {
     
     public void setNombre(String nombre) {
         this.nombre = nombre;
-    }
-    
-    public String getClave() {
-        return clave;
-    }
-    
-    public void setClave(String clave) {
-        this.clave = clave;
     }
     
     public String getCorreo() {
@@ -111,7 +85,7 @@ public class UsuarioDto {
     
     @Override
     public String toString() {
-        return "UsuarioDto{" +
+        return "ClienteResponseDto{" +
                 "nroCliente='" + nroCliente + '\'' +
                 ", apellido='" + apellido + '\'' +
                 ", nombre='" + nombre + '\'' +
@@ -122,3 +96,4 @@ public class UsuarioDto {
                 '}';
     }
 }
+

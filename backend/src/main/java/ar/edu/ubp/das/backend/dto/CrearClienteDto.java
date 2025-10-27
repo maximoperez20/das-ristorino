@@ -3,12 +3,9 @@ package ar.edu.ubp.das.backend.dto;
 import jakarta.validation.constraints.*;
 
 /**
- * DTO para usuarios/clientes del sistema
- * Mapea la tabla clientes de la base de datos
+ * DTO para crear un nuevo cliente/usuario
  */
-public class UsuarioDto {
-    
-    private String nroCliente; // UUID generado por la BD
+public class CrearClienteDto {
     
     @NotBlank(message = "El apellido es obligatorio")
     @Size(max = 120, message = "El apellido no puede exceder 120 caracteres")
@@ -18,7 +15,9 @@ public class UsuarioDto {
     @Size(max = 120, message = "El nombre no puede exceder 120 caracteres")
     private String nombre;
     
-    private String clave; // Hash de la contraseña (no se expone en responses)
+    @NotBlank(message = "La contraseña es obligatoria")
+    @Size(min = 6, max = 100, message = "La contraseña debe tener entre 6 y 100 caracteres")
+    private String password;
     
     @NotBlank(message = "El correo es obligatorio")
     @Email(message = "El formato del correo no es válido")
@@ -29,30 +28,21 @@ public class UsuarioDto {
     private String telefonos;
     
     @NotBlank(message = "La localidad es obligatoria")
-    private String nroLocalidad; // FK a localidades
-    
-    private Boolean habilitado = true;
+    private String nroLocalidad; // UUID de la localidad
     
     // Constructores
-    public UsuarioDto() {}
+    public CrearClienteDto() {}
     
-    public UsuarioDto(String nombre, String apellido, String correo, String telefonos, String nroLocalidad) {
-        this.nombre = nombre;
+    public CrearClienteDto(String apellido, String nombre, String password, String correo, String telefonos, String nroLocalidad) {
         this.apellido = apellido;
+        this.nombre = nombre;
+        this.password = password;
         this.correo = correo;
         this.telefonos = telefonos;
         this.nroLocalidad = nroLocalidad;
     }
     
     // Getters y Setters
-    public String getNroCliente() {
-        return nroCliente;
-    }
-    
-    public void setNroCliente(String nroCliente) {
-        this.nroCliente = nroCliente;
-    }
-    
     public String getApellido() {
         return apellido;
     }
@@ -69,12 +59,12 @@ public class UsuarioDto {
         this.nombre = nombre;
     }
     
-    public String getClave() {
-        return clave;
+    public String getPassword() {
+        return password;
     }
     
-    public void setClave(String clave) {
-        this.clave = clave;
+    public void setPassword(String password) {
+        this.password = password;
     }
     
     public String getCorreo() {
@@ -101,24 +91,16 @@ public class UsuarioDto {
         this.nroLocalidad = nroLocalidad;
     }
     
-    public Boolean getHabilitado() {
-        return habilitado;
-    }
-    
-    public void setHabilitado(Boolean habilitado) {
-        this.habilitado = habilitado;
-    }
-    
     @Override
     public String toString() {
-        return "UsuarioDto{" +
-                "nroCliente='" + nroCliente + '\'' +
-                ", apellido='" + apellido + '\'' +
+        return "CrearClienteDto{" +
+                "apellido='" + apellido + '\'' +
                 ", nombre='" + nombre + '\'' +
+                ", password='[PROTECTED]'" +
                 ", correo='" + correo + '\'' +
                 ", telefonos='" + telefonos + '\'' +
                 ", nroLocalidad='" + nroLocalidad + '\'' +
-                ", habilitado=" + habilitado +
                 '}';
     }
 }
+

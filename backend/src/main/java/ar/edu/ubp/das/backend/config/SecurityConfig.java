@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -32,6 +34,7 @@ public class SecurityConfig {
                     "/actuator/health",
                     "/api/restaurantes/**",
                     "/api/promociones/**",
+                    "/api/clientes",  // Crear cliente (registro público)
                     // Swagger UI (documentación API)
                     "/swagger-ui/**",
                     "/swagger-ui.html",
@@ -53,5 +56,10 @@ public class SecurityConfig {
     public JwtDecoder jwtDecoder() {
         var key = new SecretKeySpec(jwtSecret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
         return NimbusJwtDecoder.withSecretKey(key).build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

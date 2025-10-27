@@ -1,8 +1,47 @@
--- Script para crear stored procedures para la tabla reservas_restaurantes
--- Basado en la nueva estructura de base de datos
+-- Script para crear stored procedures para el sistema Ristorino
+-- Incluye procedimientos para clientes, reservas, restaurantes y promociones
 
 USE das_ristorino;
 GO
+
+-- =====================================================
+-- STORED PROCEDURES PARA CLIENTES
+-- =====================================================
+
+-- 1. Crear cliente
+CREATE OR ALTER PROCEDURE sp_CrearCliente
+    @apellido VARCHAR(120),
+    @nombre VARCHAR(120),
+    @clave VARCHAR(200),
+    @correo VARCHAR(150),
+    @telefonos VARCHAR(120),
+    @nro_localidad VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Insertar el nuevo cliente (nro_cliente se genera automáticamente con NEWID())
+    INSERT INTO clientes (apellido, nombre, clave, correo, telefonos, nro_localidad, habilitado)
+    VALUES (@apellido, @nombre, @clave, @correo, @telefonos, @nro_localidad, 1);
+    
+    -- Retornar el cliente recién creado
+    SELECT 
+        nro_cliente,
+        apellido,
+        nombre,
+        clave,
+        correo,
+        telefonos,
+        nro_localidad,
+        habilitado
+    FROM clientes
+    WHERE correo = @correo;
+END;
+GO
+
+-- =====================================================
+-- STORED PROCEDURES PARA RESERVAS
+-- =====================================================
 
 -- 1. Obtener todas las reservas
 CREATE OR ALTER PROCEDURE sp_ObtenerTodasLasReservas
