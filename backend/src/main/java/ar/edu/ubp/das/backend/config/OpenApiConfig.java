@@ -43,7 +43,7 @@ public class OpenApiConfig {
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")
                                         .bearerFormat("JWT")
-                                        .description("Token JWT - Obtener desde: GET /public/token (desarrollo)")));
+                                        .description("Token JWT - Obtener desde: POST /api/clientes/register o POST /api/clientes/login")));
     }
 }
 

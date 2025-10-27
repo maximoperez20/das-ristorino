@@ -30,7 +30,6 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Endpoints públicos (no requieren login)
                 .requestMatchers(
-                    "/public/**",
                     "/actuator/health",
                     "/api/restaurantes/**",
                     "/api/promociones/**",
