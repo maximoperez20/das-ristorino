@@ -34,7 +34,8 @@ public class SecurityConfig {
                     "/actuator/health",
                     "/api/restaurantes/**",
                     "/api/promociones/**",
-                    "/api/clientes",  // Crear cliente (registro público)
+                    "/api/clientes/register",  // Registro de cliente
+                    "/api/clientes/login",     // Login de cliente
                     // Swagger UI (documentación API)
                     "/swagger-ui/**",
                     "/swagger-ui.html",
