@@ -12,9 +12,10 @@ import org.springframework.context.annotation.Configuration;
 import java.util.List;
 
 /**
- * Configuración de OpenAPI/Swagger para documentación automática de la API.
+ * Configuración de OpenAPI para documentación automática de la API.
  * 
- * Acceso: http://localhost:8080/swagger-ui.html
+ * Documentación detallada: src/main/resources/openapi-docs.yaml
+ * Swagger UI: http://localhost:8080/swagger-ui.html
  * API Docs JSON: http://localhost:8080/v3/api-docs
  */
 @Configuration
@@ -25,8 +26,7 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("API Ristorino")
-                        .description("Portal gastronómico para descubrir y reservar en restaurantes de Córdoba. " +
-                                   "Esta API permite gestionar reservas, consultar restaurantes y promociones.")
+                        .description("Portal gastronómico para descubrir y reservar en restaurantes de Córdoba")
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("Equipo DAS - UBP")
@@ -36,9 +36,9 @@ public class OpenApiConfig {
                                 .url("http://localhost:8080")
                                 .description("Servidor de Desarrollo")))
                 .addSecurityItem(new SecurityRequirement()
-                        .addList("Bearer Authentication"))
+                        .addList("BearerAuth"))
                 .components(new io.swagger.v3.oas.models.Components()
-                        .addSecuritySchemes("Bearer Authentication",
+                        .addSecuritySchemes("BearerAuth",
                                 new SecurityScheme()
                                         .type(SecurityScheme.Type.HTTP)
                                         .scheme("bearer")

@@ -471,4 +471,64 @@ BEGIN
 END;
 GO
 
+-- =====================================================
+-- STORED PROCEDURE: sp_RegistrarClickPromocion
+-- Registra un click en una promoción/contenido
+-- =====================================================
+CREATE OR ALTER PROCEDURE sp_RegistrarClickPromocion
+    @nro_restaurante VARCHAR(36),
+    @nro_idioma VARCHAR(36),
+    @nro_contenido VARCHAR(36),
+    @nro_cliente VARCHAR(36) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @nro_click VARCHAR(36) = NEWID();
+    DECLARE @costo_click DECIMAL(12,2);
+    
+    -- Obtener el costo del click desde la tabla contenidos_restaurantes
+    SELECT @costo_click = costo_click
+    FROM contenidos_restaurantes
+    WHERE nro_restaurante = @nro_restaurante
+      AND nro_idioma = @nro_idioma
+      AND nro_contenido = @nro_contenido;
+    
+    -- Insertar el registro del click
+    INSERT INTO clicks_contenidos_restaurantes (
+        nro_restaurante,
+        nro_idioma,
+        nro_contenido,
+        nro_click,
+        fecha_hora_registro,
+        nro_cliente,
+        costo_click,
+        notificado
+    )
+    VALUES (
+        @nro_restaurante,
+        @nro_idioma,
+        @nro_contenido,
+        @nro_click,
+        SYSDATETIME(),
+        @nro_cliente,
+        @costo_click,
+        0
+    );
+    
+    -- Retornar el click registrado
+    SELECT 
+        nro_click,
+        nro_restaurante,
+        nro_idioma,
+        nro_contenido,
+        fecha_hora_registro,
+        nro_cliente,
+        costo_click,
+        notificado
+    FROM clicks_contenidos_restaurantes
+    WHERE nro_click = @nro_click;
+END;
+GO
+
 PRINT 'Stored procedures creados/actualizados exitosamente!';

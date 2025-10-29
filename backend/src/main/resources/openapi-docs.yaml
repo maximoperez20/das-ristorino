@@ -1,0 +1,336 @@
+openapi: 3.0.1
+info:
+  title: API Ristorino
+  description: Portal gastronómico para descubrir y reservar en restaurantes de Córdoba
+  version: 1.0.0
+  contact:
+    name: Equipo DAS - UBP
+    email: soporte@ristorino.com
+
+servers:
+  - url: http://localhost:8080
+    description: Servidor de Desarrollo
+
+tags:
+  - name: Clientes
+    description: Autenticación y gestión de clientes
+  - name: Promociones
+    description: Consulta de promociones y registro de clicks
+  - name: Restaurantes
+    description: Consulta de restaurantes
+  - name: Reservas
+    description: Gestión de reservas
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT obtenido desde POST /api/clientes/register o POST /api/clientes/login
+
+security:
+  - BearerAuth: []
+
+paths:
+  /api/clientes/register:
+    post:
+      tags:
+        - Clientes
+      summary: Registrar nuevo cliente
+      description: Crea un nuevo cliente y retorna un token JWT automáticamente
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - apellido
+                - nombre
+                - password
+                - correo
+                - nroLocalidad
+              properties:
+                apellido:
+                  type: string
+                  maxLength: 120
+                nombre:
+                  type: string
+                  maxLength: 120
+                password:
+                  type: string
+                  minLength: 6
+                  maxLength: 100
+                correo:
+                  type: string
+                  format: email
+                  maxLength: 150
+                telefonos:
+                  type: string
+                  maxLength: 120
+                nroLocalidad:
+                  type: string
+                  maxLength: 36
+      responses:
+        '201':
+          description: Cliente registrado exitosamente
+        '400':
+          description: Datos inválidos o correo duplicado
+        '500':
+          description: Error interno del servidor
+
+  /api/clientes/login:
+    post:
+      tags:
+        - Clientes
+      summary: Iniciar sesión
+      description: Autentica un cliente y retorna un token JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - correo
+                - password
+              properties:
+                correo:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login exitoso
+        '401':
+          description: Credenciales inválidas
+        '500':
+          description: Error interno del servidor
+
+  /api/promociones:
+    get:
+      tags:
+        - Promociones
+      summary: Obtener todas las promociones
+      description: Retorna la lista completa de promociones disponibles
+      security: []
+      responses:
+        '200':
+          description: Lista de promociones obtenida exitosamente
+
+  /api/promociones/{id}:
+    get:
+      tags:
+        - Promociones
+      summary: Obtener promoción por ID
+      description: Retorna los detalles de una promoción específica
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Promoción encontrada
+        '404':
+          description: Promoción no encontrada
+
+  /api/promociones/click:
+    post:
+      tags:
+        - Promociones
+      summary: Registrar click en promoción
+      description: Registra cuando un usuario hace click en una promoción. El campo nroCliente es opcional.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nroRestaurante
+                - nroIdioma
+                - nroContenido
+              properties:
+                nroRestaurante:
+                  type: string
+                  maxLength: 36
+                nroIdioma:
+                  type: string
+                  maxLength: 36
+                nroContenido:
+                  type: string
+                  maxLength: 36
+                nroCliente:
+                  type: string
+                  maxLength: 36
+      responses:
+        '201':
+          description: Click registrado exitosamente
+        '400':
+          description: Datos inválidos
+        '500':
+          description: Error interno del servidor
+
+  /api/restaurantes:
+    get:
+      tags:
+        - Restaurantes
+      summary: Obtener todos los restaurantes
+      description: Retorna la lista completa de restaurantes
+      security: []
+      responses:
+        '200':
+          description: Lista de restaurantes obtenida exitosamente
+
+  /api/restaurantes/{id}:
+    get:
+      tags:
+        - Restaurantes
+      summary: Obtener restaurante por ID
+      description: Retorna los detalles de un restaurante específico
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Restaurante encontrado
+        '404':
+          description: Restaurante no encontrado
+
+  /api/restaurantes/buscar:
+    get:
+      tags:
+        - Restaurantes
+      summary: Buscar restaurantes por nombre
+      description: Busca restaurantes que coincidan con el nombre proporcionado
+      security: []
+      parameters:
+        - name: nombre
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Restaurantes encontrados
+
+  /api/reservas:
+    get:
+      tags:
+        - Reservas
+      summary: Obtener todas las reservas
+      description: Retorna la lista de reservas (requiere autenticación)
+      responses:
+        '200':
+          description: Lista de reservas obtenida exitosamente
+        '401':
+          description: No autenticado
+    post:
+      tags:
+        - Reservas
+      summary: Crear una reserva
+      description: Crea una nueva reserva (requiere autenticación)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Reserva creada exitosamente
+        '400':
+          description: Datos inválidos
+        '401':
+          description: No autenticado
+
+  /api/reservas/{id}:
+    get:
+      tags:
+        - Reservas
+      summary: Obtener reserva por ID
+      description: Retorna los detalles de una reserva específica
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reserva encontrada
+        '401':
+          description: No autenticado
+        '404':
+          description: Reserva no encontrada
+    put:
+      tags:
+        - Reservas
+      summary: Actualizar una reserva
+      description: Actualiza los datos de una reserva existente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reserva actualizada exitosamente
+        '401':
+          description: No autenticado
+        '404':
+          description: Reserva no encontrada
+    delete:
+      tags:
+        - Reservas
+      summary: Eliminar una reserva
+      description: Elimina una reserva existente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Reserva eliminada exitosamente
+        '401':
+          description: No autenticado
+        '404':
+          description: Reserva no encontrada
+
+  /api/reservas/{id}/estado:
+    put:
+      tags:
+        - Reservas
+      summary: Cambiar estado de una reserva
+      description: Actualiza el estado de una reserva
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Estado actualizado exitosamente
+        '401':
+          description: No autenticado
+        '404':
+          description: Reserva no encontrada
+
