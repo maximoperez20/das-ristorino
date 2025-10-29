@@ -450,8 +450,9 @@ AS
 BEGIN
     SET NOCOUNT ON;
     SELECT 
-        CAST(ROW_NUMBER() OVER (ORDER BY cr.nro_restaurante, cr.nro_contenido) AS BIGINT) AS id,
-        CAST(0 AS BIGINT) AS restaurante_id,
+        cr.nro_restaurante,
+        cr.nro_idioma,
+        cr.nro_contenido,
         LEFT(ISNULL(cr.contenido_promocional, cr.contenido_a_publicar), 100) AS titulo,
         ISNULL(cr.contenido_promocional, cr.contenido_a_publicar) AS descripcion,
         CAST(NULL AS DECIMAL(10,2)) AS descuento_porcentaje,

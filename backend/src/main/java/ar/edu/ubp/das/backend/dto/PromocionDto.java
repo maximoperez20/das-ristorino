@@ -6,10 +6,10 @@ import java.time.LocalDateTime;
 
 public class PromocionDto {
     
-    private Long id;
-    
-    @NotNull(message = "El ID del restaurante es obligatorio")
-    private Long restauranteId;
+    // UUIDs de la base de datos (claves reales)
+    private String nroRestaurante;
+    private String nroIdioma;
+    private String nroContenido;
     
     @NotBlank(message = "El título es obligatorio")
     @Size(max = 100, message = "El título no puede exceder 100 caracteres")
@@ -51,32 +51,29 @@ public class PromocionDto {
     // Constructores
     public PromocionDto() {}
     
-    public PromocionDto(Long restauranteId, String titulo, String descripcion, 
-                       BigDecimal descuentoPorcentaje, LocalDateTime fechaInicio, 
-                       LocalDateTime fechaFin) {
-        this.restauranteId = restauranteId;
-        this.titulo = titulo;
-        this.descripcion = descripcion;
-        this.descuentoPorcentaje = descuentoPorcentaje;
-        this.fechaInicio = fechaInicio;
-        this.fechaFin = fechaFin;
-    }
-    
     // Getters y Setters
-    public Long getId() {
-        return id;
+    public String getNroRestaurante() {
+        return nroRestaurante;
     }
     
-    public void setId(Long id) {
-        this.id = id;
+    public void setNroRestaurante(String nroRestaurante) {
+        this.nroRestaurante = nroRestaurante;
     }
     
-    public Long getRestauranteId() {
-        return restauranteId;
+    public String getNroIdioma() {
+        return nroIdioma;
     }
     
-    public void setRestauranteId(Long restauranteId) {
-        this.restauranteId = restauranteId;
+    public void setNroIdioma(String nroIdioma) {
+        this.nroIdioma = nroIdioma;
+    }
+    
+    public String getNroContenido() {
+        return nroContenido;
+    }
+    
+    public void setNroContenido(String nroContenido) {
+        this.nroContenido = nroContenido;
     }
     
     public String getTitulo() {
@@ -178,8 +175,9 @@ public class PromocionDto {
     @Override
     public String toString() {
         return "PromocionDto{" +
-                "id=" + id +
-                ", restauranteId=" + restauranteId +
+                "nroRestaurante='" + nroRestaurante + '\'' +
+                ", nroIdioma='" + nroIdioma + '\'' +
+                ", nroContenido='" + nroContenido + '\'' +
                 ", titulo='" + titulo + '\'' +
                 ", descripcion='" + descripcion + '\'' +
                 ", descuentoPorcentaje=" + descuentoPorcentaje +

@@ -36,9 +36,9 @@ public class PromocionResource {
         return ResponseEntity.ok(promociones);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PromocionDto> getPromocionById(@PathVariable Long id) {
-        Optional<PromocionDto> promocion = promocionService.obtenerPromocionPorId(id);
+    @GetMapping("/{nroContenido}")
+    public ResponseEntity<PromocionDto> getPromocionById(@PathVariable String nroContenido) {
+        Optional<PromocionDto> promocion = promocionService.obtenerPromocionPorId(nroContenido);
         return promocion.map(ResponseEntity::ok)
                         .orElseGet(() -> ResponseEntity.notFound().build());
     }

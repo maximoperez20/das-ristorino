@@ -26,9 +26,9 @@ public class PromocionService {
     }
     
     /**
-     * Obtener promoción por ID
+     * Obtener promoción por UUID de contenido
      */
-    public Optional<PromocionDto> obtenerPromocionPorId(Long id) {
-        return promocionRepository.findById(id);
+    public Optional<PromocionDto> obtenerPromocionPorId(String nroContenido) {
+        return promocionRepository.findByContenidoId(nroContenido);
     }
 }
