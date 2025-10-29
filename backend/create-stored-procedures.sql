@@ -532,4 +532,66 @@ BEGIN
 END;
 GO
 
+-- =====================================================
+-- STORED PROCEDURE: sp_GuardarContenidoGenerado
+-- Guarda contenido publicitario generado por IA
+-- Vigencia: 1 mes desde la fecha actual
+-- =====================================================
+CREATE OR ALTER PROCEDURE sp_GuardarContenidoGenerado
+    @nro_restaurante VARCHAR(36),
+    @nro_sucursal VARCHAR(36) = NULL,
+    @nro_idioma VARCHAR(36),
+    @contenido_generado VARCHAR(MAX)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @nro_contenido VARCHAR(36) = NEWID();
+    DECLARE @fecha_ini DATE = CAST(GETDATE() AS DATE);
+    DECLARE @fecha_fin DATE = DATEADD(MONTH, 1, @fecha_ini);
+    DECLARE @costo_click DECIMAL(12,2) = 0.00; -- Costo por defecto
+    
+    -- Insertar el contenido generado
+    INSERT INTO contenidos_restaurantes (
+        nro_restaurante,
+        nro_idioma,
+        nro_contenido,
+        nro_sucursal,
+        contenido_promocional,
+        imagen_promocional,
+        contenido_a_publicar,
+        fecha_ini_vigencia,
+        fecha_fin_vigencia,
+        costo_click,
+        cod_contenido_restaurante
+    )
+    VALUES (
+        @nro_restaurante,
+        @nro_idioma,
+        @nro_contenido,
+        @nro_sucursal,
+        NULL, -- contenido_promocional (null por ahora)
+        NULL, -- imagen_promocional (null por ahora)
+        @contenido_generado,
+        @fecha_ini,
+        @fecha_fin,
+        @costo_click,
+        'AI_' + CONVERT(VARCHAR(36), NEWID()) -- Código único generado
+    );
+    
+    -- Retornar el contenido guardado
+    SELECT 
+        nro_restaurante,
+        nro_sucursal,
+        nro_idioma,
+        nro_contenido,
+        contenido_a_publicar,
+        fecha_ini_vigencia,
+        fecha_fin_vigencia,
+        costo_click
+    FROM contenidos_restaurantes
+    WHERE nro_contenido = @nro_contenido;
+END;
+GO
+
 PRINT 'Stored procedures creados/actualizados exitosamente!';

@@ -1,0 +1,293 @@
+package ar.edu.ubp.das.backend.service;
+
+import com.theokanning.openai.completion.chat.ChatCompletionRequest;
+import com.theokanning.openai.completion.chat.ChatMessage;
+import com.theokanning.openai.completion.chat.ChatMessageRole;
+import com.theokanning.openai.service.OpenAiService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Servicio para interactuar con la API de OpenAI.
+ * Genera contenido publicitario usando ChatGPT.
+ */
+@Service
+public class OpenAIService {
+
+    private static final Logger logger = LoggerFactory.getLogger(OpenAIService.class);
+
+    @Value("${openai.api.key}")
+    private String apiKey;
+
+    @Value("${openai.model:gpt-4}")
+    private String model;
+
+    @Value("${openai.timeout:60}")
+    private int timeoutSeconds;
+
+    /**
+     * Genera texto publicitario usando ChatGPT.
+     *
+     * @param prompt El prompt con el contexto del restaurante.
+     * @param promptId ID del prompt guardado en OpenAI (opcional)
+     * @return El texto generado por la IA.
+     * @throws RuntimeException si hay error en la llamada a OpenAI.
+     */
+    public String generarContenidoPublicitario(String prompt, String promptId) {
+        if (apiKey == null || apiKey.isEmpty() || apiKey.equals("not-configured") || apiKey.equals("${OPENAI_API_KEY:}")) {
+            throw new RuntimeException("La API key de OpenAI no está configurada. Configure la variable de entorno OPENAI_API_KEY.");
+        }
+
+        try {
+            logger.info("╔════════════════════════════════════════════════════════════════");
+            logger.info("║ GENERACIÓN DE CONTENIDO CON OPENAI");
+            logger.info("╠════════════════════════════════════════════════════════════════");
+            logger.info("║ Modelo: {}", model);
+            if (promptId != null && !promptId.isEmpty()) {
+                logger.info("║ Prompt ID: {}", promptId);
+            } else {
+                logger.info("║ Prompt ID: (ninguno - usando prompt por defecto)");
+            }
+            logger.info("╠════════════════════════════════════════════════════════════════");
+            logger.info("║ PROMPT ENVIADO:");
+            logger.info("╠════════════════════════════════════════════════════════════════");
+            
+            // Crear cliente de OpenAI
+            OpenAiService service = new OpenAiService(apiKey, Duration.ofSeconds(timeoutSeconds));
+
+            // Construir la lista de mensajes
+            List<ChatMessage> messages = new ArrayList<>();
+            
+            // Si hay un promptId, usamos el prompt guardado en OpenAI
+            if (promptId != null && !promptId.isEmpty()) {
+                // El contexto del restaurante se pasa como JSON al prompt guardado
+                ChatMessage userMessage = new ChatMessage(
+                    ChatMessageRole.USER.value(),
+                    prompt
+                );
+                messages.add(userMessage);
+                
+                // Loggear el prompt JSON
+                logger.info("║ {}", prompt.replace("\n", "\n║ "));
+            } else {
+                // Si no hay promptId, usamos el sistema por defecto
+                ChatMessage systemMessage = new ChatMessage(
+                    ChatMessageRole.SYSTEM.value(),
+                    "Eres un experto en marketing gastronómico. Tu tarea es crear textos publicitarios " +
+                    "atractivos, convincentes y profesionales para restaurantes. Usa un lenguaje persuasivo " +
+                    "pero natural, destacando las características únicas de cada establecimiento."
+                );
+
+                ChatMessage userMessage = new ChatMessage(
+                    ChatMessageRole.USER.value(),
+                    prompt
+                );
+
+                messages.add(systemMessage);
+                messages.add(userMessage);
+                
+                // Loggear el prompt completo
+                logger.info("║ SYSTEM: Eres un experto en marketing gastronómico...");
+                logger.info("║ ");
+                logger.info("║ USER:");
+                String[] lines = prompt.split("\n");
+                for (String line : lines) {
+                    logger.info("║ {}", line);
+                }
+            }
+            
+            logger.info("╚════════════════════════════════════════════════════════════════");
+
+            // Crear request (sin temperature ni maxTokens para compatibilidad con GPT-4)
+            ChatCompletionRequest completionRequest = ChatCompletionRequest.builder()
+                    .model(model)
+                    .messages(messages)
+                    .build();
+
+            // Ejecutar request
+            String contenidoGenerado = service.createChatCompletion(completionRequest)
+                    .getChoices()
+                    .get(0)
+                    .getMessage()
+                    .getContent();
+
+            // Loggear la respuesta
+            logger.info("");
+            logger.info("╔════════════════════════════════════════════════════════════════");
+            logger.info("║ RESPUESTA DE OPENAI");
+            logger.info("╠════════════════════════════════════════════════════════════════");
+            logger.info("║ Longitud: {} caracteres", contenidoGenerado.length());
+            logger.info("╠════════════════════════════════════════════════════════════════");
+            logger.info("║ CONTENIDO GENERADO:");
+            logger.info("╠════════════════════════════════════════════════════════════════");
+            
+            // Loggear el contenido generado línea por línea
+            String[] responseLines = contenidoGenerado.split("\n");
+            for (String line : responseLines) {
+                logger.info("║ {}", line);
+            }
+            
+            logger.info("╚════════════════════════════════════════════════════════════════");
+            logger.info("✅ Contenido generado exitosamente");
+            
+            // Cerrar servicio
+            service.shutdownExecutor();
+            
+            return contenidoGenerado.trim();
+
+        } catch (Exception e) {
+            logger.error("Error al generar contenido con OpenAI: {}", e.getMessage(), e);
+            throw new RuntimeException("Error al generar contenido con OpenAI: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Construye el prompt para ChatGPT basado en el contexto del restaurante.
+     */
+    public String construirPrompt(String razonSocial, String sucursal, String direccion, 
+                                  String localidad, List<String> tiposComida, 
+                                  List<String> ambientes, List<String> rangosPrecios,
+                                  String observaciones, String contextoAdicional, String promptId) {
+        
+        if (promptId != null && !promptId.isEmpty()) {
+            return construirVariablesParaPromptGuardado(razonSocial, sucursal, direccion, 
+                                                       localidad, tiposComida, ambientes, 
+                                                       rangosPrecios, observaciones, contextoAdicional);
+        }
+        
+        // Prompt por defecto
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("Genera un texto publicitario atractivo para el siguiente restaurante:\n\n");
+        
+        prompt.append("📍 Restaurante: ").append(razonSocial).append("\n");
+        if (sucursal != null && !sucursal.isEmpty()) {
+            prompt.append("📍 Sucursal: ").append(sucursal).append("\n");
+        }
+        prompt.append("📍 Ubicación: ").append(direccion).append(", ").append(localidad).append("\n");
+        
+        if (!tiposComida.isEmpty()) {
+            prompt.append("🍽️ Tipo de comida: ").append(String.join(", ", tiposComida)).append("\n");
+        }
+        
+        if (!ambientes.isEmpty()) {
+            prompt.append("🎭 Ambiente: ").append(String.join(", ", ambientes)).append("\n");
+        }
+        
+        if (!rangosPrecios.isEmpty()) {
+            prompt.append("💰 Rango de precio: ").append(String.join(", ", rangosPrecios)).append("\n");
+        }
+        
+        if (observaciones != null && !observaciones.isEmpty()) {
+            prompt.append("ℹ️ Detalles: ").append(observaciones).append("\n");
+        }
+        
+        if (contextoAdicional != null && !contextoAdicional.isEmpty()) {
+            prompt.append("💡 Información adicional: ").append(contextoAdicional).append("\n");
+        }
+        
+        prompt.append("\n");
+        prompt.append("Requisitos:\n");
+        prompt.append("- Máximo 300 palabras\n");
+        prompt.append("- Destaca las características únicas del restaurante\n");
+        prompt.append("- Invita a los clientes a visitarlo\n");
+        prompt.append("- Menciona la ubicación de forma natural\n");
+        prompt.append("- Usa un tono ").append(determinarTono(ambientes)).append("\n");
+        prompt.append("- NO uses emojis en el texto generado\n");
+        prompt.append("- Escribe en español de Argentina\n");
+
+        return prompt.toString();
+    }
+
+    /**
+     * Determina el tono del texto según el ambiente del restaurante.
+     */
+    private String determinarTono(List<String> ambientes) {
+        if (ambientes.isEmpty()) {
+            return "cálido y acogedor";
+        }
+        
+        String primerAmbiente = ambientes.get(0).toLowerCase();
+        if (primerAmbiente.contains("gourmet") || primerAmbiente.contains("premium")) {
+            return "elegante y sofisticado";
+        } else if (primerAmbiente.contains("romántico")) {
+            return "romántico y cautivador";
+        } else if (primerAmbiente.contains("familiar")) {
+            return "cálido y familiar";
+        } else if (primerAmbiente.contains("casual")) {
+            return "casual y amigable";
+        }
+        
+        return "cálido y acogedor";
+    }
+
+    /**
+     * Construye un JSON limpio con los datos del restaurante para el prompt guardado en OpenAI.
+     * Omite campos null o vacíos.
+     */
+    private String construirVariablesParaPromptGuardado(String razonSocial, String sucursal,
+                                                       String direccion, String localidad, 
+                                                       List<String> tiposComida, List<String> ambientes,
+                                                       List<String> rangosPrecios, String observaciones, 
+                                                       String contextoAdicional) {
+        StringBuilder json = new StringBuilder();
+        json.append("{\n");
+        json.append("  \"restaurante\": \"").append(escaparJson(razonSocial != null ? razonSocial : "")).append("\"");
+        
+        if (sucursal != null && !sucursal.isEmpty()) {
+            json.append(",\n  \"sucursal\": \"").append(escaparJson(sucursal)).append("\"");
+        }
+        
+        if (direccion != null && !direccion.isEmpty()) {
+            json.append(",\n  \"direccion\": \"").append(escaparJson(direccion)).append("\"");
+        }
+        
+        if (localidad != null && !localidad.isEmpty()) {
+            json.append(",\n  \"localidad\": \"").append(escaparJson(localidad)).append("\"");
+        }
+        
+        if (tiposComida != null && !tiposComida.isEmpty()) {
+            json.append(",\n  \"tipo_comida\": \"").append(escaparJson(String.join(", ", tiposComida))).append("\"");
+        }
+        
+        if (ambientes != null && !ambientes.isEmpty()) {
+            json.append(",\n  \"ambiente\": \"").append(escaparJson(String.join(", ", ambientes))).append("\"");
+        }
+        
+        if (rangosPrecios != null && !rangosPrecios.isEmpty()) {
+            json.append(",\n  \"rango_precio\": \"").append(escaparJson(String.join(", ", rangosPrecios))).append("\"");
+        }
+        
+        if (observaciones != null && !observaciones.isEmpty()) {
+            json.append(",\n  \"observaciones\": \"").append(escaparJson(observaciones)).append("\"");
+        }
+        
+        if (contextoAdicional != null && !contextoAdicional.isEmpty()) {
+            json.append(",\n  \"contexto_adicional\": \"").append(escaparJson(contextoAdicional)).append("\"");
+        }
+        
+        json.append("\n}");
+        
+        // Instrucción explícita para obtener solo el texto publicitario
+        return json.toString() + "\n\nGenera ÚNICAMENTE el texto publicitario listo para publicar. NO incluyas explicaciones, títulos ni comentarios adicionales.";
+    }
+    
+    /**
+     * Escapa caracteres especiales para JSON
+     */
+    private String escaparJson(String texto) {
+        if (texto == null) return "";
+        return texto
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t");
+    }
+}
+

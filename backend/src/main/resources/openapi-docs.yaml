@@ -16,6 +16,8 @@ tags:
     description: Autenticación y gestión de clientes
   - name: Promociones
     description: Consulta de promociones y registro de clicks
+  - name: Contenidos IA
+    description: Generación de contenido publicitario con Inteligencia Artificial
   - name: Restaurantes
     description: Consulta de restaurantes
   - name: Reservas
@@ -179,6 +181,201 @@ paths:
           description: Datos inválidos
         '500':
           description: Error interno del servidor
+
+  /api/contenidos/generar:
+    post:
+      tags:
+        - Contenidos IA
+      summary: Generar contenido publicitario con IA
+      description: |
+        🤖 **Funcionalidad Innovadora con Inteligencia Artificial**
+        
+        Este endpoint utiliza ChatGPT de OpenAI para generar automáticamente textos publicitarios 
+        personalizados para restaurantes. El sistema:
+        
+        1. 📊 Analiza la información del restaurante desde la base de datos (tipo de comida, 
+           ubicación, ambiente, horarios, etc.)
+        2. 🎯 Construye un prompt contextualizado con todos los detalles relevantes
+        3. 🤖 Envía el prompt a ChatGPT usando el **Prompt ID configurado** en OpenAI
+        4. 💾 Guarda el contenido generado en la tabla `contenidos_restaurantes`
+        5. 📅 Establece vigencia automática de 1 mes
+        
+        **Características:**
+        - 🎨 Tono adaptativo según el ambiente del restaurante
+        - 📏 Máximo 300 palabras
+        - 🇦🇷 Texto en español de Argentina
+        - 🆔 Código único con prefijo "AI_"
+        - 📊 Integración con sistema de clicks y promociones
+        - 🎯 **Prompt ID por defecto**: `pmpt_68f93394cf6c8195955e0767742b9d7f05a21f383241fa79`
+        
+        **Prompt ID:**
+        - Si NO especificas `promptId` → usa el configurado por defecto en `application.properties`
+        - Si especificas `promptId` → usa el prompt que indiques (sobreescribe el default)
+        - El prompt por defecto está guardado en tu proyecto de OpenAI y se puede cambiar vía variable de entorno `OPENAI_PROMPT_ID`
+        
+        **Requiere:** Token JWT de autenticación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nroRestaurante
+                - nroIdioma
+              properties:
+                nroRestaurante:
+                  type: string
+                  format: uuid
+                  maxLength: 36
+                  description: UUID del restaurante (obligatorio)
+                  example: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
+                nroSucursal:
+                  type: string
+                  format: uuid
+                  maxLength: 36
+                  description: UUID de la sucursal (opcional, si no se especifica se usa info general)
+                  example: "A1B2C3D4-E5F6-7890-1234-567890ABCDEF"
+                nroIdioma:
+                  type: string
+                  format: uuid
+                  maxLength: 36
+                  description: UUID del idioma (obligatorio)
+                  example: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+                contextoAdicional:
+                  type: string
+                  maxLength: 500
+                  description: Información adicional para el prompt (opcional)
+                  example: "Destacar la nueva carta de vinos premium y el ambiente romántico"
+                promptId:
+                  type: string
+                  maxLength: 100
+                  description: |
+                    ID del prompt guardado en OpenAI (opcional).
+                    Si no se especifica, usa el prompt por defecto configurado en application.properties:
+                    `pmpt_68f93394cf6c8195955e0767742b9d7f05a21f383241fa79`
+                  example: "pmpt_68f93394cf6c8195955e0767742b9d7f05a21f383241fa79"
+            examples:
+              restaurante_general:
+                summary: Generar con prompt por defecto (mínimo)
+                value:
+                  nroRestaurante: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
+                  nroIdioma: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+              sucursal_especifica:
+                summary: Generar para sucursal específica con contexto
+                value:
+                  nroRestaurante: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
+                  nroSucursal: "A1B2C3D4-E5F6-7890-1234-567890ABCDEF"
+                  nroIdioma: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+                  contextoAdicional: "Mencionar la experiencia única y el nuevo menú degustación"
+              con_prompt_personalizado:
+                summary: Usar un prompt diferente al configurado
+                value:
+                  nroRestaurante: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
+                  nroIdioma: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+                  promptId: "pmpt_OTRO_PROMPT_ID_DIFERENTE"
+                  contextoAdicional: "Enfocado en eventos corporativos y reuniones de negocios"
+      responses:
+        '201':
+          description: Contenido generado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nroRestaurante:
+                    type: string
+                    format: uuid
+                    example: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
+                  nroSucursal:
+                    type: string
+                    format: uuid
+                    example: "A1B2C3D4-E5F6-7890-1234-567890ABCDEF"
+                  nroIdioma:
+                    type: string
+                    format: uuid
+                    example: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+                  nroContenido:
+                    type: string
+                    format: uuid
+                    description: UUID del contenido recién generado
+                    example: "X1Y2Z3W4-V5U6-7890-ABCD-EF1234567890"
+                  nombreRestaurante:
+                    type: string
+                    example: "Los Aroza SRL"
+                  nombreSucursal:
+                    type: string
+                    example: "Los Aroza - Centro"
+                  contenidoGenerado:
+                    type: string
+                    description: Texto publicitario generado por ChatGPT
+                    example: "En el corazón de Córdoba, sobre la emblemática Av. Colón, Los Aroza te invita a vivir una experiencia gastronómica única. Nuestra sucursal Centro combina la exquisita tradición de la cocina japonesa con un ambiente íntimo y romántico..."
+                  fechaIniVigencia:
+                    type: string
+                    format: date
+                    description: Fecha de inicio de vigencia (automática)
+                    example: "2025-10-29"
+                  fechaFinVigencia:
+                    type: string
+                    format: date
+                    description: Fecha de fin de vigencia (1 mes después)
+                    example: "2025-11-29"
+              example:
+                nroRestaurante: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
+                nroSucursal: "A1B2C3D4-E5F6-7890-1234-567890ABCDEF"
+                nroIdioma: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+                nroContenido: "X1Y2Z3W4-V5U6-7890-ABCD-EF1234567890"
+                nombreRestaurante: "Los Aroza SRL"
+                nombreSucursal: "Los Aroza - Centro"
+                contenidoGenerado: "En el corazón de Córdoba, sobre la emblemática Av. Colón, Los Aroza te invita a vivir una experiencia gastronómica única. Nuestra sucursal Centro combina la exquisita tradición de la cocina japonesa con un ambiente íntimo y romántico, perfecto para compartir momentos especiales. Bajo una iluminación cálida y acompañados por música suave, nuestros chefs especializados elaboran cada pieza de sushi con dedicación artesanal..."
+                fechaIniVigencia: "2025-10-29"
+                fechaFinVigencia: "2025-11-29"
+        '400':
+          description: Datos inválidos o restaurante no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                restaurante_no_encontrado:
+                  value:
+                    error: "Restaurante no encontrado con ID: 5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
+                datos_invalidos:
+                  value:
+                    error: "El número de restaurante es obligatorio"
+        '401':
+          description: No autenticado o token JWT inválido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Full authentication is required to access this resource"
+        '500':
+          description: Error interno del servidor o error de OpenAI API
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                openai_no_configurado:
+                  value:
+                    error: "La API key de OpenAI no está configurada. Configure la variable de entorno OPENAI_API_KEY."
+                error_generacion:
+                  value:
+                    error: "Error al generar contenido con OpenAI: Rate limit exceeded"
+                error_base_datos:
+                  value:
+                    error: "Error al guardar el contenido generado en la base de datos"
 
   /api/restaurantes:
     get:

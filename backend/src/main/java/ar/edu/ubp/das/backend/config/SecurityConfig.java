@@ -44,7 +44,8 @@ public class SecurityConfig {
                 // Endpoints protegidos (requieren token)
                 .requestMatchers(
                     "/api/reservas/**",
-                    "/api/usuarios/**"
+                    "/api/usuarios/**",
+                    "/api/contenidos/**"  // Generación de contenido con IA
                 ).authenticated()
                 .anyRequest().authenticated()
             )

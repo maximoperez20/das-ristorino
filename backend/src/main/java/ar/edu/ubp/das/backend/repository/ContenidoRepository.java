@@ -1,0 +1,212 @@
+package ar.edu.ubp.das.backend.repository;
+
+import ar.edu.ubp.das.backend.dto.ContenidoGeneradoDto;
+import ar.edu.ubp.das.backend.dto.RestauranteContextoDto;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Repository para gestión de contenidos de restaurantes.
+ * Obtiene información contextual y guarda contenido generado por IA.
+ */
+@Repository
+public class ContenidoRepository {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    /**
+     * Obtiene el contexto completo de un restaurante/sucursal para generar contenido.
+     * Incluye datos básicos, ubicación, preferencias y horarios.
+     *
+     * @param nroRestaurante UUID del restaurante
+     * @param nroSucursal UUID de la sucursal (puede ser null)
+     * @return Contexto del restaurante
+     */
+    public Optional<RestauranteContextoDto> obtenerContextoRestaurante(String nroRestaurante, String nroSucursal) {
+        String sql = 
+            "SELECT " +
+            "    r.razon_social, " +
+            "    s.nom_sucursal, " +
+            "    CONCAT(s.calle, ' ', CAST(s.nro_calle AS VARCHAR), ', ', s.barrio) AS direccion, " +
+            "    l.nom_localidad, " +
+            "    p.nom_provincia, " +
+            "    s.total_comensales " +
+            "FROM restaurantes r " +
+            "LEFT JOIN sucursales_restaurantes s ON r.nro_restaurante = s.nro_restaurante " +
+            "    AND (? IS NULL OR s.nro_sucursal = ?) " +
+            "LEFT JOIN localidades l ON s.nro_localidad = l.nro_localidad " +
+            "LEFT JOIN provincias p ON l.cod_provincia = p.cod_provincia " +
+            "WHERE r.nro_restaurante = ?";
+
+        List<RestauranteContextoDto> resultados = jdbcTemplate.query(
+            sql, 
+            (rs, rowNum) -> mapearContextoBasico(rs),
+            nroSucursal, nroSucursal, nroRestaurante
+        );
+
+        if (resultados.isEmpty()) {
+            return Optional.empty();
+        }
+
+        RestauranteContextoDto contexto = resultados.get(0);
+
+        // Obtener preferencias (tipos de comida, ambiente, precios)
+        obtenerPreferencias(nroRestaurante, nroSucursal, contexto);
+
+        // Obtener horarios
+        obtenerHorarios(nroRestaurante, nroSucursal, contexto);
+
+        return Optional.of(contexto);
+    }
+
+    /**
+     * Mapea los datos básicos del restaurante desde el ResultSet.
+     */
+    private RestauranteContextoDto mapearContextoBasico(ResultSet rs) throws SQLException {
+        RestauranteContextoDto contexto = new RestauranteContextoDto();
+        contexto.setRazonSocial(rs.getString("razon_social"));
+        contexto.setNombreSucursal(rs.getString("nom_sucursal"));
+        contexto.setDireccion(rs.getString("direccion"));
+        contexto.setLocalidad(rs.getString("nom_localidad"));
+        contexto.setProvincia(rs.getString("nom_provincia"));
+        
+        Integer totalComensales = rs.getInt("total_comensales");
+        if (!rs.wasNull()) {
+            contexto.setTotalComensales(totalComensales);
+        }
+        
+        return contexto;
+    }
+
+    /**
+     * Obtiene las preferencias del restaurante (tipo de comida, ambiente, precio).
+     */
+    private void obtenerPreferencias(String nroRestaurante, String nroSucursal, RestauranteContextoDto contexto) {
+        String sql = 
+            "SELECT " +
+            "    cp.nom_categoria, " +
+            "    dcp.nom_valor_dominio, " +
+            "    pr.observaciones " +
+            "FROM preferencias_restaurantes pr " +
+            "JOIN categorias_preferencias cp ON pr.cod_categoria = cp.cod_categoria " +
+            "JOIN dominio_categorias_preferencias dcp " +
+            "    ON pr.cod_categoria = dcp.cod_categoria " +
+            "    AND pr.nro_valor_dominio = dcp.nro_valor_dominio " +
+            "WHERE pr.nro_restaurante = ? " +
+            "    AND (pr.nro_sucursal IS NULL OR pr.nro_sucursal = ? OR ? IS NULL) " +
+            "ORDER BY cp.nom_categoria, pr.nro_preferencia";
+
+        jdbcTemplate.query(sql, rs -> {
+            String categoria = rs.getString("nom_categoria");
+            String valor = rs.getString("nom_valor_dominio");
+            String observaciones = rs.getString("observaciones");
+
+            if (categoria.equalsIgnoreCase("Tipo de comida")) {
+                contexto.getTiposComida().add(valor);
+                if (observaciones != null && !observaciones.isEmpty()) {
+                    if (contexto.getObservacionesAdicionales() == null) {
+                        contexto.setObservacionesAdicionales(observaciones);
+                    } else {
+                        contexto.setObservacionesAdicionales(
+                            contexto.getObservacionesAdicionales() + " " + observaciones
+                        );
+                    }
+                }
+            } else if (categoria.equalsIgnoreCase("Ambiente")) {
+                contexto.getAmbientes().add(valor);
+                if (observaciones != null && !observaciones.isEmpty()) {
+                    if (contexto.getObservacionesAdicionales() == null) {
+                        contexto.setObservacionesAdicionales(observaciones);
+                    } else {
+                        contexto.setObservacionesAdicionales(
+                            contexto.getObservacionesAdicionales() + " " + observaciones
+                        );
+                    }
+                }
+            } else if (categoria.equalsIgnoreCase("Rango de precio")) {
+                contexto.getRangosPrecios().add(valor);
+            }
+        }, nroRestaurante, nroSucursal, nroSucursal);
+    }
+
+    /**
+     * Obtiene los horarios del restaurante/sucursal.
+     */
+    private void obtenerHorarios(String nroRestaurante, String nroSucursal, RestauranteContextoDto contexto) {
+        String sql = 
+            "SELECT " +
+            "    CONVERT(VARCHAR(5), hora_desde, 108) AS hora_desde, " +
+            "    CONVERT(VARCHAR(5), hora_hasta, 108) AS hora_hasta " +
+            "FROM turnos_sucursales_restaurantes " +
+            "WHERE nro_restaurante = ? " +
+            "    AND (? IS NULL OR nro_sucursal = ?) " +
+            "    AND habilitado = 1 " +
+            "ORDER BY hora_desde";
+
+        jdbcTemplate.query(sql, rs -> {
+            String horario = rs.getString("hora_desde") + " - " + rs.getString("hora_hasta");
+            contexto.getHorarios().add(horario);
+        }, nroRestaurante, nroSucursal, nroSucursal);
+    }
+
+    /**
+     * Guarda el contenido generado por IA en la tabla contenidos_restaurantes.
+     *
+     * @param nroRestaurante UUID del restaurante
+     * @param nroSucursal UUID de la sucursal (puede ser null)
+     * @param nroIdioma UUID del idioma
+     * @param contenidoGenerado Texto generado por IA
+     * @return DTO con los datos del contenido guardado
+     */
+    public Optional<ContenidoGeneradoDto> guardarContenidoGenerado(
+            String nroRestaurante, 
+            String nroSucursal, 
+            String nroIdioma, 
+            String contenidoGenerado) {
+        
+        String sql = "EXEC sp_GuardarContenidoGenerado ?, ?, ?, ?";
+        
+        try {
+            List<ContenidoGeneradoDto> result = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> {
+                    ContenidoGeneradoDto dto = new ContenidoGeneradoDto();
+                    dto.setNroRestaurante(rs.getString("nro_restaurante"));
+                    dto.setNroSucursal(rs.getString("nro_sucursal"));
+                    dto.setNroIdioma(rs.getString("nro_idioma"));
+                    dto.setNroContenido(rs.getString("nro_contenido"));
+                    dto.setContenidoGenerado(rs.getString("contenido_a_publicar"));
+                    
+                    java.sql.Date fechaIni = rs.getDate("fecha_ini_vigencia");
+                    if (fechaIni != null) {
+                        dto.setFechaIniVigencia(fechaIni.toLocalDate());
+                    }
+                    
+                    java.sql.Date fechaFin = rs.getDate("fecha_fin_vigencia");
+                    if (fechaFin != null) {
+                        dto.setFechaFinVigencia(fechaFin.toLocalDate());
+                    }
+                    
+                    return dto;
+                },
+                nroRestaurante,
+                nroSucursal,
+                nroIdioma,
+                contenidoGenerado
+            );
+            
+            return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Error al guardar contenido generado: " + e.getMessage(), e);
+        }
+    }
+}
+
