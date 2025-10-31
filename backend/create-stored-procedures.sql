@@ -594,4 +594,35 @@ BEGIN
 END;
 GO
 
+-- =====================================================
+-- STORED PROCEDURE: sp_ActualizarCodContenidoRestaurante
+-- Actualiza el cod_contenido_restaurante después de registrar en SOAP
+-- =====================================================
+CREATE OR ALTER PROCEDURE sp_ActualizarCodContenidoRestaurante
+    @nro_restaurante VARCHAR(36),
+    @nro_idioma VARCHAR(36),
+    @nro_contenido VARCHAR(36),
+    @cod_contenido_restaurante VARCHAR(40)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    UPDATE contenidos_restaurantes
+    SET cod_contenido_restaurante = @cod_contenido_restaurante
+    WHERE nro_restaurante = @nro_restaurante
+      AND nro_idioma = @nro_idioma
+      AND nro_contenido = @nro_contenido;
+    
+    SELECT 
+        nro_restaurante,
+        nro_idioma,
+        nro_contenido,
+        cod_contenido_restaurante
+    FROM contenidos_restaurantes
+    WHERE nro_restaurante = @nro_restaurante
+      AND nro_idioma = @nro_idioma
+      AND nro_contenido = @nro_contenido;
+END;
+GO
+
 PRINT 'Stored procedures creados/actualizados exitosamente!';

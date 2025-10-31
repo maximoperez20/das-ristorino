@@ -13,7 +13,8 @@ import java.util.Map;
 
 /**
  * Controlador REST para generación de contenido publicitario con IA.
- * Endpoint protegido (requiere autenticación JWT).
+ * Este endpoint genera contenido usando OpenAI y lo sincroniza con el servicio SOAP del restaurante.
+ * Documentación detallada en: openapi-docs.yaml
  */
 @RestController
 @RequestMapping("/api/contenidos")
@@ -23,32 +24,6 @@ public class ContenidoResource {
     @Autowired
     private ContenidoService contenidoService;
 
-    /**
-     * Genera contenido publicitario con IA para un restaurante/sucursal.
-     * 
-     * POST /api/contenidos/generar
-     * 
-     * Body:
-     * {
-     *   "nroRestaurante": "uuid-del-restaurante",
-     *   "nroSucursal": "uuid-de-sucursal-opcional",
-     *   "nroIdioma": "uuid-del-idioma",
-     *   "contextoAdicional": "info extra opcional"
-     * }
-     * 
-     * Respuesta:
-     * {
-     *   "nroRestaurante": "uuid",
-     *   "nroSucursal": "uuid",
-     *   "nroIdioma": "uuid",
-     *   "nroContenido": "uuid-del-contenido-generado",
-     *   "nombreRestaurante": "Los Aroza SRL",
-     *   "nombreSucursal": "Los Aroza - Centro",
-     *   "contenidoGenerado": "Texto publicitario generado...",
-     *   "fechaIniVigencia": "2025-10-29",
-     *   "fechaFinVigencia": "2025-11-29"
-     * }
-     */
     @PostMapping("/generar")
     public ResponseEntity<?> generarContenido(@Valid @RequestBody GenerarContenidoRequestDto request) {
         try {

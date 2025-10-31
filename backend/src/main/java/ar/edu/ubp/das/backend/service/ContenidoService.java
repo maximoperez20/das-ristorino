@@ -1,8 +1,10 @@
 package ar.edu.ubp.das.backend.service;
 
+import ar.edu.ubp.das.backend.client.RestauranteSoapClient;
 import ar.edu.ubp.das.backend.dto.ContenidoGeneradoDto;
 import ar.edu.ubp.das.backend.dto.GenerarContenidoRequestDto;
 import ar.edu.ubp.das.backend.dto.RestauranteContextoDto;
+import ar.edu.ubp.das.backend.dto.soap.RegistrarContenidoSoapDto;
 import ar.edu.ubp.das.backend.repository.ContenidoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 /**
@@ -26,6 +29,9 @@ public class ContenidoService {
 
     @Autowired
     private OpenAIService openAIService;
+
+    @Autowired
+    private RestauranteSoapClient restauranteSoapClient;
 
     @Value("${openai.prompt.id}")
     private String defaultPromptId;
@@ -106,6 +112,51 @@ public class ContenidoService {
         resultado.setNombreSucursal(contexto.getNombreSucursal());
 
         logger.info("Contenido guardado exitosamente con nro_contenido: {}", resultado.getNroContenido());
+
+        try {
+            logger.info("Registrando contenido en SOAP del restaurante...");
+
+            String codSucursalRestaurante = null;
+            if (request.getNroSucursal() != null && !request.getNroSucursal().trim().isEmpty()) {
+                codSucursalRestaurante = contenidoRepository.obtenerCodSucursalRestaurante(
+                    request.getNroRestaurante(),
+                    request.getNroSucursal()
+                );
+                if (codSucursalRestaurante == null) {
+                    logger.warn("Sucursal encontrada pero cod_sucursal_restaurante es NULL. La sucursal puede no estar sincronizada con el SOAP.");
+                } else {
+                    logger.info("Cod sucursal restaurante obtenido: {}", codSucursalRestaurante);
+                }
+            }
+
+            RegistrarContenidoSoapDto soapResponse = restauranteSoapClient.registrarContenido(
+                request.getNroRestaurante(),
+                codSucursalRestaurante,
+                contenidoGenerado,
+                null,
+                null
+            );
+
+            if (soapResponse.isExitoso()) {
+                logger.info("Contenido registrado en SOAP exitosamente. ID del restaurante: {}", 
+                    soapResponse.getNroContenido());
+                
+                contenidoRepository.actualizarCodContenidoRestaurante(
+                    request.getNroRestaurante(),
+                    request.getNroIdioma(),
+                    resultado.getNroContenido(),
+                    soapResponse.getNroContenido()
+                );
+                
+                logger.info("cod_contenido_restaurante actualizado exitosamente");
+            } else {
+                logger.warn("El SOAP no pudo registrar el contenido: {}", soapResponse.getMensaje());
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error al registrar contenido en SOAP (continuando de todas formas): {}", 
+                e.getMessage(), e);
+        }
 
         return resultado;
     }

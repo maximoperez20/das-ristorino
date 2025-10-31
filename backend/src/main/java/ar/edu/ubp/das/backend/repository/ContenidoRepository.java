@@ -208,5 +208,56 @@ public class ContenidoRepository {
             throw new RuntimeException("Error al guardar contenido generado: " + e.getMessage(), e);
         }
     }
+
+    public void actualizarCodContenidoRestaurante(
+            String nroRestaurante,
+            String nroIdioma,
+            String nroContenido,
+            String codContenidoRestaurante) {
+        
+        String sql = "EXEC sp_ActualizarCodContenidoRestaurante ?, ?, ?, ?";
+        
+        try {
+            jdbcTemplate.queryForObject(
+                sql,
+                (rs, rowNum) -> {
+                    return rs.getString("cod_contenido_restaurante");
+                },
+                nroRestaurante,
+                nroIdioma,
+                nroContenido,
+                codContenidoRestaurante
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Error al actualizar cod_contenido_restaurante: " + e.getMessage(), e);
+        }
+    }
+
+    public String obtenerCodSucursalRestaurante(String nroRestaurante, String nroSucursal) {
+        if (nroSucursal == null) {
+            return null;
+        }
+
+        String sql = "SELECT cod_sucursal_restaurante FROM sucursales_restaurantes WHERE nro_restaurante = ? AND nro_sucursal = ?";
+
+        try {
+            List<String> result = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getString("cod_sucursal_restaurante"),
+                nroRestaurante,
+                nroSucursal
+            );
+
+            if (result.isEmpty()) {
+                throw new RuntimeException("Sucursal no encontrada en ristorino: nro_restaurante=" + nroRestaurante + ", nro_sucursal=" + nroSucursal);
+            }
+
+            return result.get(0);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener cod_sucursal_restaurante: " + e.getMessage(), e);
+        }
+    }
 }
 

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 /**
  * DTO para la respuesta de contenido generado por IA.
  * Contiene los UUIDs, el texto generado y las fechas de vigencia.
+ * Documentación detallada en: openapi-docs.yaml
  */
 public class ContenidoGeneradoDto {
 

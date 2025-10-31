@@ -186,34 +186,45 @@ paths:
     post:
       tags:
         - Contenidos IA
-      summary: Generar contenido publicitario con IA
+      summary: Generar contenido publicitario con IA e integrar con SOAP
       description: |
-        🤖 **Funcionalidad Innovadora con Inteligencia Artificial**
+        🤖 **Funcionalidad Innovadora con Inteligencia Artificial e Integración SOAP**
         
         Este endpoint utiliza ChatGPT de OpenAI para generar automáticamente textos publicitarios 
-        personalizados para restaurantes. El sistema:
+        personalizados para restaurantes y los sincroniza con el servicio SOAP del restaurante.
         
+        **Flujo completo:**
         1. 📊 Analiza la información del restaurante desde la base de datos (tipo de comida, 
            ubicación, ambiente, horarios, etc.)
         2. 🎯 Construye un prompt contextualizado con todos los detalles relevantes
         3. 🤖 Envía el prompt a ChatGPT usando el **Prompt ID configurado** en OpenAI
-        4. 💾 Guarda el contenido generado en la tabla `contenidos_restaurantes`
-        5. 📅 Establece vigencia automática de 1 mes
+        4. 💾 Guarda el contenido generado en `das_ristorino.contenidos_restaurantes`
+        5. 📡 Notifica al servicio SOAP (`das-restaurante-soap`) para guardar en su BD
+        6. 🔗 Actualiza `cod_contenido_restaurante` con el UUID retornado por el SOAP
+        7. 📅 Establece vigencia automática de 1 mes
+        
+        **Integración SOAP:**
+        - El contenido se sincroniza automáticamente con `das-restaurante-soap`
+        - El servicio SOAP genera su propio UUID para el contenido
+        - El campo `cod_contenido_restaurante` en ristorino almacena el UUID del SOAP
+        - Esto permite referenciar el contenido del SOAP para notificaciones de clicks
         
         **Características:**
         - 🎨 Tono adaptativo según el ambiente del restaurante
         - 📏 Máximo 300 palabras
         - 🇦🇷 Texto en español de Argentina
-        - 🆔 Código único con prefijo "AI_"
+        - 🔗 Integración automática REST → SOAP
         - 📊 Integración con sistema de clicks y promociones
         - 🎯 **Prompt ID por defecto**: `pmpt_68f93394cf6c8195955e0767742b9d7f05a21f383241fa79`
         
         **Prompt ID:**
         - Si NO especificas `promptId` → usa el configurado por defecto en `application.properties`
         - Si especificas `promptId` → usa el prompt que indiques (sobreescribe el default)
-        - El prompt por defecto está guardado en tu proyecto de OpenAI y se puede cambiar vía variable de entorno `OPENAI_PROMPT_ID`
         
-        **Requiere:** Token JWT de autenticación
+        **Seguridad:**
+        - Endpoint público para pruebas (no requiere autenticación)
+      security: []
+      operationId: generarContenido
       requestBody:
         required: true
         content:
@@ -308,7 +319,7 @@ paths:
                     example: "Los Aroza - Centro"
                   contenidoGenerado:
                     type: string
-                    description: Texto publicitario generado por ChatGPT
+                    description: Texto publicitario generado por ChatGPT y sincronizado con el SOAP del restaurante
                     example: "En el corazón de Córdoba, sobre la emblemática Av. Colón, Los Aroza te invita a vivir una experiencia gastronómica única. Nuestra sucursal Centro combina la exquisita tradición de la cocina japonesa con un ambiente íntimo y romántico..."
                   fechaIniVigencia:
                     type: string
@@ -346,19 +357,8 @@ paths:
                 datos_invalidos:
                   value:
                     error: "El número de restaurante es obligatorio"
-        '401':
-          description: No autenticado o token JWT inválido
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-              example:
-                error: "Full authentication is required to access this resource"
         '500':
-          description: Error interno del servidor o error de OpenAI API
+          description: Error interno del servidor (OpenAI, BD o SOAP)
           content:
             application/json:
               schema:
@@ -376,6 +376,9 @@ paths:
                 error_base_datos:
                   value:
                     error: "Error al guardar el contenido generado en la base de datos"
+                error_soap:
+                  value:
+                    error: "Error en comunicación SOAP: Connection refused"
 
   /api/restaurantes:
     get:

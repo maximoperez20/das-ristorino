@@ -35,6 +35,7 @@ public class SecurityConfig {
                     "/api/promociones/**",
                     "/api/clientes/register",  // Registro de cliente
                     "/api/clientes/login",     // Login de cliente
+                    "/api/contenidos/**",      // Generación de contenido (público para pruebas)
                     // Swagger UI (documentación API)
                     "/swagger-ui/**",
                     "/swagger-ui.html",
@@ -44,8 +45,7 @@ public class SecurityConfig {
                 // Endpoints protegidos (requieren token)
                 .requestMatchers(
                     "/api/reservas/**",
-                    "/api/usuarios/**",
-                    "/api/contenidos/**"  // Generación de contenido con IA
+                    "/api/usuarios/**"
                 ).authenticated()
                 .anyRequest().authenticated()
             )

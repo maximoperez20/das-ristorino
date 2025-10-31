@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 /**
  * DTO para solicitar la generación de contenido con IA.
  * Requiere el restaurante y el idioma; la sucursal es opcional.
+ * Documentación detallada en: openapi-docs.yaml
  */
 public class GenerarContenidoRequestDto {
 
@@ -14,17 +15,17 @@ public class GenerarContenidoRequestDto {
     private String nroRestaurante;
 
     @Size(max = 36, message = "El número de sucursal no puede exceder 36 caracteres")
-    private String nroSucursal; // Opcional, si no se especifica se usará info general del restaurante
+    private String nroSucursal;
 
     @NotBlank(message = "El número de idioma es obligatorio")
     @Size(max = 36, message = "El número de idioma no puede exceder 36 caracteres")
     private String nroIdioma;
 
     @Size(max = 500, message = "El contexto adicional no puede exceder 500 caracteres")
-    private String contextoAdicional; // Opcional: info extra que el usuario quiera agregar al prompt
+    private String contextoAdicional;
 
     @Size(max = 100, message = "El ID del prompt no puede exceder 100 caracteres")
-    private String promptId; // Opcional: si no se especifica, se usa el prompt por defecto configurado en application.properties
+    private String promptId;
 
     // Getters y Setters
     public String getNroRestaurante() {
