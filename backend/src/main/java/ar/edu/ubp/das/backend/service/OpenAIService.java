@@ -81,7 +81,8 @@ public class OpenAIService {
                     ChatMessageRole.SYSTEM.value(),
                     "Eres un experto en marketing gastronómico. Tu tarea es crear textos publicitarios " +
                     "atractivos, convincentes y profesionales para restaurantes. Usa un lenguaje persuasivo " +
-                    "pero natural, destacando las características únicas de cada establecimiento."
+                    "pero natural, destacando las características únicas de cada establecimiento. " +
+                    "Sigue las instrucciones del usuario sobre el idioma en el que debe escribirse el texto."
                 );
 
                 ChatMessage userMessage = new ChatMessage(
@@ -153,12 +154,14 @@ public class OpenAIService {
     public String construirPrompt(String razonSocial, String sucursal, String direccion, 
                                   String localidad, List<String> tiposComida, 
                                   List<String> ambientes, List<String> rangosPrecios,
-                                  String observaciones, String contextoAdicional, String promptId) {
+                                  String observaciones, String contextoAdicional, String promptId,
+                                  String codIdioma, String nomIdioma) {
         
         if (promptId != null && !promptId.isEmpty()) {
             return construirVariablesParaPromptGuardado(razonSocial, sucursal, direccion, 
                                                        localidad, tiposComida, ambientes, 
-                                                       rangosPrecios, observaciones, contextoAdicional);
+                                                       rangosPrecios, observaciones, contextoAdicional,
+                                                       codIdioma, nomIdioma);
         }
         
         // Prompt por defecto
@@ -199,7 +202,7 @@ public class OpenAIService {
         prompt.append("- Menciona la ubicación de forma natural\n");
         prompt.append("- Usa un tono ").append(determinarTono(ambientes)).append("\n");
         prompt.append("- NO uses emojis en el texto generado\n");
-        prompt.append("- Escribe en español de Argentina\n");
+        prompt.append("- Escribe en ").append(nomIdioma != null ? nomIdioma : "español de Argentina").append("\n");
 
         return prompt.toString();
     }
@@ -234,7 +237,7 @@ public class OpenAIService {
                                                        String direccion, String localidad, 
                                                        List<String> tiposComida, List<String> ambientes,
                                                        List<String> rangosPrecios, String observaciones, 
-                                                       String contextoAdicional) {
+                                                       String contextoAdicional, String codIdioma, String nomIdioma) {
         StringBuilder json = new StringBuilder();
         json.append("{\n");
         json.append("  \"restaurante\": \"").append(escaparJson(razonSocial != null ? razonSocial : "")).append("\"");
@@ -271,10 +274,25 @@ public class OpenAIService {
             json.append(",\n  \"contexto_adicional\": \"").append(escaparJson(contextoAdicional)).append("\"");
         }
         
+        if (codIdioma != null && !codIdioma.isEmpty()) {
+            json.append(",\n  \"cod_idioma\": \"").append(escaparJson(codIdioma)).append("\"");
+        }
+        
+        if (nomIdioma != null && !nomIdioma.isEmpty()) {
+            json.append(",\n  \"nom_idioma\": \"").append(escaparJson(nomIdioma)).append("\"");
+        }
+        
         json.append("\n}");
         
-        // Instrucción explícita para obtener solo el texto publicitario
-        return json.toString() + "\n\nGenera ÚNICAMENTE el texto publicitario listo para publicar. NO incluyas explicaciones, títulos ni comentarios adicionales.";
+        // Instrucción explícita para obtener solo el texto publicitario en el idioma especificado
+        String instruccionIdioma = "";
+        if (nomIdioma != null && !nomIdioma.isEmpty()) {
+            instruccionIdioma = " Escribe el texto en " + nomIdioma + ".";
+        } else if (codIdioma != null) {
+            instruccionIdioma = " Escribe el texto en el idioma correspondiente al código " + codIdioma + ".";
+        }
+        
+        return json.toString() + "\n\nGenera ÚNICAMENTE el texto publicitario listo para publicar." + instruccionIdioma + " NO incluyas explicaciones, títulos ni comentarios adicionales.";
     }
     
     /**

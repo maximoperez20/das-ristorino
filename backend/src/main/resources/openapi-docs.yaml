@@ -214,7 +214,10 @@ paths:
         **Características:**
         - 🎨 Tono adaptativo según el ambiente del restaurante
         - 📏 Máximo 300 palabras
-        - 🇦🇷 Texto en español de Argentina
+        - 🌐 **Soporte multiidioma**: El texto se genera en el idioma especificado por `nroIdioma`
+          - Consulta la tabla `idiomas` para obtener `cod_idioma` (ej: es-AR, en-US, pt-BR)
+          - El prompt incluye instrucciones para generar el texto en el idioma correcto
+          - Ejemplos: español de Argentina, inglés, portugués de Brasil, etc.
         - 🔗 Integración automática REST → SOAP
         - 📊 Integración con sistema de clicks y promociones
         - 🎯 **Prompt ID por defecto**: `pmpt_68f93394cf6c8195955e0767742b9d7f05a21f383241fa79`
@@ -253,7 +256,11 @@ paths:
                   type: string
                   format: uuid
                   maxLength: 36
-                  description: UUID del idioma (obligatorio)
+                  description: |
+                    UUID del idioma (obligatorio).
+                    El sistema consulta la tabla `idiomas` para obtener el código del idioma (cod_idioma, ej: es-AR, en-US, pt-BR)
+                    y genera el contenido publicitario en ese idioma.
+                    El texto generado por OpenAI será en el idioma correspondiente al `nroIdioma` especificado.
                   example: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
                 contextoAdicional:
                   type: string

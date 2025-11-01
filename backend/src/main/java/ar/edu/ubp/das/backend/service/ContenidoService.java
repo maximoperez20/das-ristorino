@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 
 /**
@@ -69,7 +68,12 @@ public class ContenidoService {
         
         logger.info("🎯 Usando Prompt ID: {}", promptId);
 
-        // Construir prompt con el contexto
+        // Obtener información del idioma
+        String codIdioma = contenidoRepository.obtenerCodIdioma(request.getNroIdioma());
+        String nomIdioma = contenidoRepository.obtenerNomIdioma(request.getNroIdioma());
+        logger.info("🌐 Idioma seleccionado: {} ({})", nomIdioma, codIdioma);
+
+        // Construir prompt con el contexto e idioma
         String prompt = openAIService.construirPrompt(
             contexto.getRazonSocial(),
             contexto.getNombreSucursal(),
@@ -80,7 +84,9 @@ public class ContenidoService {
             contexto.getRangosPrecios(),
             contexto.getObservacionesAdicionales(),
             request.getContextoAdicional(),
-            promptId
+            promptId,
+            codIdioma,
+            nomIdioma
         );
 
         logger.info("Prompt construido. Longitud: {} caracteres", prompt.length());

@@ -259,5 +259,49 @@ public class ContenidoRepository {
             throw new RuntimeException("Error al obtener cod_sucursal_restaurante: " + e.getMessage(), e);
         }
     }
+
+    public String obtenerCodIdioma(String nroIdioma) {
+        String sql = "SELECT cod_idioma FROM idiomas WHERE nro_idioma = ?";
+
+        try {
+            List<String> result = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getString("cod_idioma"),
+                nroIdioma
+            );
+
+            if (result.isEmpty()) {
+                throw new RuntimeException("Idioma no encontrado: nro_idioma=" + nroIdioma);
+            }
+
+            return result.get(0);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener cod_idioma: " + e.getMessage(), e);
+        }
+    }
+
+    public String obtenerNomIdioma(String nroIdioma) {
+        String sql = "SELECT nom_idioma FROM idiomas WHERE nro_idioma = ?";
+
+        try {
+            List<String> result = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getString("nom_idioma"),
+                nroIdioma
+            );
+
+            if (result.isEmpty()) {
+                throw new RuntimeException("Idioma no encontrado: nro_idioma=" + nroIdioma);
+            }
+
+            return result.get(0);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener nom_idioma: " + e.getMessage(), e);
+        }
+    }
 }
 
