@@ -1,5 +1,6 @@
 package ar.edu.ubp.das.backend.client;
 
+import ar.edu.ubp.das.backend.dto.soap.NotificarClickSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.RegistrarContenidoSoapDto;
 import ar.edu.ubp.das.backend.utils.SOAPClient;
 import org.slf4j.Logger;
@@ -8,8 +9,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Map;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 @Component
 public class RestauranteSoapClient {
@@ -72,6 +78,65 @@ public class RestauranteSoapClient {
         } catch (Exception e) {
             logger.error("Error al llamar al servicio SOAP: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
+        }
+    }
+
+    public NotificarClickSoapDto notificarClick(
+            String nroRestaurante,
+            String nroContenido,
+            String nroClick,
+            LocalDateTime fechaHoraRegistro,
+            String nroCliente,
+            BigDecimal costoClick) {
+
+        logger.info("Notificando click al SOAP - Restaurante: {}, Contenido: {}, Click: {}", 
+                nroRestaurante, nroContenido, nroClick);
+
+        try {
+            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
+                    .wsdlUrl(wsdlUrl)
+                    .namespace(namespace)
+                    .serviceName(serviceName)
+                    .portName(portName)
+                    .operationName("notificarClickRequest")
+                    .build();
+
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("nroRestaurante", nroRestaurante);
+            parameters.put("nroContenido", nroContenido);
+            parameters.put("nroClick", nroClick);
+            parameters.put("fechaHoraRegistro", convertToXMLGregorianCalendar(fechaHoraRegistro));
+            if (nroCliente != null) {
+                parameters.put("nroCliente", nroCliente);
+            }
+            if (costoClick != null) {
+                parameters.put("costoClick", costoClick);
+            }
+
+            NotificarClickSoapDto response = soapClient.callServiceForObject(
+                    NotificarClickSoapDto.class,
+                    "notificarClickResponse",
+                    parameters
+            );
+
+            logger.info("Respuesta SOAP - Exitoso: {}, Mensaje: {}",
+                    response.isExitoso(), response.getMensaje());
+
+            return response;
+        } catch (Exception e) {
+            logger.error("Error al llamar al servicio SOAP para notificar click: {}", e.getMessage(), e);
+            throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
+        }
+    }
+
+    private XMLGregorianCalendar convertToXMLGregorianCalendar(LocalDateTime localDateTime) {
+        try {
+            ZonedDateTime zonedDateTime = localDateTime.atZone(java.time.ZoneId.systemDefault());
+            GregorianCalendar gregorianCalendar = GregorianCalendar.from(zonedDateTime);
+            return DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalendar);
+        } catch (Exception e) {
+            logger.error("Error al convertir LocalDateTime a XMLGregorianCalendar: {}", e.getMessage(), e);
+            throw new RuntimeException("Error al convertir fecha: " + e.getMessage(), e);
         }
     }
 }

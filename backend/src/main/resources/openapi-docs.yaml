@@ -22,6 +22,8 @@ tags:
     description: Consulta de restaurantes
   - name: Reservas
     description: Gestión de reservas
+  - name: Batch Jobs
+    description: Procesos batch para notificación de clicks y sincronización
 
 components:
   securitySchemes:
@@ -533,4 +535,64 @@ paths:
           description: No autenticado
         '404':
           description: Reserva no encontrada
+
+  /api/batch/procesar-clicks:
+    post:
+      tags:
+        - Batch Jobs
+      summary: Ejecutar batch de notificación de clicks
+      description: |
+        🔄 **Proceso Batch de Notificación de Clicks**
+        
+        Ejecuta manualmente el proceso batch que notifica al servicio SOAP del restaurante 
+        todos los clicks no notificados registrados en el sistema.
+        
+        **Funcionamiento:**
+        1. 🔍 Busca todos los clicks con `notificado = 0` y `cod_contenido_restaurante` válido (sin prefijo 'AI_')
+        2. 📡 Por cada click, llama al servicio SOAP para registrar el click
+        3. ✅ Si la notificación es exitosa, marca el click como `notificado = 1`
+        4. ❌ Si falla, registra el error en logs pero no reintenta
+        5. 📊 Retorna un resumen con total procesados, exitosos y fallidos
+        
+        **Programación automática:**
+        - El batch se ejecuta automáticamente todos los días a las **2:00 AM**
+        - Este endpoint permite ejecutarlo manualmente para pruebas o cuando sea necesario
+        
+        **Validaciones:**
+        - Solo procesa clicks cuyo contenido fue exitosamente registrado en el SOAP
+        - Excluye clicks de contenidos con `cod_contenido_restaurante` que tenga prefijo 'AI_'
+        - Valida que el contenido exista en el SOAP antes de registrar el click
+        
+        **Nota:** Este endpoint está configurado como público para facilitar pruebas.
+      security: []
+      responses:
+        '200':
+          description: Batch ejecutado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensaje:
+                    type: string
+                    example: "Batch de clicks ejecutado exitosamente"
+                  estado:
+                    type: string
+                    example: "completado"
+              example:
+                mensaje: "Batch de clicks ejecutado exitosamente"
+                estado: "completado"
+        '500':
+          description: Error al ejecutar el batch
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensaje:
+                    type: string
+                    example: "Error al ejecutar batch de clicks: [mensaje de error]"
+                  estado:
+                    type: string
+                    example: "error"
 

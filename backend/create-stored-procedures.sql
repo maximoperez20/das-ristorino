@@ -625,4 +625,58 @@ BEGIN
 END;
 GO
 
+-- =====================================================
+-- STORED PROCEDURE: sp_ObtenerClicksNoNotificados
+-- Obtiene clicks no notificados con cod_contenido_restaurante
+-- =====================================================
+CREATE OR ALTER PROCEDURE sp_ObtenerClicksNoNotificados
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        c.nro_restaurante,
+        c.nro_idioma,
+        c.nro_contenido,
+        c.nro_click,
+        c.fecha_hora_registro,
+        c.nro_cliente,
+        c.costo_click,
+        cr.cod_contenido_restaurante
+    FROM clicks_contenidos_restaurantes c
+    INNER JOIN contenidos_restaurantes cr
+        ON c.nro_restaurante = cr.nro_restaurante
+        AND c.nro_idioma = cr.nro_idioma
+        AND c.nro_contenido = cr.nro_contenido
+    WHERE c.notificado = 0
+        AND cr.cod_contenido_restaurante IS NOT NULL
+        AND cr.cod_contenido_restaurante NOT LIKE 'AI_%'
+    ORDER BY c.fecha_hora_registro;
+END;
+GO
+
+-- =====================================================
+-- STORED PROCEDURE: sp_MarcarClickComoNotificado
+-- Marca un click como notificado
+-- =====================================================
+CREATE OR ALTER PROCEDURE sp_MarcarClickComoNotificado
+    @nro_restaurante VARCHAR(36),
+    @nro_idioma VARCHAR(36),
+    @nro_contenido VARCHAR(36),
+    @nro_click VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    UPDATE clicks_contenidos_restaurantes
+    SET notificado = 1
+    WHERE nro_restaurante = @nro_restaurante
+        AND nro_idioma = @nro_idioma
+        AND nro_contenido = @nro_contenido
+        AND nro_click = @nro_click;
+    
+    SELECT @@ROWCOUNT AS filas_actualizadas;
+END;
+GO
+
 PRINT 'Stored procedures creados/actualizados exitosamente!';

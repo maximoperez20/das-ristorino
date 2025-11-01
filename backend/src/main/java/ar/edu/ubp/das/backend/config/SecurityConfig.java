@@ -36,6 +36,7 @@ public class SecurityConfig {
                     "/api/clientes/register",  // Registro de cliente
                     "/api/clientes/login",     // Login de cliente
                     "/api/contenidos/**",      // Generación de contenido (público para pruebas)
+                    "/api/batch/**",           // Batch jobs (público para pruebas)
                     // Swagger UI (documentación API)
                     "/swagger-ui/**",
                     "/swagger-ui.html",

@@ -10,6 +10,7 @@ import jakarta.xml.soap.*;
 import jakarta.xml.ws.Dispatch;
 import jakarta.xml.ws.Service;
 import jakarta.xml.ws.soap.SOAPFaultException;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -135,7 +136,12 @@ public class SOAPClient {
             return;
         }
         
-        if (isSimpleType(parameter.getClass())) {
+        if (parameter instanceof XMLGregorianCalendar) {
+            XMLGregorianCalendar xmlCal = (XMLGregorianCalendar) parameter;
+            SOAPElement childElement = operation.addChildElement(parameterName, "tns", namespace);
+            childElement.addTextNode(xmlCal.toXMLFormat());
+        }
+        else if (isSimpleType(parameter.getClass())) {
             SOAPElement childElement = operation.addChildElement(parameterName, "tns", namespace);
             childElement.addTextNode(parameter.toString());
         }
