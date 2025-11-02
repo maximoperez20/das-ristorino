@@ -1,6 +1,5 @@
 package ar.edu.ubp.das.backend.components;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -14,8 +13,11 @@ import java.util.Map;
 @Component
 public class SimpleJdbcCallFactory {
     
-    @Autowired
-    private JdbcTemplate jdbcTpl;
+    private final JdbcTemplate jdbcTemplate;
+    
+    public SimpleJdbcCallFactory(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
     
     public <T> Map<String, Object> executeQueryWithOutputs(String procedureName, String schemaName, SqlParameterSource params, String resultSetName, Class<T> mappedClass) {
         SimpleJdbcCall jdbcCall = createCall(procedureName, schemaName)
@@ -23,6 +25,7 @@ public class SimpleJdbcCallFactory {
         return jdbcCall.execute(params);
     }
     
+    @SuppressWarnings("unchecked")
     public <T> List<T> executeQuery(String procedureName, String schemaName, SqlParameterSource params, String resultSetName, Class<T> mappedClass) {
         Map<String, Object> out = executeQueryWithOutputs(procedureName, schemaName, params, resultSetName, mappedClass);
         return (List<T>) out.get(resultSetName);
@@ -46,7 +49,7 @@ public class SimpleJdbcCallFactory {
     }
     
     private SimpleJdbcCall createCall(String procedureName, String schemaName) {
-        return new SimpleJdbcCall(jdbcTpl)
+        return new SimpleJdbcCall(jdbcTemplate)
                 .withProcedureName(procedureName)
                 .withSchemaName(schemaName);
     }
