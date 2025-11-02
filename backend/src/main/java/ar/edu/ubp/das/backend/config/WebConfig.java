@@ -9,10 +9,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        configurer
-                .defaultContentType(MediaType.APPLICATION_JSON)
-                .favorPathExtension(false)
-                .favorParameter(false)
-                .useRegisteredExtensionsOnly(false);
+        configurer.defaultContentType(MediaType.APPLICATION_JSON);
     }
 }
