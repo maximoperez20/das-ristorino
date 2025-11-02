@@ -5,7 +5,6 @@ import ar.edu.ubp.das.backend.dto.CrearClienteDto;
 import ar.edu.ubp.das.backend.dto.LoginRequestDto;
 import ar.edu.ubp.das.backend.service.AuthService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +20,11 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class ClienteResource {
 
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
+    
+    public ClienteResource(AuthService authService) {
+        this.authService = authService;
+    }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody CrearClienteDto crearClienteDto) {

@@ -7,7 +7,6 @@ import ar.edu.ubp.das.backend.dto.SucursalDto;
 import ar.edu.ubp.das.backend.service.BusquedaNLPService;
 import ar.edu.ubp.das.backend.service.RestauranteService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,11 +24,13 @@ import java.util.Optional;
 @CrossOrigin(origins = "*")
 public class RestauranteResource {
 
-    @Autowired
-    private RestauranteService restauranteService;
-
-    @Autowired
-    private BusquedaNLPService busquedaNLPService;
+    private final RestauranteService restauranteService;
+    private final BusquedaNLPService busquedaNLPService;
+    
+    public RestauranteResource(RestauranteService restauranteService, BusquedaNLPService busquedaNLPService) {
+        this.restauranteService = restauranteService;
+        this.busquedaNLPService = busquedaNLPService;
+    }
 
     /**
      * GET /api/restaurantes - Obtener todos los restaurantes

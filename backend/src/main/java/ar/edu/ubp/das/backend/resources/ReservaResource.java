@@ -3,7 +3,6 @@ package ar.edu.ubp.das.backend.resources;
 import ar.edu.ubp.das.backend.dto.*;
 import ar.edu.ubp.das.backend.service.ReservaService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +14,11 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class ReservaResource {
 
-    @Autowired
-    private ReservaService reservaService;
+    private final ReservaService reservaService;
+    
+    public ReservaResource(ReservaService reservaService) {
+        this.reservaService = reservaService;
+    }
 
     // GET /api/reservas - Obtener todas las reservas
     @GetMapping

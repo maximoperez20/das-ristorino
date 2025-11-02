@@ -4,7 +4,6 @@ import ar.edu.ubp.das.backend.dto.RestauranteDto;
 import ar.edu.ubp.das.backend.dto.RestauranteDetalleDto;
 import ar.edu.ubp.das.backend.dto.SucursalDto;
 import ar.edu.ubp.das.backend.repository.RestauranteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,8 +16,11 @@ import java.util.Optional;
 @Service
 public class RestauranteService {
     
-    @Autowired
-    private RestauranteRepository restauranteRepository;
+    private final RestauranteRepository restauranteRepository;
+    
+    public RestauranteService(RestauranteRepository restauranteRepository) {
+        this.restauranteRepository = restauranteRepository;
+    }
     
     /**
      * Obtener todos los restaurantes

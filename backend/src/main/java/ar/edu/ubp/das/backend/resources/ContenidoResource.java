@@ -4,7 +4,6 @@ import ar.edu.ubp.das.backend.dto.ContenidoGeneradoDto;
 import ar.edu.ubp.das.backend.dto.GenerarContenidoRequestDto;
 import ar.edu.ubp.das.backend.service.ContenidoService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +20,11 @@ import java.util.Map;
 @CrossOrigin(origins = "*")
 public class ContenidoResource {
 
-    @Autowired
-    private ContenidoService contenidoService;
+    private final ContenidoService contenidoService;
+    
+    public ContenidoResource(ContenidoService contenidoService) {
+        this.contenidoService = contenidoService;
+    }
 
     @PostMapping("/generar")
     public ResponseEntity<?> generarContenido(@Valid @RequestBody GenerarContenidoRequestDto request) {

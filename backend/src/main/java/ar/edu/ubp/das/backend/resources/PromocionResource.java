@@ -6,7 +6,6 @@ import ar.edu.ubp.das.backend.dto.RegistrarClickDto;
 import ar.edu.ubp.das.backend.service.ClickService;
 import ar.edu.ubp.das.backend.service.PromocionService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,11 +23,13 @@ import java.util.Optional;
 @CrossOrigin(origins = "*")
 public class PromocionResource {
 
-    @Autowired
-    private PromocionService promocionService;
+    private final PromocionService promocionService;
+    private final ClickService clickService;
     
-    @Autowired
-    private ClickService clickService;
+    public PromocionResource(PromocionService promocionService, ClickService clickService) {
+        this.promocionService = promocionService;
+        this.clickService = clickService;
+    }
 
     @GetMapping
     public ResponseEntity<List<PromocionDto>> getAllPromociones() {
