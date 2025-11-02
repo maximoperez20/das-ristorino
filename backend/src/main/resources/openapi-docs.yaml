@@ -1,0 +1,1222 @@
+openapi: 3.0.1
+info:
+  title: API Ristorino
+  description: |
+    Portal gastronómico para descubrir y reservar en restaurantes de Córdoba.
+    
+    ## Autenticación
+    
+    La API usa autenticación JWT (JSON Web Tokens) stateless. Para acceder a endpoints protegidos:
+    
+    1. Registrar nuevo cliente con `POST /api/clientes/register` o hacer login con `POST /api/clientes/login`
+    2. Obtener el token JWT de la respuesta
+    3. Incluir el token en el header de las requests: `Authorization: Bearer <token>`
+    
+    ## Logout
+    
+    Con JWT stateless no hay sesión del lado del servidor. El logout se realiza del lado del cliente:
+    - Eliminar el token JWT del almacenamiento local (localStorage, cookies, etc.)
+    - No hay endpoint de logout en el servidor ya que el token es independiente del servidor
+  version: 1.0.0
+  contact:
+    name: Equipo DAS - UBP
+    email: soporte@ristorino.com
+
+servers:
+  - url: http://localhost:8080
+    description: Servidor de Desarrollo
+
+tags:
+  - name: Clientes
+    description: |
+      Autenticación y gestión de clientes.
+      
+      **Nota sobre Logout**: Con JWT stateless, el logout es del lado del cliente.
+      Simplemente elimina el token del almacenamiento local. No hay endpoint de logout.
+  - name: Promociones
+    description: Consulta de promociones y registro de clicks
+  - name: Contenidos IA
+    description: Generación de contenido publicitario con Inteligencia Artificial
+  - name: Restaurantes
+    description: |
+      Consulta de restaurantes y búsqueda inteligente.
+      
+      **Requerimiento 11**: Visualización de información completa de restaurantes.
+      El endpoint `GET /api/restaurantes/{nroRestaurante}` devuelve una ficha completa que incluye:
+      - Datos básicos del restaurante
+      - Tipo de cocina
+      - Descripción general
+      - Promociones vigentes
+      - Listado de sucursales disponibles
+      
+      **Requerimientos 10 y 35**: Búsqueda con lenguaje natural (NLP).
+      El endpoint `POST /api/restaurantes/buscar-nlp` permite buscar restaurantes expresándose
+      libremente en lenguaje natural. El sistema interpreta la intención del usuario mediante
+      procesamiento de lenguaje natural (NLP) con OpenAI y devuelve resultados personalizados.
+  - name: Reservas
+    description: Gestión de reservas
+  - name: Batch Jobs
+    description: Procesos batch para notificación de clicks y sincronización
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token JWT obtenido desde POST /api/clientes/register o POST /api/clientes/login
+  schemas:
+    RestauranteDetalle:
+      type: object
+      description: Ficha completa de un restaurante según Requerimiento 11
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID numérico del restaurante
+          example: 1
+        nombre:
+          type: string
+          description: Nombre del restaurante
+          example: "Los Aroza SRL"
+        direccion:
+          type: string
+          description: Dirección completa del restaurante
+          example: "Av. Colón 950, Centro"
+        telefono:
+          type: string
+          description: Teléfono de contacto
+          example: "0351-1234567"
+        email:
+          type: string
+          format: email
+          description: Correo electrónico de contacto
+          example: "contacto@losaroza.com"
+        capacidad:
+          type: integer
+          description: Capacidad total de comensales
+          example: 50
+        horarioApertura:
+          type: string
+          format: time
+          description: Horario de apertura
+          example: "18:00:00"
+        horarioCierre:
+          type: string
+          format: time
+          description: Horario de cierre
+          example: "23:00:00"
+        descripcion:
+          type: string
+          description: Descripción general del restaurante
+          example: "Restaurante especializado en cocina japonesa y sushi gourmet..."
+        tipoCocina:
+          type: array
+          items:
+            type: string
+          description: Lista de tipos de comida del restaurante
+          example: ["Sushi", "Japonés"]
+        calificacion:
+          type: number
+          format: double
+          description: Calificación del restaurante (0.0 a 5.0)
+          example: 4.5
+        activo:
+          type: boolean
+          description: Indica si el restaurante está activo
+          example: true
+        imagenes:
+          type: array
+          items:
+            type: string
+          description: URLs de imágenes del restaurante
+          example: []
+        diasAtencion:
+          type: array
+          items:
+            type: string
+          description: Días de la semana en que el restaurante atiende
+          example: ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"]
+        sucursales:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sucursal'
+          description: Lista de sucursales del restaurante
+        promociones:
+          type: array
+          items:
+            $ref: '#/components/schemas/Promocion'
+          description: Promociones vigentes del restaurante
+      required:
+        - id
+        - nombre
+        - direccion
+        - telefono
+        - capacidad
+        - horarioApertura
+        - horarioCierre
+        - tipoCocina
+        - calificacion
+        - activo
+        - sucursales
+        - promociones
+
+    Sucursal:
+      type: object
+      description: Información de una sucursal de restaurante
+      properties:
+        nroRestaurante:
+          type: string
+          format: uuid
+          description: UUID del restaurante
+          example: "16DEE5C3-9355-4F64-9355-FC79BD28DA63"
+        nroSucursal:
+          type: string
+          format: uuid
+          description: UUID de la sucursal
+          example: "0CCCA46E-6B5C-42D0-A236-A650CC92AF7E"
+        nombre:
+          type: string
+          description: Nombre de la sucursal
+          example: "Los Aroza - Centro"
+        direccion:
+          type: string
+          description: Dirección completa de la sucursal
+          example: "Av. Colón 950, Centro"
+        localidad:
+          type: string
+          description: Localidad donde se encuentra la sucursal
+          example: "Córdoba"
+        provincia:
+          type: string
+          description: Provincia donde se encuentra la sucursal
+          example: "Córdoba"
+        codigoPostal:
+          type: string
+          description: Código postal de la sucursal
+          example: "5000"
+        telefonos:
+          type: string
+          description: Teléfonos de contacto de la sucursal
+          example: "0351-1234567"
+        capacidad:
+          type: integer
+          description: Capacidad total de comensales de la sucursal
+          example: 50
+        minToleranciaReserva:
+          type: integer
+          description: Tolerancia mínima en minutos para realizar una reserva
+          example: 15
+      required:
+        - nroRestaurante
+        - nroSucursal
+        - nombre
+        - direccion
+        - capacidad
+        - minToleranciaReserva
+
+    Promocion:
+      type: object
+      description: Información de una promoción
+      properties:
+        nroRestaurante:
+          type: string
+          format: uuid
+          description: UUID del restaurante
+        nroIdioma:
+          type: string
+          format: uuid
+          description: UUID del idioma
+        nroContenido:
+          type: string
+          format: uuid
+          description: UUID del contenido/promoción
+        titulo:
+          type: string
+          description: Título de la promoción
+        descripcion:
+          type: string
+          description: Descripción completa de la promoción
+        descuentoPorcentaje:
+          type: number
+          format: decimal
+          description: Descuento en porcentaje
+        descuentoFijo:
+          type: number
+          format: decimal
+          description: Descuento fijo en pesos
+        fechaInicio:
+          type: string
+          format: date-time
+          description: Fecha y hora de inicio de la promoción
+        fechaFin:
+          type: string
+          format: date-time
+          description: Fecha y hora de fin de la promoción
+        estado:
+          type: string
+          enum: [ACTIVA, INACTIVA, EXPIRADA]
+          description: Estado de la promoción
+        imagenUrl:
+          type: string
+          format: uri
+          description: URL de la imagen de la promoción
+        minPersonas:
+          type: integer
+          description: Mínimo de personas para aplicar la promoción
+        maxPersonas:
+          type: integer
+          description: Máximo de personas para aplicar la promoción
+        codigoPromocion:
+          type: string
+          description: Código único para aplicar la promoción
+        requiereCodigo:
+          type: boolean
+          description: Indica si se requiere código para aplicar la promoción
+      required:
+        - nroRestaurante
+        - nroIdioma
+        - nroContenido
+        - titulo
+        - descripcion
+        - estado
+
+    BusquedaNLPRequest:
+      type: object
+      description: Solicitud para búsqueda con lenguaje natural
+      properties:
+        consulta:
+          type: string
+          maxLength: 500
+          description: Consulta del usuario en lenguaje natural
+          example: "quiero comer algo picante en el centro"
+      required:
+        - consulta
+
+    BusquedaNLPResponse:
+      type: object
+      description: Respuesta del análisis NLP de OpenAI (estructura interna)
+      properties:
+        tipoComida:
+          type: array
+          items:
+            type: string
+          description: Tipos de comida identificados
+          example: ["Picante"]
+        barrio:
+          type: string
+          description: Barrio identificado
+          example: "Centro"
+        localidad:
+          type: string
+          description: Localidad identificada
+          example: "Córdoba"
+        ambiente:
+          type: string
+          description: Ambiente identificado
+          example: "Romántico"
+        rangoPrecio:
+          type: string
+          description: Rango de precio identificado
+          example: "Económico"
+        momentoDia:
+          type: string
+          enum: [almuerzo, cena, desayuno]
+          description: Momento del día identificado
+          example: "cena"
+        intencion:
+          type: string
+          enum: [comer, cenar, almorzar, tomar]
+          description: Intención del usuario
+          example: "comer"
+        palabrasClave:
+          type: array
+          items:
+            type: string
+          description: Palabras clave extraídas
+          example: ["picante", "centro"]
+
+security:
+  - BearerAuth: []
+
+paths:
+  /api/clientes/register:
+    post:
+      tags:
+        - Clientes
+      summary: Registrar nuevo cliente
+      description: |
+        Crea un nuevo cliente y retorna un token JWT automáticamente.
+        
+        El token JWT debe incluirse en el header `Authorization: Bearer <token>` 
+        para acceder a endpoints protegidos.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - apellido
+                - nombre
+                - password
+                - correo
+                - nroLocalidad
+              properties:
+                apellido:
+                  type: string
+                  maxLength: 120
+                nombre:
+                  type: string
+                  maxLength: 120
+                password:
+                  type: string
+                  minLength: 6
+                  maxLength: 100
+                correo:
+                  type: string
+                  format: email
+                  maxLength: 150
+                telefonos:
+                  type: string
+                  maxLength: 120
+                nroLocalidad:
+                  type: string
+                  maxLength: 36
+      responses:
+        '201':
+          description: Cliente registrado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Token JWT para autenticación
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  nroCliente:
+                    type: string
+                    format: uuid
+                    description: UUID del cliente
+                  nombre:
+                    type: string
+                    description: Nombre del cliente
+                  apellido:
+                    type: string
+                    description: Apellido del cliente
+                  correo:
+                    type: string
+                    format: email
+                    description: Correo electrónico del cliente
+              example:
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                nroCliente: "12345678-1234-1234-1234-123456789012"
+                nombre: "Juan"
+                apellido: "Pérez"
+                correo: "juan.perez@example.com"
+        '400':
+          description: Datos inválidos o correo duplicado
+        '500':
+          description: Error interno del servidor
+
+  /api/clientes/login:
+    post:
+      tags:
+        - Clientes
+      summary: Iniciar sesión
+      description: |
+        Autentica un cliente y retorna un token JWT.
+        
+        El token JWT debe incluirse en el header `Authorization: Bearer <token>` 
+        para acceder a endpoints protegidos.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - correo
+                - password
+              properties:
+                correo:
+                  type: string
+                  format: email
+                  example: "juan.perez@example.com"
+                password:
+                  type: string
+                  example: "miPassword123"
+      responses:
+        '200':
+          description: Login exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Token JWT para autenticación
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  nroCliente:
+                    type: string
+                    format: uuid
+                    description: UUID del cliente
+                  nombre:
+                    type: string
+                    description: Nombre del cliente
+                  apellido:
+                    type: string
+                    description: Apellido del cliente
+                  correo:
+                    type: string
+                    format: email
+                    description: Correo electrónico del cliente
+              example:
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                nroCliente: "12345678-1234-1234-1234-123456789012"
+                nombre: "Juan"
+                apellido: "Pérez"
+                correo: "juan.perez@example.com"
+        '401':
+          description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Credenciales inválidas"
+        '500':
+          description: Error interno del servidor
+
+  /api/promociones:
+    get:
+      tags:
+        - Promociones
+      summary: Obtener todas las promociones
+      description: Retorna la lista completa de promociones disponibles
+      security: []
+      responses:
+        '200':
+          description: Lista de promociones obtenida exitosamente
+
+  /api/promociones/{id}:
+    get:
+      tags:
+        - Promociones
+      summary: Obtener promoción por ID
+      description: Retorna los detalles de una promoción específica
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Promoción encontrada
+        '404':
+          description: Promoción no encontrada
+
+  /api/promociones/click:
+    post:
+      tags:
+        - Promociones
+      summary: Registrar click en promoción
+      description: Registra cuando un usuario hace click en una promoción. El campo nroCliente es opcional.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nroRestaurante
+                - nroIdioma
+                - nroContenido
+              properties:
+                nroRestaurante:
+                  type: string
+                  maxLength: 36
+                nroIdioma:
+                  type: string
+                  maxLength: 36
+                nroContenido:
+                  type: string
+                  maxLength: 36
+                nroCliente:
+                  type: string
+                  maxLength: 36
+      responses:
+        '201':
+          description: Click registrado exitosamente
+        '400':
+          description: Datos inválidos
+        '500':
+          description: Error interno del servidor
+
+  /api/contenidos/generar:
+    post:
+      tags:
+        - Contenidos IA
+      summary: Generar contenido publicitario con IA e integrar con SOAP
+      description: |
+        🤖 **Funcionalidad Innovadora con Inteligencia Artificial e Integración SOAP**
+        
+        Este endpoint utiliza ChatGPT de OpenAI para generar automáticamente textos publicitarios 
+        personalizados para restaurantes y los sincroniza con el servicio SOAP del restaurante.
+        
+        **Flujo completo:**
+        1. 📊 Analiza la información del restaurante desde la base de datos (tipo de comida, 
+           ubicación, ambiente, horarios, etc.)
+        2. 🎯 Construye un prompt contextualizado con todos los detalles relevantes
+        3. 🤖 Envía el prompt a ChatGPT usando el **Prompt ID configurado** en OpenAI
+        4. 💾 Guarda el contenido generado en `das_ristorino.contenidos_restaurantes`
+        5. 📡 Notifica al servicio SOAP (`das-restaurante-soap`) para guardar en su BD
+        6. 🔗 Actualiza `cod_contenido_restaurante` con el UUID retornado por el SOAP
+        7. 📅 Establece vigencia automática de 1 mes
+        
+        **Integración SOAP:**
+        - El contenido se sincroniza automáticamente con `das-restaurante-soap`
+        - El servicio SOAP genera su propio UUID para el contenido
+        - El campo `cod_contenido_restaurante` en ristorino almacena el UUID del SOAP
+        - Esto permite referenciar el contenido del SOAP para notificaciones de clicks
+        
+        **Características:**
+        - 🎨 Tono adaptativo según el ambiente del restaurante
+        - 📏 Máximo 300 palabras
+        - 🌐 **Soporte multiidioma**: El texto se genera en el idioma especificado por `nroIdioma`
+          - Consulta la tabla `idiomas` para obtener `cod_idioma` (ej: es-AR, en-US, pt-BR)
+          - El prompt incluye instrucciones para generar el texto en el idioma correcto
+          - Ejemplos: español de Argentina, inglés, portugués de Brasil, etc.
+        - 🔗 Integración automática REST → SOAP
+        - 📊 Integración con sistema de clicks y promociones
+        - 🎯 **Prompt ID por defecto**: `pmpt_68f93394cf6c8195955e0767742b9d7f05a21f383241fa79`
+        
+        **Prompt ID:**
+        - Si NO especificas `promptId` → usa el configurado por defecto en `application.properties`
+        - Si especificas `promptId` → usa el prompt que indiques (sobreescribe el default)
+        
+        **Seguridad:**
+        - Endpoint público para pruebas (no requiere autenticación)
+      security: []
+      operationId: generarContenido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nroRestaurante
+                - nroIdioma
+              properties:
+                nroRestaurante:
+                  type: string
+                  format: uuid
+                  maxLength: 36
+                  description: UUID del restaurante (obligatorio)
+                  example: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
+                nroSucursal:
+                  type: string
+                  format: uuid
+                  maxLength: 36
+                  description: UUID de la sucursal (opcional, si no se especifica se usa info general)
+                  example: "A1B2C3D4-E5F6-7890-1234-567890ABCDEF"
+                nroIdioma:
+                  type: string
+                  format: uuid
+                  maxLength: 36
+                  description: |
+                    UUID del idioma (obligatorio).
+                    El sistema consulta la tabla `idiomas` para obtener el código del idioma (cod_idioma, ej: es-AR, en-US, pt-BR)
+                    y genera el contenido publicitario en ese idioma.
+                    El texto generado por OpenAI será en el idioma correspondiente al `nroIdioma` especificado.
+                  example: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+                contextoAdicional:
+                  type: string
+                  maxLength: 500
+                  description: Información adicional para el prompt (opcional)
+                  example: "Destacar la nueva carta de vinos premium y el ambiente romántico"
+                promptId:
+                  type: string
+                  maxLength: 100
+                  description: |
+                    ID del prompt guardado en OpenAI (opcional).
+                    Si no se especifica, usa el prompt por defecto configurado en application.properties:
+                    `pmpt_68f93394cf6c8195955e0767742b9d7f05a21f383241fa79`
+                  example: "pmpt_68f93394cf6c8195955e0767742b9d7f05a21f383241fa79"
+            examples:
+              restaurante_general:
+                summary: Generar con prompt por defecto (mínimo)
+                value:
+                  nroRestaurante: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
+                  nroIdioma: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+              sucursal_especifica:
+                summary: Generar para sucursal específica con contexto
+                value:
+                  nroRestaurante: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
+                  nroSucursal: "A1B2C3D4-E5F6-7890-1234-567890ABCDEF"
+                  nroIdioma: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+                  contextoAdicional: "Mencionar la experiencia única y el nuevo menú degustación"
+              con_prompt_personalizado:
+                summary: Usar un prompt diferente al configurado
+                value:
+                  nroRestaurante: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
+                  nroIdioma: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+                  promptId: "pmpt_OTRO_PROMPT_ID_DIFERENTE"
+                  contextoAdicional: "Enfocado en eventos corporativos y reuniones de negocios"
+      responses:
+        '201':
+          description: Contenido generado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nroRestaurante:
+                    type: string
+                    format: uuid
+                    example: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
+                  nroSucursal:
+                    type: string
+                    format: uuid
+                    example: "A1B2C3D4-E5F6-7890-1234-567890ABCDEF"
+                  nroIdioma:
+                    type: string
+                    format: uuid
+                    example: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+                  nroContenido:
+                    type: string
+                    format: uuid
+                    description: UUID del contenido recién generado
+                    example: "X1Y2Z3W4-V5U6-7890-ABCD-EF1234567890"
+                  nombreRestaurante:
+                    type: string
+                    example: "Los Aroza SRL"
+                  nombreSucursal:
+                    type: string
+                    example: "Los Aroza - Centro"
+                  contenidoGenerado:
+                    type: string
+                    description: Texto publicitario generado por ChatGPT y sincronizado con el SOAP del restaurante
+                    example: "En el corazón de Córdoba, sobre la emblemática Av. Colón, Los Aroza te invita a vivir una experiencia gastronómica única. Nuestra sucursal Centro combina la exquisita tradición de la cocina japonesa con un ambiente íntimo y romántico..."
+                  fechaIniVigencia:
+                    type: string
+                    format: date
+                    description: Fecha de inicio de vigencia (automática)
+                    example: "2025-10-29"
+                  fechaFinVigencia:
+                    type: string
+                    format: date
+                    description: Fecha de fin de vigencia (1 mes después)
+                    example: "2025-11-29"
+              example:
+                nroRestaurante: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
+                nroSucursal: "A1B2C3D4-E5F6-7890-1234-567890ABCDEF"
+                nroIdioma: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+                nroContenido: "X1Y2Z3W4-V5U6-7890-ABCD-EF1234567890"
+                nombreRestaurante: "Los Aroza SRL"
+                nombreSucursal: "Los Aroza - Centro"
+                contenidoGenerado: "En el corazón de Córdoba, sobre la emblemática Av. Colón, Los Aroza te invita a vivir una experiencia gastronómica única. Nuestra sucursal Centro combina la exquisita tradición de la cocina japonesa con un ambiente íntimo y romántico, perfecto para compartir momentos especiales. Bajo una iluminación cálida y acompañados por música suave, nuestros chefs especializados elaboran cada pieza de sushi con dedicación artesanal..."
+                fechaIniVigencia: "2025-10-29"
+                fechaFinVigencia: "2025-11-29"
+        '400':
+          description: Datos inválidos o restaurante no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                restaurante_no_encontrado:
+                  value:
+                    error: "Restaurante no encontrado con ID: 5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
+                datos_invalidos:
+                  value:
+                    error: "El número de restaurante es obligatorio"
+        '500':
+          description: Error interno del servidor (OpenAI, BD o SOAP)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                openai_no_configurado:
+                  value:
+                    error: "La API key de OpenAI no está configurada. Configure la variable de entorno OPENAI_API_KEY."
+                error_generacion:
+                  value:
+                    error: "Error al generar contenido con OpenAI: Rate limit exceeded"
+                error_base_datos:
+                  value:
+                    error: "Error al guardar el contenido generado en la base de datos"
+                error_soap:
+                  value:
+                    error: "Error en comunicación SOAP: Connection refused"
+
+  /api/restaurantes:
+    get:
+      tags:
+        - Restaurantes
+      summary: Obtener todos los restaurantes
+      description: Retorna la lista completa de restaurantes
+      security: []
+      responses:
+        '200':
+          description: Lista de restaurantes obtenida exitosamente
+
+  /api/restaurantes/{nroRestaurante}:
+    get:
+      tags:
+        - Restaurantes
+      summary: Obtener ficha completa de restaurante (Requerimiento 11)
+      description: |
+        Retorna la ficha completa de un restaurante según el **Requerimiento 11: Visualizar información de restaurantes**.
+        
+        Incluye:
+        - **Datos básicos**: nombre, dirección, teléfono, email, capacidad, horarios, calificación
+        - **Tipo de cocina**: lista de tipos de comida (obtenidos de preferencias del restaurante)
+        - **Descripción general**: descripción del restaurante
+        - **Promociones vigentes**: lista de promociones activas del restaurante
+        - **Listado de sucursales**: todas las sucursales disponibles con sus datos completos
+        
+        Endpoint público (no requiere autenticación).
+      security: []
+      parameters:
+        - name: nroRestaurante
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID del restaurante (nro_restaurante)
+          example: "16DEE5C3-9355-4F64-9355-FC79BD28DA63"
+      responses:
+        '200':
+          description: Restaurante encontrado - Ficha completa con todos los datos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestauranteDetalle'
+              example:
+                id: 1
+                nombre: "Los Aroza SRL"
+                direccion: "Av. Colón 950, Centro"
+                telefono: "0351-1234567"
+                email: "contacto@losaroza.com"
+                capacidad: 50
+                horarioApertura: "18:00:00"
+                horarioCierre: "23:00:00"
+                descripcion: "Restaurante especializado en cocina japonesa y sushi gourmet..."
+                tipoCocina:
+                  - "Sushi"
+                  - "Japonés"
+                calificacion: 4.5
+                activo: true
+                imagenes: []
+                diasAtencion: ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"]
+                sucursales:
+                  - nroRestaurante: "16DEE5C3-9355-4F64-9355-FC79BD28DA63"
+                    nroSucursal: "0CCCA46E-6B5C-42D0-A236-A650CC92AF7E"
+                    nombre: "Los Aroza - Centro"
+                    direccion: "Av. Colón 950, Centro"
+                    localidad: "Córdoba"
+                    provincia: "Córdoba"
+                    codigoPostal: "5000"
+                    telefonos: "0351-1234567"
+                    capacidad: 50
+                    minToleranciaReserva: 15
+                promociones:
+                  - nroRestaurante: "16DEE5C3-9355-4F64-9355-FC79BD28DA63"
+                    nroIdioma: "2219E244-8413-474D-ABFC-8EDDD06ED2EB"
+                    nroContenido: "7F0B1753-47A0-4DAD-9981-B4AAE13CCA90"
+                    titulo: "¡Descuento especial en sushi!"
+                    descripcion: "20% de descuento en pedidos de sushi para grupos de 4 o más personas..."
+                    estado: "ACTIVA"
+                    fechaInicio: "2025-10-29T00:00:00"
+                    fechaFin: "2025-11-29T00:00:00"
+        '404':
+          description: Restaurante no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Restaurante no encontrado"
+
+  /api/restaurantes/{nroRestaurante}/sucursales:
+    get:
+      tags:
+        - Restaurantes
+      summary: Obtener sucursales de un restaurante
+      description: |
+        Retorna el listado completo de sucursales de un restaurante específico.
+        
+        Incluye información detallada de cada sucursal:
+        - Nombre de la sucursal
+        - Dirección completa (calle, número, barrio)
+        - Localidad y provincia
+        - Teléfonos
+        - Capacidad (total de comensales)
+        - Tolerancia mínima para reservas
+        
+        Endpoint público (no requiere autenticación).
+      security: []
+      parameters:
+        - name: nroRestaurante
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID del restaurante (nro_restaurante)
+          example: "16DEE5C3-9355-4F64-9355-FC79BD28DA63"
+      responses:
+        '200':
+          description: Lista de sucursales obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sucursal'
+              example:
+                - nroRestaurante: "16DEE5C3-9355-4F64-9355-FC79BD28DA63"
+                  nroSucursal: "0CCCA46E-6B5C-42D0-A236-A650CC92AF7E"
+                  nombre: "Los Aroza - Centro"
+                  direccion: "Av. Colón 950, Centro"
+                  localidad: "Córdoba"
+                  provincia: "Córdoba"
+                  codigoPostal: "5000"
+                  telefonos: "0351-1234567"
+                  capacidad: 50
+                  minToleranciaReserva: 15
+        '404':
+          description: Restaurante no encontrado
+
+  /api/restaurantes/buscar:
+    get:
+      tags:
+        - Restaurantes
+      summary: Buscar restaurantes por nombre
+      description: Busca restaurantes que coincidan con el nombre proporcionado
+      security: []
+      parameters:
+        - name: nombre
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Restaurantes encontrados
+
+  /api/restaurantes/buscar-nlp:
+    post:
+      tags:
+        - Restaurantes
+      summary: Buscar restaurantes con lenguaje natural (NLP) - Req 10 y 35
+      description: |
+        🔍 **Búsqueda Inteligente con Lenguaje Natural**
+        
+        Permite al usuario realizar búsquedas expresándose libremente en lenguaje natural,
+        recibiendo resultados personalizados y contextuales según su intención.
+        
+        **Funcionamiento:**
+        1. El usuario escribe una consulta en lenguaje natural (ej: "quiero comer algo picante en el centro")
+        2. El sistema obtiene catálogos disponibles de la BD (tipos de comida, barrios, ambientes, etc.)
+        3. OpenAI analiza la consulta y extrae entidades estructuradas usando el prompt guardado
+        4. Se ejecuta un stored procedure que busca restaurantes que coinciden con los criterios
+        5. Se devuelve una lista relevante de restaurantes alineada con la intención del usuario
+        
+        **Ejemplos de consultas:**
+        - "quiero comer algo picante en el centro"
+        - "cena romántica con sushi"
+        - "almuerzo vegano económico en Nueva Córdoba"
+        - "dónde puedo comer algo picante esta noche"
+        
+        **Características:**
+        - ✅ Procesamiento de lenguaje natural (NLP) con OpenAI
+        - ✅ Extracción automática de entidades (tipo de comida, ubicación, ambiente, precio)
+        - ✅ Búsqueda inteligente basada en intención del usuario
+        - ✅ Disponible para todos los usuarios (sin autenticación)
+        - ✅ Resultados personalizados y contextuales
+        
+        **Prompt ID configurado:** `pmpt_68f9295bc1e48194b2e725a7b5df2b1c0a01e67130022025`
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BusquedaNLPRequest'
+            examples:
+              consulta_simple:
+                summary: Búsqueda simple por ubicación
+                value:
+                  consulta: "quiero comer algo picante en el centro"
+              consulta_completa:
+                summary: Búsqueda con múltiples criterios
+                value:
+                  consulta: "cena romántica con sushi"
+              consulta_con_precio:
+                summary: Búsqueda con rango de precio
+                value:
+                  consulta: "almuerzo vegano económico en Nueva Córdoba"
+              consulta_ambigua:
+                summary: Búsqueda ambigua
+                value:
+                  consulta: "dónde puedo comer algo picante esta noche"
+      responses:
+        '200':
+          description: Lista de restaurantes encontrados según la intención del usuario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      format: int64
+                    nombre:
+                      type: string
+                    direccion:
+                      type: string
+                    telefono:
+                      type: string
+                    email:
+                      type: string
+                    capacidad:
+                      type: integer
+                    horarioApertura:
+                      type: string
+                      format: time
+                    horarioCierre:
+                      type: string
+                      format: time
+                    descripcion:
+                      type: string
+                    categoria:
+                      type: string
+                    calificacion:
+                      type: number
+                    activo:
+                      type: boolean
+                    imagenUrl:
+                      type: string
+              example:
+                - id: 1
+                  nombre: "Restaurante Picante del Centro"
+                  direccion: "Av. Colón 950, Centro"
+                  telefono: "0351-1234567"
+                  capacidad: 50
+                  horarioApertura: "18:00:00"
+                  horarioCierre: "23:00:00"
+                  categoria: "Picante"
+        '400':
+          description: Consulta inválida o vacía
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "La consulta es obligatoria"
+        '500':
+          description: Error al procesar la búsqueda (OpenAI o BD)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Error al procesar la búsqueda: La API key de OpenAI no está configurada"
+
+  /api/reservas:
+    get:
+      tags:
+        - Reservas
+      summary: Obtener todas las reservas
+      description: Retorna la lista de reservas (requiere autenticación)
+      responses:
+        '200':
+          description: Lista de reservas obtenida exitosamente
+        '401':
+          description: No autenticado
+    post:
+      tags:
+        - Reservas
+      summary: Crear una reserva
+      description: Crea una nueva reserva (requiere autenticación)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Reserva creada exitosamente
+        '400':
+          description: Datos inválidos
+        '401':
+          description: No autenticado
+
+  /api/reservas/{id}:
+    get:
+      tags:
+        - Reservas
+      summary: Obtener reserva por ID
+      description: Retorna los detalles de una reserva específica
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reserva encontrada
+        '401':
+          description: No autenticado
+        '404':
+          description: Reserva no encontrada
+    put:
+      tags:
+        - Reservas
+      summary: Actualizar una reserva
+      description: Actualiza los datos de una reserva existente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Reserva actualizada exitosamente
+        '401':
+          description: No autenticado
+        '404':
+          description: Reserva no encontrada
+    delete:
+      tags:
+        - Reservas
+      summary: Eliminar una reserva
+      description: Elimina una reserva existente
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Reserva eliminada exitosamente
+        '401':
+          description: No autenticado
+        '404':
+          description: Reserva no encontrada
+
+  /api/reservas/{id}/estado:
+    put:
+      tags:
+        - Reservas
+      summary: Cambiar estado de una reserva
+      description: Actualiza el estado de una reserva
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Estado actualizado exitosamente
+        '401':
+          description: No autenticado
+        '404':
+          description: Reserva no encontrada
+
+  /api/batch/procesar-clicks:
+    post:
+      tags:
+        - Batch Jobs
+      summary: Ejecutar batch de notificación de clicks
+      description: |
+        🔄 **Proceso Batch de Notificación de Clicks**
+        
+        Ejecuta manualmente el proceso batch que notifica al servicio SOAP del restaurante 
+        todos los clicks no notificados registrados en el sistema.
+        
+        **Funcionamiento:**
+        1. 🔍 Busca todos los clicks con `notificado = 0` y `cod_contenido_restaurante` válido (sin prefijo 'AI_')
+        2. 📡 Por cada click, llama al servicio SOAP para registrar el click
+        3. ✅ Si la notificación es exitosa, marca el click como `notificado = 1`
+        4. ❌ Si falla, registra el error en logs pero no reintenta
+        5. 📊 Retorna un resumen con total procesados, exitosos y fallidos
+        
+        **Programación automática:**
+        - El batch se ejecuta automáticamente todos los días a las **2:00 AM**
+        - Este endpoint permite ejecutarlo manualmente para pruebas o cuando sea necesario
+        
+        **Validaciones:**
+        - Solo procesa clicks cuyo contenido fue exitosamente registrado en el SOAP
+        - Excluye clicks de contenidos con `cod_contenido_restaurante` que tenga prefijo 'AI_'
+        - Valida que el contenido exista en el SOAP antes de registrar el click
+        
+        **Nota:** Este endpoint está configurado como público para facilitar pruebas.
+      security: []
+      responses:
+        '200':
+          description: Batch ejecutado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensaje:
+                    type: string
+                    example: "Batch de clicks ejecutado exitosamente"
+                  estado:
+                    type: string
+                    example: "completado"
+              example:
+                mensaje: "Batch de clicks ejecutado exitosamente"
+                estado: "completado"
+        '500':
+          description: Error al ejecutar el batch
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensaje:
+                    type: string
+                    example: "Error al ejecutar batch de clicks: [mensaje de error]"
+                  estado:
+                    type: string
+                    example: "error"
+

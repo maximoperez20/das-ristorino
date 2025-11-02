@@ -6,7 +6,6 @@ import ar.edu.ubp.das.backend.dto.UsuarioDto;
 import ar.edu.ubp.das.backend.repository.ClienteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,11 +17,13 @@ public class ClienteService {
     
     private static final Logger logger = LoggerFactory.getLogger(ClienteService.class);
     
-    @Autowired
-    private ClienteRepository clienteRepository;
+    private final ClienteRepository clienteRepository;
+    private final PasswordEncoder passwordEncoder;
     
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    public ClienteService(ClienteRepository clienteRepository, PasswordEncoder passwordEncoder) {
+        this.clienteRepository = clienteRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
     
     /**
      * Crear un nuevo cliente

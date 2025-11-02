@@ -8,7 +8,6 @@ import ar.edu.ubp.das.backend.dto.UsuarioDto;
 import ar.edu.ubp.das.backend.repository.ClienteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -20,17 +19,18 @@ public class AuthService {
     
     private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
     
-    @Autowired
-    private ClienteRepository clienteRepository;
+    private final ClienteRepository clienteRepository;
+    private final ClienteService clienteService;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
     
-    @Autowired
-    private ClienteService clienteService;
-    
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    
-    @Autowired
-    private JwtService jwtService;
+    public AuthService(ClienteRepository clienteRepository, ClienteService clienteService,
+                       PasswordEncoder passwordEncoder, JwtService jwtService) {
+        this.clienteRepository = clienteRepository;
+        this.clienteService = clienteService;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+    }
     
     /**
      * Login de cliente

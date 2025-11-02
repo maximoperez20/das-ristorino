@@ -1,8 +1,9 @@
 package ar.edu.ubp.das.backend.service;
 
 import ar.edu.ubp.das.backend.dto.RestauranteDto;
+import ar.edu.ubp.das.backend.dto.RestauranteDetalleDto;
+import ar.edu.ubp.das.backend.dto.SucursalDto;
 import ar.edu.ubp.das.backend.repository.RestauranteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,8 +16,11 @@ import java.util.Optional;
 @Service
 public class RestauranteService {
     
-    @Autowired
-    private RestauranteRepository restauranteRepository;
+    private final RestauranteRepository restauranteRepository;
+    
+    public RestauranteService(RestauranteRepository restauranteRepository) {
+        this.restauranteRepository = restauranteRepository;
+    }
     
     /**
      * Obtener todos los restaurantes
@@ -26,10 +30,25 @@ public class RestauranteService {
     }
     
     /**
-     * Obtener restaurante por ID
+     * Obtener restaurante por UUID (nroRestaurante)
      */
-    public Optional<RestauranteDto> obtenerRestaurantePorId(Long id) {
-        return restauranteRepository.findById(id);
+    public Optional<RestauranteDto> obtenerRestaurantePorId(String nroRestaurante) {
+        return restauranteRepository.findById(nroRestaurante);
+    }
+    
+    /**
+     * Obtener detalle completo de un restaurante (Requerimiento 11)
+     * Incluye: datos básicos, tipo de cocina, descripción, sucursales y promociones vigentes
+     */
+    public Optional<RestauranteDetalleDto> obtenerDetalleRestaurantePorId(String nroRestaurante) {
+        return restauranteRepository.findDetalleById(nroRestaurante);
+    }
+    
+    /**
+     * Obtener sucursales de un restaurante
+     */
+    public List<SucursalDto> obtenerSucursales(String nroRestaurante) {
+        return restauranteRepository.obtenerSucursales(nroRestaurante);
     }
     
     /**
@@ -38,4 +57,5 @@ public class RestauranteService {
     public List<RestauranteDto> buscarRestaurantesPorNombre(String nombre) {
         return restauranteRepository.findByNombreContaining(nombre);
     }
+    
 }

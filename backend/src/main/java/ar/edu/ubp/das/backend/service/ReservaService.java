@@ -2,7 +2,6 @@ package ar.edu.ubp.das.backend.service;
 
 import ar.edu.ubp.das.backend.dto.*;
 import ar.edu.ubp.das.backend.repository.ReservaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,8 +13,11 @@ import java.util.Optional;
 @Service
 public class ReservaService {
     
-    @Autowired
-    private ReservaRepository reservaRepository;
+    private final ReservaRepository reservaRepository;
+    
+    public ReservaService(ReservaRepository reservaRepository) {
+        this.reservaRepository = reservaRepository;
+    }
     
     /**
      * Obtener todas las reservas
