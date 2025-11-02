@@ -7,6 +7,8 @@ import ar.edu.ubp.das.backend.dto.SucursalDto;
 import ar.edu.ubp.das.backend.service.BusquedaNLPService;
 import ar.edu.ubp.das.backend.service.RestauranteService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +26,8 @@ import java.util.Optional;
 @CrossOrigin(origins = "*")
 public class RestauranteResource {
 
+    private static final Logger logger = LoggerFactory.getLogger(RestauranteResource.class);
+    
     private final RestauranteService restauranteService;
     private final BusquedaNLPService busquedaNLPService;
     
@@ -92,7 +96,12 @@ public class RestauranteResource {
         try {
             List<RestauranteDto> restaurantes = busquedaNLPService.buscarRestaurantesPorNLP(request);
             return ResponseEntity.ok(restaurantes);
+        } catch (RuntimeException e) {
+            logger.warn("Error al procesar búsqueda NLP: {}", e.getMessage());
+            return ResponseEntity.status(400)
+                    .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
+            logger.error("Error inesperado al procesar búsqueda NLP", e);
             return ResponseEntity.status(500)
                     .body(Map.of("error", "Error al procesar la búsqueda: " + e.getMessage()));
         }

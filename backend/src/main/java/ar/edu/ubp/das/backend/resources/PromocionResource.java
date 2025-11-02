@@ -6,6 +6,8 @@ import ar.edu.ubp.das.backend.dto.RegistrarClickDto;
 import ar.edu.ubp.das.backend.service.ClickService;
 import ar.edu.ubp.das.backend.service.PromocionService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +25,8 @@ import java.util.Optional;
 @CrossOrigin(origins = "*")
 public class PromocionResource {
 
+    private static final Logger logger = LoggerFactory.getLogger(PromocionResource.class);
+    
     private final PromocionService promocionService;
     private final ClickService clickService;
     
@@ -51,10 +55,16 @@ public class PromocionResource {
             if (click != null) {
                 return ResponseEntity.status(HttpStatus.CREATED).body(click);
             } else {
+                logger.warn("No se pudo registrar el click para promoción: {}", registrarClickDto.getNroContenido());
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                         .body(Map.of("error", "No se pudo registrar el click"));
             }
+        } catch (RuntimeException e) {
+            logger.warn("Error al registrar click: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
+            logger.error("Error inesperado al registrar click", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al registrar click: " + e.getMessage()));
         }
