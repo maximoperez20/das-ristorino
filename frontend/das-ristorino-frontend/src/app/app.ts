@@ -1,35 +1,15 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ComponenteHijo } from './componente-hijo/componente-hijo';
-
+import { NavbarComponent } from "./navbar-component/navbar-component";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ComponenteHijo ],
+  imports: [RouterOutlet, NavbarComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
 
-  reciboMensaje: string = '';
-
-  recibirMensaje($event: string) {
-    this.reciboMensaje = $event;
-  }
-
-
-
-
-//Contador
-  valorNumerico: number= 0;
-  incrementar() {
-    this.valorNumerico++;
-  }
-
-  decrementar(){
-    this.valorNumerico--;
-  }
-
-
+  
   
 }
