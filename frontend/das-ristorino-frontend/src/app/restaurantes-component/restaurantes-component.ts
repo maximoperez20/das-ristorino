@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { restaurantsList} from '../data/restaurantes.mock';
+import { restaurantesLista} from '../data/restaurantes.mock';
 @Component({
   selector: 'app-restaurantes-component',
   imports: [],
@@ -7,6 +7,6 @@ import { restaurantsList} from '../data/restaurantes.mock';
   styleUrl: './restaurantes-component.scss',
 })
 export class RestaurantesComponent {
-  restaurantsList = restaurantsList;
+  restaurantsList = restaurantesLista;
 
 }
