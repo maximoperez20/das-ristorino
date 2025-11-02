@@ -38,7 +38,16 @@ tags:
   - name: Contenidos IA
     description: Generación de contenido publicitario con Inteligencia Artificial
   - name: Restaurantes
-    description: Consulta de restaurantes
+    description: |
+      Consulta de restaurantes y sucursales.
+      
+      **Requerimiento 11**: Visualización de información completa de restaurantes.
+      El endpoint `GET /api/restaurantes/{nroRestaurante}` devuelve una ficha completa que incluye:
+      - Datos básicos del restaurante
+      - Tipo de cocina
+      - Descripción general
+      - Promociones vigentes
+      - Listado de sucursales disponibles
   - name: Reservas
     description: Gestión de reservas
   - name: Batch Jobs
@@ -51,6 +60,221 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: Token JWT obtenido desde POST /api/clientes/register o POST /api/clientes/login
+  schemas:
+    RestauranteDetalle:
+      type: object
+      description: Ficha completa de un restaurante según Requerimiento 11
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: ID numérico del restaurante
+          example: 1
+        nombre:
+          type: string
+          description: Nombre del restaurante
+          example: "Los Aroza SRL"
+        direccion:
+          type: string
+          description: Dirección completa del restaurante
+          example: "Av. Colón 950, Centro"
+        telefono:
+          type: string
+          description: Teléfono de contacto
+          example: "0351-1234567"
+        email:
+          type: string
+          format: email
+          description: Correo electrónico de contacto
+          example: "contacto@losaroza.com"
+        capacidad:
+          type: integer
+          description: Capacidad total de comensales
+          example: 50
+        horarioApertura:
+          type: string
+          format: time
+          description: Horario de apertura
+          example: "18:00:00"
+        horarioCierre:
+          type: string
+          format: time
+          description: Horario de cierre
+          example: "23:00:00"
+        descripcion:
+          type: string
+          description: Descripción general del restaurante
+          example: "Restaurante especializado en cocina japonesa y sushi gourmet..."
+        tipoCocina:
+          type: array
+          items:
+            type: string
+          description: Lista de tipos de comida del restaurante
+          example: ["Sushi", "Japonés"]
+        calificacion:
+          type: number
+          format: double
+          description: Calificación del restaurante (0.0 a 5.0)
+          example: 4.5
+        activo:
+          type: boolean
+          description: Indica si el restaurante está activo
+          example: true
+        imagenes:
+          type: array
+          items:
+            type: string
+          description: URLs de imágenes del restaurante
+          example: []
+        diasAtencion:
+          type: array
+          items:
+            type: string
+          description: Días de la semana en que el restaurante atiende
+          example: ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"]
+        sucursales:
+          type: array
+          items:
+            $ref: '#/components/schemas/Sucursal'
+          description: Lista de sucursales del restaurante
+        promociones:
+          type: array
+          items:
+            $ref: '#/components/schemas/Promocion'
+          description: Promociones vigentes del restaurante
+      required:
+        - id
+        - nombre
+        - direccion
+        - telefono
+        - capacidad
+        - horarioApertura
+        - horarioCierre
+        - tipoCocina
+        - calificacion
+        - activo
+        - sucursales
+        - promociones
+
+    Sucursal:
+      type: object
+      description: Información de una sucursal de restaurante
+      properties:
+        nroRestaurante:
+          type: string
+          format: uuid
+          description: UUID del restaurante
+          example: "16DEE5C3-9355-4F64-9355-FC79BD28DA63"
+        nroSucursal:
+          type: string
+          format: uuid
+          description: UUID de la sucursal
+          example: "0CCCA46E-6B5C-42D0-A236-A650CC92AF7E"
+        nombre:
+          type: string
+          description: Nombre de la sucursal
+          example: "Los Aroza - Centro"
+        direccion:
+          type: string
+          description: Dirección completa de la sucursal
+          example: "Av. Colón 950, Centro"
+        localidad:
+          type: string
+          description: Localidad donde se encuentra la sucursal
+          example: "Córdoba"
+        provincia:
+          type: string
+          description: Provincia donde se encuentra la sucursal
+          example: "Córdoba"
+        codigoPostal:
+          type: string
+          description: Código postal de la sucursal
+          example: "5000"
+        telefonos:
+          type: string
+          description: Teléfonos de contacto de la sucursal
+          example: "0351-1234567"
+        capacidad:
+          type: integer
+          description: Capacidad total de comensales de la sucursal
+          example: 50
+        minToleranciaReserva:
+          type: integer
+          description: Tolerancia mínima en minutos para realizar una reserva
+          example: 15
+      required:
+        - nroRestaurante
+        - nroSucursal
+        - nombre
+        - direccion
+        - capacidad
+        - minToleranciaReserva
+
+    Promocion:
+      type: object
+      description: Información de una promoción
+      properties:
+        nroRestaurante:
+          type: string
+          format: uuid
+          description: UUID del restaurante
+        nroIdioma:
+          type: string
+          format: uuid
+          description: UUID del idioma
+        nroContenido:
+          type: string
+          format: uuid
+          description: UUID del contenido/promoción
+        titulo:
+          type: string
+          description: Título de la promoción
+        descripcion:
+          type: string
+          description: Descripción completa de la promoción
+        descuentoPorcentaje:
+          type: number
+          format: decimal
+          description: Descuento en porcentaje
+        descuentoFijo:
+          type: number
+          format: decimal
+          description: Descuento fijo en pesos
+        fechaInicio:
+          type: string
+          format: date-time
+          description: Fecha y hora de inicio de la promoción
+        fechaFin:
+          type: string
+          format: date-time
+          description: Fecha y hora de fin de la promoción
+        estado:
+          type: string
+          enum: [ACTIVA, INACTIVA, EXPIRADA]
+          description: Estado de la promoción
+        imagenUrl:
+          type: string
+          format: uri
+          description: URL de la imagen de la promoción
+        minPersonas:
+          type: integer
+          description: Mínimo de personas para aplicar la promoción
+        maxPersonas:
+          type: integer
+          description: Máximo de personas para aplicar la promoción
+        codigoPromocion:
+          type: string
+          description: Código único para aplicar la promoción
+        requiereCodigo:
+          type: boolean
+          description: Indica si se requiere código para aplicar la promoción
+      required:
+        - nroRestaurante
+        - nroIdioma
+        - nroContenido
+        - titulo
+        - descripcion
+        - estado
 
 security:
   - BearerAuth: []
@@ -499,8 +723,18 @@ paths:
     get:
       tags:
         - Restaurantes
-      summary: Obtener restaurante por UUID
-      description: Retorna los detalles de un restaurante específico usando su UUID (nroRestaurante)
+      summary: Obtener ficha completa de restaurante (Requerimiento 11)
+      description: |
+        Retorna la ficha completa de un restaurante según el **Requerimiento 11: Visualizar información de restaurantes**.
+        
+        Incluye:
+        - **Datos básicos**: nombre, dirección, teléfono, email, capacidad, horarios, calificación
+        - **Tipo de cocina**: lista de tipos de comida (obtenidos de preferencias del restaurante)
+        - **Descripción general**: descripción del restaurante
+        - **Promociones vigentes**: lista de promociones activas del restaurante
+        - **Listado de sucursales**: todas las sucursales disponibles con sus datos completos
+        
+        Endpoint público (no requiere autenticación).
       security: []
       parameters:
         - name: nroRestaurante
@@ -513,7 +747,106 @@ paths:
           example: "16DEE5C3-9355-4F64-9355-FC79BD28DA63"
       responses:
         '200':
-          description: Restaurante encontrado
+          description: Restaurante encontrado - Ficha completa con todos los datos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestauranteDetalle'
+              example:
+                id: 1
+                nombre: "Los Aroza SRL"
+                direccion: "Av. Colón 950, Centro"
+                telefono: "0351-1234567"
+                email: "contacto@losaroza.com"
+                capacidad: 50
+                horarioApertura: "18:00:00"
+                horarioCierre: "23:00:00"
+                descripcion: "Restaurante especializado en cocina japonesa y sushi gourmet..."
+                tipoCocina:
+                  - "Sushi"
+                  - "Japonés"
+                calificacion: 4.5
+                activo: true
+                imagenes: []
+                diasAtencion: ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"]
+                sucursales:
+                  - nroRestaurante: "16DEE5C3-9355-4F64-9355-FC79BD28DA63"
+                    nroSucursal: "0CCCA46E-6B5C-42D0-A236-A650CC92AF7E"
+                    nombre: "Los Aroza - Centro"
+                    direccion: "Av. Colón 950, Centro"
+                    localidad: "Córdoba"
+                    provincia: "Córdoba"
+                    codigoPostal: "5000"
+                    telefonos: "0351-1234567"
+                    capacidad: 50
+                    minToleranciaReserva: 15
+                promociones:
+                  - nroRestaurante: "16DEE5C3-9355-4F64-9355-FC79BD28DA63"
+                    nroIdioma: "2219E244-8413-474D-ABFC-8EDDD06ED2EB"
+                    nroContenido: "7F0B1753-47A0-4DAD-9981-B4AAE13CCA90"
+                    titulo: "¡Descuento especial en sushi!"
+                    descripcion: "20% de descuento en pedidos de sushi para grupos de 4 o más personas..."
+                    estado: "ACTIVA"
+                    fechaInicio: "2025-10-29T00:00:00"
+                    fechaFin: "2025-11-29T00:00:00"
+        '404':
+          description: Restaurante no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Restaurante no encontrado"
+
+  /api/restaurantes/{nroRestaurante}/sucursales:
+    get:
+      tags:
+        - Restaurantes
+      summary: Obtener sucursales de un restaurante
+      description: |
+        Retorna el listado completo de sucursales de un restaurante específico.
+        
+        Incluye información detallada de cada sucursal:
+        - Nombre de la sucursal
+        - Dirección completa (calle, número, barrio)
+        - Localidad y provincia
+        - Teléfonos
+        - Capacidad (total de comensales)
+        - Tolerancia mínima para reservas
+        
+        Endpoint público (no requiere autenticación).
+      security: []
+      parameters:
+        - name: nroRestaurante
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID del restaurante (nro_restaurante)
+          example: "16DEE5C3-9355-4F64-9355-FC79BD28DA63"
+      responses:
+        '200':
+          description: Lista de sucursales obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sucursal'
+              example:
+                - nroRestaurante: "16DEE5C3-9355-4F64-9355-FC79BD28DA63"
+                  nroSucursal: "0CCCA46E-6B5C-42D0-A236-A650CC92AF7E"
+                  nombre: "Los Aroza - Centro"
+                  direccion: "Av. Colón 950, Centro"
+                  localidad: "Córdoba"
+                  provincia: "Córdoba"
+                  codigoPostal: "5000"
+                  telefonos: "0351-1234567"
+                  capacidad: 50
+                  minToleranciaReserva: 15
         '404':
           description: Restaurante no encontrado
 
