@@ -429,16 +429,125 @@ BEGIN
             CASE WHEN e.barrio IS NOT NULL THEN ', ' + e.barrio ELSE '' END
         )) AS direccion,
         e.telefono AS telefono,
-        CAST(NULL AS VARCHAR(100)) AS email,
+        -- Email desde configuracion_restaurantes (si existe el atributo)
+        (SELECT TOP 1 valor FROM configuracion_restaurantes cr 
+         JOIN atributos a ON cr.cod_atributo = a.cod_atributo 
+         WHERE cr.nro_restaurante = @nroRestaurante 
+           AND a.nom_atributo = 'email') AS email,
         ISNULL(e.capacidad, 0) AS capacidad,
         ISNULL(e.horario_apertura, CAST('08:00:00' AS TIME(0))) AS horario_apertura,
         ISNULL(e.horario_cierre,  CAST('23:00:00' AS TIME(0))) AS horario_cierre,
-        CAST(NULL AS VARCHAR(500)) AS descripcion,
-        CAST(NULL AS VARCHAR(100)) AS categoria,
+        -- Descripción desde contenidos_restaurantes (contenido general, no de sucursal específica)
+        (SELECT TOP 1 contenido_a_publicar FROM contenidos_restaurantes 
+         WHERE nro_restaurante = @nroRestaurante 
+           AND nro_sucursal IS NULL 
+           AND contenido_a_publicar IS NOT NULL 
+         ORDER BY fecha_ini_vigencia DESC) AS descripcion,
+        -- Categoría/Tipo de cocina (primera preferencia de tipo de comida)
+        (SELECT TOP 1 dcp.nom_valor_dominio 
+         FROM preferencias_restaurantes pr
+         JOIN categorias_preferencias cp ON pr.cod_categoria = cp.cod_categoria
+         JOIN dominio_categorias_preferencias dcp ON pr.cod_categoria = dcp.cod_categoria 
+           AND pr.nro_valor_dominio = dcp.nro_valor_dominio
+         WHERE pr.nro_restaurante = @nroRestaurante 
+           AND cp.nom_categoria = 'Tipo de comida'
+           AND pr.nro_sucursal IS NULL
+         ORDER BY pr.nro_preferencia) AS categoria,
         CAST(4.0 AS FLOAT) AS calificacion,
         CAST(1 AS BIT) AS activo,
-        CAST(NULL AS VARCHAR(255)) AS imagen_url
+        CAST(NULL AS VARCHAR(255)) AS imagen_url  -- Imágenes se obtienen en otro stored procedure
     FROM enumerado e;
+END;
+GO
+
+-- =============================
+-- Obtener sucursales de un restaurante
+-- =============================
+CREATE OR ALTER PROCEDURE sp_ObtenerSucursalesPorRestaurante
+    @nroRestaurante VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        s.nro_restaurante,
+        s.nro_sucursal,
+        s.nom_sucursal AS nombre,
+        LTRIM(RTRIM(
+            ISNULL(s.calle,'') +
+            CASE WHEN s.nro_calle IS NOT NULL THEN ' ' + CAST(s.nro_calle AS VARCHAR(10)) ELSE '' END +
+            CASE WHEN s.barrio IS NOT NULL THEN ', ' + s.barrio ELSE '' END
+        )) AS direccion,
+        l.nom_localidad AS localidad,
+        p.nom_provincia AS provincia,
+        s.cod_postal AS codigo_postal,
+        s.telefonos,
+        s.total_comensales AS capacidad,
+        s.min_tolerencia_reserva AS min_tolerancia_reserva
+    FROM sucursales_restaurantes s
+    LEFT JOIN localidades l ON s.nro_localidad = l.nro_localidad
+    LEFT JOIN provincias p ON l.cod_provincia = p.cod_provincia
+    WHERE s.nro_restaurante = @nroRestaurante
+    ORDER BY s.nom_sucursal;
+END;
+GO
+
+-- =============================
+-- Obtener tipos de cocina de un restaurante
+-- =============================
+CREATE OR ALTER PROCEDURE sp_ObtenerTiposCocinaPorRestaurante
+    @nroRestaurante VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        dcp.nom_valor_dominio AS tipo_cocina
+    FROM preferencias_restaurantes pr
+    JOIN categorias_preferencias cp ON pr.cod_categoria = cp.cod_categoria
+    JOIN dominio_categorias_preferencias dcp ON pr.cod_categoria = dcp.cod_categoria 
+      AND pr.nro_valor_dominio = dcp.nro_valor_dominio
+    WHERE pr.nro_restaurante = @nroRestaurante 
+      AND cp.nom_categoria = 'Tipo de comida'
+      AND pr.nro_sucursal IS NULL  -- Solo preferencias del restaurante, no de sucursal específica
+    ORDER BY pr.nro_preferencia;
+END;
+GO
+
+-- =============================
+-- Obtener promociones vigentes de un restaurante
+-- =============================
+CREATE OR ALTER PROCEDURE sp_ObtenerPromocionesPorRestaurante
+    @nroRestaurante VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        cr.nro_restaurante,
+        cr.nro_idioma,
+        cr.nro_contenido,
+        LEFT(ISNULL(cr.contenido_promocional, cr.contenido_a_publicar), 100) AS titulo,
+        ISNULL(cr.contenido_promocional, cr.contenido_a_publicar) AS descripcion,
+        CAST(NULL AS DECIMAL(10,2)) AS descuento_porcentaje,
+        CAST(NULL AS DECIMAL(10,2)) AS descuento_fijo,
+        CAST(cr.fecha_ini_vigencia AS DATETIME2) AS fecha_inicio,
+        CAST(cr.fecha_fin_vigencia AS DATETIME2) AS fecha_fin,
+        CASE WHEN cr.fecha_ini_vigencia IS NOT NULL AND cr.fecha_fin_vigencia IS NOT NULL 
+             AND CAST(GETDATE() AS DATE) BETWEEN cr.fecha_ini_vigencia AND cr.fecha_fin_vigencia 
+             THEN 'ACTIVA' ELSE 'INACTIVA' END AS estado,
+        CAST(NULL AS NVARCHAR(255)) AS imagen_url,
+        CAST(NULL AS INT) AS min_personas,
+        CAST(NULL AS INT) AS max_personas,
+        cr.cod_contenido_restaurante AS codigo_promocion,
+        CAST(0 AS BIT) AS requiere_codigo
+    FROM contenidos_restaurantes cr
+    WHERE cr.nro_restaurante = @nroRestaurante
+      AND cr.contenido_promocional IS NOT NULL  -- Solo promociones (no contenidos generales)
+      AND cr.fecha_ini_vigencia IS NOT NULL
+      AND cr.fecha_fin_vigencia IS NOT NULL
+      AND CAST(GETDATE() AS DATE) <= cr.fecha_fin_vigencia  -- Vigentes o futuras
+    ORDER BY cr.fecha_ini_vigencia DESC;
 END;
 GO
 

@@ -1,6 +1,8 @@
 package ar.edu.ubp.das.backend.service;
 
 import ar.edu.ubp.das.backend.dto.RestauranteDto;
+import ar.edu.ubp.das.backend.dto.RestauranteDetalleDto;
+import ar.edu.ubp.das.backend.dto.SucursalDto;
 import ar.edu.ubp.das.backend.repository.RestauranteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,21 @@ public class RestauranteService {
      */
     public Optional<RestauranteDto> obtenerRestaurantePorId(String nroRestaurante) {
         return restauranteRepository.findById(nroRestaurante);
+    }
+    
+    /**
+     * Obtener detalle completo de un restaurante (Requerimiento 11)
+     * Incluye: datos básicos, tipo de cocina, descripción, sucursales y promociones vigentes
+     */
+    public Optional<RestauranteDetalleDto> obtenerDetalleRestaurantePorId(String nroRestaurante) {
+        return restauranteRepository.findDetalleById(nroRestaurante);
+    }
+    
+    /**
+     * Obtener sucursales de un restaurante
+     */
+    public List<SucursalDto> obtenerSucursales(String nroRestaurante) {
+        return restauranteRepository.obtenerSucursales(nroRestaurante);
     }
     
     /**
