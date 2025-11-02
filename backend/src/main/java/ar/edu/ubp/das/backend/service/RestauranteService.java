@@ -55,4 +55,5 @@ public class RestauranteService {
     public List<RestauranteDto> buscarRestaurantesPorNombre(String nombre) {
         return restauranteRepository.findByNombreContaining(nombre);
     }
+    
 }

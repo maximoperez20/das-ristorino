@@ -1,5 +1,6 @@
 package ar.edu.ubp.das.backend.service;
 
+import ar.edu.ubp.das.backend.dto.BusquedaContextoDto;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.completion.chat.ChatMessageRole;
@@ -296,6 +297,159 @@ public class OpenAIService {
     }
     
     /**
+     * Analiza una consulta en lenguaje natural para búsqueda de restaurantes.
+     * Usa un prompt guardado en OpenAI para extraer entidades.
+     *
+     * @param consultaUsuario Consulta del usuario en lenguaje natural
+     * @param contexto Contexto con catálogos disponibles
+     * @param promptId ID del prompt guardado en OpenAI
+     * @return Respuesta JSON parseada con la intención extraída
+     */
+    public String analizarConsultaNLP(String consultaUsuario, BusquedaContextoDto contexto, String promptId) {
+        if (apiKey == null || apiKey.isEmpty() || apiKey.equals("not-configured") || apiKey.equals("${OPENAI_API_KEY:}")) {
+            throw new RuntimeException("La API key de OpenAI no está configurada. Configure la variable de entorno OPENAI_API_KEY.");
+        }
+
+        try {
+            logger.info("╔════════════════════════════════════════════════════════════════");
+            logger.info("║ ANÁLISIS NLP DE CONSULTA DE BÚSQUEDA");
+            logger.info("╠════════════════════════════════════════════════════════════════");
+            logger.info("║ Modelo: {}", model);
+            logger.info("║ Prompt ID: {}", promptId);
+            logger.info("╠════════════════════════════════════════════════════════════════");
+            logger.info("║ CONSULTA DEL USUARIO:");
+            logger.info("║ {}", consultaUsuario);
+            logger.info("╠════════════════════════════════════════════════════════════════");
+            logger.info("║ CONTEXTO ENVIADO A OPENAI:");
+            logger.info("╠════════════════════════════════════════════════════════════════");
+            
+            // Construir JSON de contexto
+            String jsonContexto = construirJSONParaBusquedaNLP(consultaUsuario, contexto);
+            
+            // Loggear el JSON construido
+            logger.info("║ {}", jsonContexto.replace("\n", "\n║ "));
+            logger.info("╚════════════════════════════════════════════════════════════════");
+
+            // Crear cliente de OpenAI
+            OpenAiService service = new OpenAiService(apiKey, Duration.ofSeconds(timeoutSeconds));
+
+            // Construir mensaje para OpenAI con instrucción explícita de devolver solo JSON
+            List<ChatMessage> messages = new ArrayList<>();
+            String mensajeCompleto = jsonContexto + "\n\nIMPORTANTE: Responde ÚNICAMENTE con un objeto JSON válido. NO incluyas explicaciones, comentarios ni texto adicional antes o después del JSON. El JSON debe comenzar con '{' y terminar con '}'.";
+            ChatMessage userMessage = new ChatMessage(
+                ChatMessageRole.USER.value(),
+                mensajeCompleto
+            );
+            messages.add(userMessage);
+
+            // Crear request
+            ChatCompletionRequest completionRequest = ChatCompletionRequest.builder()
+                    .model(model)
+                    .messages(messages)
+                    .build();
+
+            // Ejecutar request
+            String respuestaJson = service.createChatCompletion(completionRequest)
+                    .getChoices()
+                    .get(0)
+                    .getMessage()
+                    .getContent();
+
+            // Loggear la respuesta
+            logger.info("");
+            logger.info("╔════════════════════════════════════════════════════════════════");
+            logger.info("║ RESPUESTA JSON DE OPENAI:");
+            logger.info("╠════════════════════════════════════════════════════════════════");
+            logger.info("║ {}", respuestaJson.replace("\n", "\n║ "));
+            logger.info("╚════════════════════════════════════════════════════════════════");
+            logger.info("✅ Consulta analizada exitosamente");
+            
+            // Cerrar servicio
+            service.shutdownExecutor();
+            
+            return respuestaJson.trim();
+
+        } catch (Exception e) {
+            logger.error("Error al analizar consulta NLP con OpenAI: {}", e.getMessage(), e);
+            throw new RuntimeException("Error al analizar consulta NLP: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Construye el JSON de contexto para enviar a OpenAI
+     */
+    private String construirJSONParaBusquedaNLP(String consultaUsuario, BusquedaContextoDto contexto) {
+        StringBuilder json = new StringBuilder();
+        json.append("{\n");
+        json.append("  \"consultaUsuario\": \"").append(escaparJson(consultaUsuario)).append("\",\n");
+        json.append("  \"contexto\": {\n");
+        
+        // Tipos de comida
+        if (contexto.getContexto().getTiposComida() != null && !contexto.getContexto().getTiposComida().isEmpty()) {
+            json.append("    \"tiposComida\": [");
+            for (int i = 0; i < contexto.getContexto().getTiposComida().size(); i++) {
+                if (i > 0) json.append(", ");
+                json.append("\"").append(escaparJson(contexto.getContexto().getTiposComida().get(i))).append("\"");
+            }
+            json.append("]");
+        } else {
+            json.append("    \"tiposComida\": []");
+        }
+        
+        // Barrios
+        if (contexto.getContexto().getBarrios() != null && !contexto.getContexto().getBarrios().isEmpty()) {
+            json.append(",\n    \"barrios\": [");
+            for (int i = 0; i < contexto.getContexto().getBarrios().size(); i++) {
+                if (i > 0) json.append(", ");
+                json.append("\"").append(escaparJson(contexto.getContexto().getBarrios().get(i))).append("\"");
+            }
+            json.append("]");
+        } else {
+            json.append(",\n    \"barrios\": []");
+        }
+        
+        // Localidades
+        if (contexto.getContexto().getLocalidades() != null && !contexto.getContexto().getLocalidades().isEmpty()) {
+            json.append(",\n    \"localidades\": [");
+            for (int i = 0; i < contexto.getContexto().getLocalidades().size(); i++) {
+                if (i > 0) json.append(", ");
+                json.append("\"").append(escaparJson(contexto.getContexto().getLocalidades().get(i))).append("\"");
+            }
+            json.append("]");
+        } else {
+            json.append(",\n    \"localidades\": []");
+        }
+        
+        // Ambientes
+        if (contexto.getContexto().getAmbientes() != null && !contexto.getContexto().getAmbientes().isEmpty()) {
+            json.append(",\n    \"ambientes\": [");
+            for (int i = 0; i < contexto.getContexto().getAmbientes().size(); i++) {
+                if (i > 0) json.append(", ");
+                json.append("\"").append(escaparJson(contexto.getContexto().getAmbientes().get(i))).append("\"");
+            }
+            json.append("]");
+        } else {
+            json.append(",\n    \"ambientes\": []");
+        }
+        
+        // Rangos de precio
+        if (contexto.getContexto().getRangosPrecio() != null && !contexto.getContexto().getRangosPrecio().isEmpty()) {
+            json.append(",\n    \"rangosPrecio\": [");
+            for (int i = 0; i < contexto.getContexto().getRangosPrecio().size(); i++) {
+                if (i > 0) json.append(", ");
+                json.append("\"").append(escaparJson(contexto.getContexto().getRangosPrecio().get(i))).append("\"");
+            }
+            json.append("]");
+        } else {
+            json.append(",\n    \"rangosPrecio\": []");
+        }
+        
+        json.append("\n  }\n}");
+        
+        return json.toString();
+    }
+    
+    /**
      * Escapa caracteres especiales para JSON
      */
     private String escaparJson(String texto) {
@@ -308,4 +462,5 @@ public class OpenAIService {
             .replace("\t", "\\t");
     }
 }
+
 

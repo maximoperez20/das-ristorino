@@ -29,18 +29,18 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // Endpoints públicos (accesibles sin autenticación)
-                .requestMatchers(
-                    "/actuator/health",
-                    "/api/restaurantes/**",     // Consulta de restaurantes - PÚBLICO
-                    "/api/promociones/**",      // Consulta de promociones - PÚBLICO
-                    "/api/clientes/register",   // Registro de cliente - PÚBLICO
-                    "/api/clientes/login",      // Login de cliente - PÚBLICO
-                    // Swagger UI (documentación API)
-                    "/swagger-ui/**",
-                    "/swagger-ui.html",
-                    "/v3/api-docs/**",
-                    "/webjars/**"
-                ).permitAll()
+                       .requestMatchers(
+                           "/actuator/health",
+                           "/api/restaurantes/**",     // Consulta de restaurantes y búsqueda NLP - PÚBLICO
+                           "/api/promociones/**",      // Consulta de promociones - PÚBLICO
+                           "/api/clientes/register",   // Registro de cliente - PÚBLICO
+                           "/api/clientes/login",      // Login de cliente - PÚBLICO
+                           // Swagger UI (documentación API)
+                           "/swagger-ui/**",
+                           "/swagger-ui.html",
+                           "/v3/api-docs/**",
+                           "/webjars/**"
+                       ).permitAll()
                 // Endpoints protegidos (requieren token JWT)
                 .requestMatchers(
                     "/api/reservas/**",

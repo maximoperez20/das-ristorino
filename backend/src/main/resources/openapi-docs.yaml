@@ -39,7 +39,7 @@ tags:
     description: Generación de contenido publicitario con Inteligencia Artificial
   - name: Restaurantes
     description: |
-      Consulta de restaurantes y sucursales.
+      Consulta de restaurantes y búsqueda inteligente.
       
       **Requerimiento 11**: Visualización de información completa de restaurantes.
       El endpoint `GET /api/restaurantes/{nroRestaurante}` devuelve una ficha completa que incluye:
@@ -48,6 +48,11 @@ tags:
       - Descripción general
       - Promociones vigentes
       - Listado de sucursales disponibles
+      
+      **Requerimientos 10 y 35**: Búsqueda con lenguaje natural (NLP).
+      El endpoint `POST /api/restaurantes/buscar-nlp` permite buscar restaurantes expresándose
+      libremente en lenguaje natural. El sistema interpreta la intención del usuario mediante
+      procesamiento de lenguaje natural (NLP) con OpenAI y devuelve resultados personalizados.
   - name: Reservas
     description: Gestión de reservas
   - name: Batch Jobs
@@ -275,6 +280,61 @@ components:
         - titulo
         - descripcion
         - estado
+
+    BusquedaNLPRequest:
+      type: object
+      description: Solicitud para búsqueda con lenguaje natural
+      properties:
+        consulta:
+          type: string
+          maxLength: 500
+          description: Consulta del usuario en lenguaje natural
+          example: "quiero comer algo picante en el centro"
+      required:
+        - consulta
+
+    BusquedaNLPResponse:
+      type: object
+      description: Respuesta del análisis NLP de OpenAI (estructura interna)
+      properties:
+        tipoComida:
+          type: array
+          items:
+            type: string
+          description: Tipos de comida identificados
+          example: ["Picante"]
+        barrio:
+          type: string
+          description: Barrio identificado
+          example: "Centro"
+        localidad:
+          type: string
+          description: Localidad identificada
+          example: "Córdoba"
+        ambiente:
+          type: string
+          description: Ambiente identificado
+          example: "Romántico"
+        rangoPrecio:
+          type: string
+          description: Rango de precio identificado
+          example: "Económico"
+        momentoDia:
+          type: string
+          enum: [almuerzo, cena, desayuno]
+          description: Momento del día identificado
+          example: "cena"
+        intencion:
+          type: string
+          enum: [comer, cenar, almorzar, tomar]
+          description: Intención del usuario
+          example: "comer"
+        palabrasClave:
+          type: array
+          items:
+            type: string
+          description: Palabras clave extraídas
+          example: ["picante", "centro"]
 
 security:
   - BearerAuth: []
@@ -866,6 +926,133 @@ paths:
       responses:
         '200':
           description: Restaurantes encontrados
+
+  /api/restaurantes/buscar-nlp:
+    post:
+      tags:
+        - Restaurantes
+      summary: Buscar restaurantes con lenguaje natural (NLP) - Req 10 y 35
+      description: |
+        🔍 **Búsqueda Inteligente con Lenguaje Natural**
+        
+        Permite al usuario realizar búsquedas expresándose libremente en lenguaje natural,
+        recibiendo resultados personalizados y contextuales según su intención.
+        
+        **Funcionamiento:**
+        1. El usuario escribe una consulta en lenguaje natural (ej: "quiero comer algo picante en el centro")
+        2. El sistema obtiene catálogos disponibles de la BD (tipos de comida, barrios, ambientes, etc.)
+        3. OpenAI analiza la consulta y extrae entidades estructuradas usando el prompt guardado
+        4. Se ejecuta un stored procedure que busca restaurantes que coinciden con los criterios
+        5. Se devuelve una lista relevante de restaurantes alineada con la intención del usuario
+        
+        **Ejemplos de consultas:**
+        - "quiero comer algo picante en el centro"
+        - "cena romántica con sushi"
+        - "almuerzo vegano económico en Nueva Córdoba"
+        - "dónde puedo comer algo picante esta noche"
+        
+        **Características:**
+        - ✅ Procesamiento de lenguaje natural (NLP) con OpenAI
+        - ✅ Extracción automática de entidades (tipo de comida, ubicación, ambiente, precio)
+        - ✅ Búsqueda inteligente basada en intención del usuario
+        - ✅ Disponible para todos los usuarios (sin autenticación)
+        - ✅ Resultados personalizados y contextuales
+        
+        **Prompt ID configurado:** `pmpt_68f9295bc1e48194b2e725a7b5df2b1c0a01e67130022025`
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BusquedaNLPRequest'
+            examples:
+              consulta_simple:
+                summary: Búsqueda simple por ubicación
+                value:
+                  consulta: "quiero comer algo picante en el centro"
+              consulta_completa:
+                summary: Búsqueda con múltiples criterios
+                value:
+                  consulta: "cena romántica con sushi"
+              consulta_con_precio:
+                summary: Búsqueda con rango de precio
+                value:
+                  consulta: "almuerzo vegano económico en Nueva Córdoba"
+              consulta_ambigua:
+                summary: Búsqueda ambigua
+                value:
+                  consulta: "dónde puedo comer algo picante esta noche"
+      responses:
+        '200':
+          description: Lista de restaurantes encontrados según la intención del usuario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      format: int64
+                    nombre:
+                      type: string
+                    direccion:
+                      type: string
+                    telefono:
+                      type: string
+                    email:
+                      type: string
+                    capacidad:
+                      type: integer
+                    horarioApertura:
+                      type: string
+                      format: time
+                    horarioCierre:
+                      type: string
+                      format: time
+                    descripcion:
+                      type: string
+                    categoria:
+                      type: string
+                    calificacion:
+                      type: number
+                    activo:
+                      type: boolean
+                    imagenUrl:
+                      type: string
+              example:
+                - id: 1
+                  nombre: "Restaurante Picante del Centro"
+                  direccion: "Av. Colón 950, Centro"
+                  telefono: "0351-1234567"
+                  capacidad: 50
+                  horarioApertura: "18:00:00"
+                  horarioCierre: "23:00:00"
+                  categoria: "Picante"
+        '400':
+          description: Consulta inválida o vacía
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "La consulta es obligatoria"
+        '500':
+          description: Error al procesar la búsqueda (OpenAI o BD)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Error al procesar la búsqueda: La API key de OpenAI no está configurada"
 
   /api/reservas:
     get:

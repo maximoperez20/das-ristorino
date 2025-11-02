@@ -192,4 +192,34 @@ public class RestauranteRepository {
         String sql = "EXEC sp_BuscarRestaurantesPorNombre ?";
         return jdbcTemplate.query(sql, restauranteRowMapper, "%" + nombre + "%");
     }
+
+    /**
+     * Buscar restaurantes usando análisis NLP
+     * 
+     * @param tiposComida Lista de tipos de comida (puede ser null)
+     * @param barrio Barrio (puede ser null)
+     * @param localidad Localidad (puede ser null)
+     * @param ambiente Ambiente (puede ser null)
+     * @param rangoPrecio Rango de precio (puede ser null)
+     * @param palabrasClave Lista de palabras clave para búsqueda en nombre/descripción (puede ser null)
+     * @return Lista de restaurantes que coinciden con los criterios
+     */
+    public List<RestauranteDto> buscarPorNLP(List<String> tiposComida, String barrio, 
+                                             String localidad, String ambiente, 
+                                             String rangoPrecio, List<String> palabrasClave) {
+        String sql = "EXEC sp_BuscarRestaurantesPorNLP ?, ?, ?, ?, ?, ?";
+        
+        // Convertir listas a strings separados por comas
+        String tiposComidaStr = tiposComida != null && !tiposComida.isEmpty() 
+            ? String.join(",", tiposComida) : null;
+        String barrioStr = barrio != null && !barrio.isEmpty() ? barrio : null;
+        String localidadStr = localidad != null && !localidad.isEmpty() ? localidad : null;
+        String ambienteStr = ambiente != null && !ambiente.isEmpty() ? ambiente : null;
+        String rangoPrecioStr = rangoPrecio != null && !rangoPrecio.isEmpty() ? rangoPrecio : null;
+        String palabrasClaveStr = palabrasClave != null && !palabrasClave.isEmpty() 
+            ? String.join(",", palabrasClave) : null;
+        
+        return jdbcTemplate.query(sql, restauranteRowMapper, 
+            tiposComidaStr, barrioStr, localidadStr, ambienteStr, rangoPrecioStr, palabrasClaveStr);
+    }
 }

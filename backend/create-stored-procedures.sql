@@ -552,6 +552,133 @@ END;
 GO
 
 -- =============================
+-- Búsqueda de restaurantes por NLP (lenguaje natural)
+-- =============================
+CREATE OR ALTER PROCEDURE sp_BuscarRestaurantesPorNLP
+    @tiposComida NVARCHAR(MAX) = NULL,        -- JSON array o lista separada por comas
+    @barrios NVARCHAR(MAX) = NULL,             -- JSON array o lista separada por comas
+    @localidades NVARCHAR(MAX) = NULL,        -- JSON array o lista separada por comas
+    @ambientes NVARCHAR(MAX) = NULL,           -- JSON array o lista separada por comas
+    @rangosPrecio NVARCHAR(MAX) = NULL,       -- JSON array o lista separada por comas
+    @palabrasClave NVARCHAR(MAX) = NULL       -- Palabras clave para búsqueda en nombre/descripción
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    ;WITH restaurantes_filtrados AS (
+        SELECT DISTINCT
+            r.nro_restaurante,
+            r.razon_social
+        FROM restaurantes r
+        LEFT JOIN sucursales_restaurantes s ON s.nro_restaurante = r.nro_restaurante
+        LEFT JOIN localidades l ON s.nro_localidad = l.nro_localidad
+        LEFT JOIN preferencias_restaurantes pr ON pr.nro_restaurante = r.nro_restaurante AND pr.nro_sucursal IS NULL
+        LEFT JOIN categorias_preferencias cp ON pr.cod_categoria = cp.cod_categoria
+        LEFT JOIN dominio_categorias_preferencias dcp ON pr.cod_categoria = dcp.cod_categoria 
+            AND pr.nro_valor_dominio = dcp.nro_valor_dominio
+        WHERE 
+            -- Filtro por tipos de comida
+            (@tiposComida IS NULL OR @tiposComida = '' OR EXISTS (
+                SELECT 1 FROM dominio_categorias_preferencias dcp2
+                JOIN categorias_preferencias cp2 ON dcp2.cod_categoria = cp2.cod_categoria
+                WHERE cp2.nom_categoria = 'Tipo de comida'
+                    AND dcp2.nom_valor_dominio IN (
+                        SELECT value FROM STRING_SPLIT(@tiposComida, ',')
+                    )
+                    AND pr.cod_categoria = dcp2.cod_categoria
+                    AND pr.nro_valor_dominio = dcp2.nro_valor_dominio
+            ))
+            -- Filtro por barrios
+            AND (@barrios IS NULL OR @barrios = '' OR s.barrio IN (
+                SELECT value FROM STRING_SPLIT(@barrios, ',')
+            ))
+            -- Filtro por localidades
+            AND (@localidades IS NULL OR @localidades = '' OR l.nom_localidad IN (
+                SELECT value FROM STRING_SPLIT(@localidades, ',')
+            ))
+            -- Filtro por ambientes
+            AND (@ambientes IS NULL OR @ambientes = '' OR EXISTS (
+                SELECT 1 FROM dominio_categorias_preferencias dcp3
+                JOIN categorias_preferencias cp3 ON dcp3.cod_categoria = cp3.cod_categoria
+                WHERE cp3.nom_categoria = 'Ambiente'
+                    AND dcp3.nom_valor_dominio IN (
+                        SELECT value FROM STRING_SPLIT(@ambientes, ',')
+                    )
+                    AND pr.cod_categoria = dcp3.cod_categoria
+                    AND pr.nro_valor_dominio = dcp3.nro_valor_dominio
+            ))
+            -- Filtro por rangos de precio
+            AND (@rangosPrecio IS NULL OR @rangosPrecio = '' OR EXISTS (
+                SELECT 1 FROM dominio_categorias_preferencias dcp4
+                JOIN categorias_preferencias cp4 ON dcp4.cod_categoria = cp4.cod_categoria
+                WHERE cp4.nom_categoria = 'Rango de precio'
+                    AND dcp4.nom_valor_dominio IN (
+                        SELECT value FROM STRING_SPLIT(@rangosPrecio, ',')
+                    )
+                    AND pr.cod_categoria = dcp4.cod_categoria
+                    AND pr.nro_valor_dominio = dcp4.nro_valor_dominio
+            ))
+            -- Filtro por palabras clave en nombre o descripción (búsqueda por cualquier palabra)
+            AND (@palabrasClave IS NULL OR @palabrasClave = '' OR 
+                EXISTS (
+                    SELECT 1 FROM STRING_SPLIT(@palabrasClave, ',') AS keyword
+                    WHERE LTRIM(RTRIM(keyword.value)) <> ''
+                    AND (
+                        r.razon_social LIKE '%' + LTRIM(RTRIM(keyword.value)) + '%'
+                        OR EXISTS (
+                            SELECT 1 FROM contenidos_restaurantes cr
+                            WHERE cr.nro_restaurante = r.nro_restaurante
+                                AND (
+                                    cr.contenido_a_publicar LIKE '%' + LTRIM(RTRIM(keyword.value)) + '%'
+                                    OR cr.contenido_promocional LIKE '%' + LTRIM(RTRIM(keyword.value)) + '%'
+                                )
+                        )
+                    )
+                )
+            )
+    )
+    SELECT 
+        CAST(ROW_NUMBER() OVER (ORDER BY razon_social) AS BIGINT) AS id,
+        rf.razon_social AS nombre,
+        LTRIM(RTRIM(
+            ISNULL(MIN(s.calle), '') +
+            CASE WHEN MIN(s.nro_calle) IS NOT NULL THEN ' ' + CAST(MIN(s.nro_calle) AS VARCHAR(10)) ELSE '' END +
+            CASE WHEN MIN(s.barrio) IS NOT NULL THEN ', ' + MIN(s.barrio) ELSE '' END
+        )) AS direccion,
+        MIN(s.telefonos) AS telefono,
+        (SELECT TOP 1 valor FROM configuracion_restaurantes cr 
+         JOIN atributos a ON cr.cod_atributo = a.cod_atributo 
+         WHERE cr.nro_restaurante = rf.nro_restaurante 
+           AND a.nom_atributo = 'email') AS email,
+        ISNULL(MAX(s.total_comensales), 0) AS capacidad,
+        ISNULL(MIN(t.hora_desde), CAST('08:00:00' AS TIME(0))) AS horario_apertura,
+        ISNULL(MAX(t.hora_hasta), CAST('23:00:00' AS TIME(0))) AS horario_cierre,
+        (SELECT TOP 1 contenido_a_publicar FROM contenidos_restaurantes 
+         WHERE nro_restaurante = rf.nro_restaurante 
+           AND nro_sucursal IS NULL 
+           AND contenido_a_publicar IS NOT NULL 
+         ORDER BY fecha_ini_vigencia DESC) AS descripcion,
+        (SELECT TOP 1 dcp.nom_valor_dominio 
+         FROM preferencias_restaurantes pr
+         JOIN categorias_preferencias cp ON pr.cod_categoria = cp.cod_categoria
+         JOIN dominio_categorias_preferencias dcp ON pr.cod_categoria = dcp.cod_categoria 
+           AND pr.nro_valor_dominio = dcp.nro_valor_dominio
+         WHERE pr.nro_restaurante = rf.nro_restaurante 
+           AND cp.nom_categoria = 'Tipo de comida'
+           AND pr.nro_sucursal IS NULL
+         ORDER BY pr.nro_preferencia) AS categoria,
+        CAST(4.0 AS FLOAT) AS calificacion,
+        CAST(1 AS BIT) AS activo,
+        CAST(NULL AS VARCHAR(255)) AS imagen_url
+    FROM restaurantes_filtrados rf
+    LEFT JOIN sucursales_restaurantes s ON s.nro_restaurante = rf.nro_restaurante
+    LEFT JOIN turnos_sucursales_restaurantes t ON t.nro_restaurante = rf.nro_restaurante
+    GROUP BY rf.nro_restaurante, rf.razon_social
+    ORDER BY rf.razon_social;
+END;
+GO
+
+-- =============================
 -- Promociones (mínimo para listar)
 -- =============================
 CREATE OR ALTER PROCEDURE sp_ObtenerTodasLasPromociones
