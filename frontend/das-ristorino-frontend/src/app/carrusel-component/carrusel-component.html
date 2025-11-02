@@ -15,16 +15,15 @@
                 @for (promocion of promocionesLista; track promocion.codigoPromocion) {
                 <div class="col-10 col-md-4">
                     <div class="card h-100 shadow-sm">
-                        <img [src]="promocion.imagenUrl || 'https://picsum.photos/seed/' + promocion.codigoPromocion + '/500/300'"
-                            class="card-img-top" alt="{{ promocion.titulo }}" />
-
+                        <img [src]="promocion.imagenUrl" class="card-img-top" alt="{{ promocion.titulo }}" />
                         <div class="card-body">
                             <h5 class="card-title">{{ promocion.titulo }}</h5>
                             <p class="card-text text-truncate">{{ promocion.descripcion }}</p>
                             <p class="text-muted small mb-2">
                                 Vigencia hasta: {{ promocion.fechaFin | date:'short' }}
                             </p>
-                            <a class="btn btn-primary" [routerLink]="['/promociones', promocion.codigoPromocion]">
+                            <a class="btn btn-primary" (click)="registrarClickPromocion(promocion)"
+                                [routerLink]="['/promociones', promocion.codigoPromocion]">
                                 Ver promoción
                             </a>
                         </div>

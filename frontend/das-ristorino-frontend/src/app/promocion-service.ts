@@ -15,6 +15,20 @@ export class PromocionService {
   obtenerPromociones(): Observable<Promocion[]> {
     return this.http.get<Promocion[]>(this.apiUrl);
   }
-    
-  
+
+  /** Registra un click sobre una promoción */
+  registrarClickPromocion(
+    nroRestaurante: string,
+    nroIdioma: string,
+    nroContenido: string
+  ): Observable<any> {
+    const url = `${this.apiUrl}/click`;
+    const body = {
+      nroRestaurante,
+      nroIdioma,
+      nroContenido
+    };
+    return this.http.post(url, body);
+  }
+
 }
