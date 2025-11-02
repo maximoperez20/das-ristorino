@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { RouterLink } from "@angular/router";
 import { PromocionService } from '../promocion-service';
 import { DatePipe } from '@angular/common';
+import { Promocion } from '../data/promociones.mock';
 
 @Component({
   selector: 'app-carrusel-component',
@@ -11,11 +12,11 @@ import { DatePipe } from '@angular/common';
 })
 export class CarruselComponent implements OnInit {
 
-  constructor(private promocionService: PromocionService) { }
+  constructor(private _promocionService: PromocionService) { }
 
   promocionesLista: any[] = [];
   ngOnInit(): void {
-    this.promocionService.obtenerPromociones().subscribe({
+    this._promocionService.obtenerPromociones().subscribe({
       next: (data) => {
         // Aquí puedes manejar los datos recibidos
         console.log(data);
@@ -28,4 +29,16 @@ export class CarruselComponent implements OnInit {
     });
   }
 
+  registrarClickPromocion(promocion: Promocion) {
+  this._promocionService
+    .registrarClickPromocion(
+      promocion.nroRestaurante,
+      promocion.nroIdioma,
+      promocion.nroContenido
+    )
+    .subscribe({
+      next: () => console.log('Click registrado correctamente'),
+      error: (err) => console.error('Error registrando click', err)
+    });
+}
 }
