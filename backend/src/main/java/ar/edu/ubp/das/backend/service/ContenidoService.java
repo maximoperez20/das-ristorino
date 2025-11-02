@@ -12,8 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 /**
  * Servicio para gestión de contenidos generados con IA.
  * Orquesta la recopilación de datos, generación con OpenAI y almacenamiento.
@@ -49,16 +47,10 @@ public class ContenidoService {
                     request.getNroIdioma());
 
         // Obtener contexto del restaurante desde la BD
-        Optional<RestauranteContextoDto> contextoOpt = contenidoRepository.obtenerContextoRestaurante(
+        RestauranteContextoDto contexto = contenidoRepository.obtenerContextoRestaurante(
             request.getNroRestaurante(), 
             request.getNroSucursal()
-        );
-
-        if (contextoOpt.isEmpty()) {
-            throw new RuntimeException("Restaurante no encontrado con ID: " + request.getNroRestaurante());
-        }
-
-        RestauranteContextoDto contexto = contextoOpt.get();
+        ).orElseThrow(() -> new RuntimeException("Restaurante no encontrado con ID: " + request.getNroRestaurante()));
         logger.info("Contexto del restaurante obtenido: {}", contexto);
 
         // Determinar qué prompt ID usar
@@ -102,18 +94,12 @@ public class ContenidoService {
         }
 
         // Guardar en la base de datos
-        Optional<ContenidoGeneradoDto> resultadoOpt = contenidoRepository.guardarContenidoGenerado(
+        ContenidoGeneradoDto resultado = contenidoRepository.guardarContenidoGenerado(
             request.getNroRestaurante(),
             request.getNroSucursal(),
             request.getNroIdioma(),
             contenidoGenerado
-        );
-
-        if (resultadoOpt.isEmpty()) {
-            throw new RuntimeException("Error al guardar el contenido generado en la base de datos");
-        }
-
-        ContenidoGeneradoDto resultado = resultadoOpt.get();
+        ).orElseThrow(() -> new RuntimeException("Error al guardar el contenido generado en la base de datos"));
         resultado.setNombreRestaurante(contexto.getRazonSocial());
         resultado.setNombreSucursal(contexto.getNombreSucursal());
 

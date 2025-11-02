@@ -121,12 +121,12 @@ public class RestauranteRepository {
      */
     public Optional<RestauranteDetalleDto> findDetalleById(String nroRestaurante) {
         // Obtener datos básicos
-        Optional<RestauranteDto> restauranteOpt = findById(nroRestaurante);
-        if (restauranteOpt.isEmpty()) {
+        RestauranteDto restaurante = findById(nroRestaurante)
+                .orElse(null);
+        
+        if (restaurante == null) {
             return Optional.empty();
         }
-        
-        RestauranteDto restaurante = restauranteOpt.get();
         RestauranteDetalleDto detalle = new RestauranteDetalleDto();
         
         // Mapear datos básicos

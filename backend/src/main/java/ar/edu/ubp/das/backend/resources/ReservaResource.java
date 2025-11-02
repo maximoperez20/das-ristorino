@@ -8,10 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/reservas")
@@ -31,12 +28,9 @@ public class ReservaResource {
     // GET /api/reservas/{id} - Obtener una reserva por ID
     @GetMapping("/{id}")
     public ResponseEntity<ReservaResponseDto> getReservaById(@PathVariable String id) {
-        Optional<ReservaResponseDto> reserva = reservaService.obtenerReservaPorId(id);
-        if (reserva.isPresent()) {
-            return ResponseEntity.ok(reserva.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return reservaService.obtenerReservaPorId(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     // POST /api/reservas - Crear una nueva reserva
@@ -64,8 +58,9 @@ public class ReservaResource {
         try {
             boolean actualizado = reservaService.actualizarReserva(id, actualizarReservaDto);
             if (actualizado) {
-                Optional<ReservaResponseDto> reservaActualizada = reservaService.obtenerReservaPorId(id);
-                return ResponseEntity.ok(reservaActualizada.get());
+                return reservaService.obtenerReservaPorId(id)
+                        .map(ResponseEntity::ok)
+                        .orElseGet(() -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
             } else {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
@@ -98,8 +93,9 @@ public class ReservaResource {
         
         boolean actualizado = reservaService.cambiarEstadoReserva(id, cambiarEstadoDto.getEstado());
         if (actualizado) {
-            Optional<ReservaResponseDto> reserva = reservaService.obtenerReservaPorId(id);
-            return ResponseEntity.ok(reserva.get());
+            return reservaService.obtenerReservaPorId(id)
+                    .map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
