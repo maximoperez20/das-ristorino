@@ -8,12 +8,12 @@ import { Promocion } from './data/promociones.mock';
 })
 export class PromocionService {
 
-  private appiUrl = 'http://localhost:8080/api/promociones';
+  private apiUrl = 'http://localhost:8080/api/promociones';
 
   constructor(private http: HttpClient) { }
 
   obtenerPromociones(): Observable<Promocion[]> {
-    return this.http.get<Promocion[]>(this.appiUrl);
+    return this.http.get<Promocion[]>(this.apiUrl);
   }
     
   
