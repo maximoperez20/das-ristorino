@@ -31,11 +31,11 @@ public class RestauranteResource {
     }
 
     /**
-     * GET /api/restaurantes/{id} - Obtener un restaurante por ID
+     * GET /api/restaurantes/{nroRestaurante} - Obtener un restaurante por UUID
      */
-    @GetMapping("/{id}")
-    public ResponseEntity<RestauranteDto> getRestauranteById(@PathVariable Long id) {
-        Optional<RestauranteDto> restaurante = restauranteService.obtenerRestaurantePorId(id);
+    @GetMapping("/{nroRestaurante}")
+    public ResponseEntity<RestauranteDto> getRestauranteById(@PathVariable String nroRestaurante) {
+        Optional<RestauranteDto> restaurante = restauranteService.obtenerRestaurantePorId(nroRestaurante);
         return restaurante.map(ResponseEntity::ok)
                           .orElseGet(() -> ResponseEntity.notFound().build());
     }

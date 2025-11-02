@@ -1,7 +1,22 @@
 openapi: 3.0.1
 info:
   title: API Ristorino
-  description: Portal gastronómico para descubrir y reservar en restaurantes de Córdoba
+  description: |
+    Portal gastronómico para descubrir y reservar en restaurantes de Córdoba.
+    
+    ## Autenticación
+    
+    La API usa autenticación JWT (JSON Web Tokens) stateless. Para acceder a endpoints protegidos:
+    
+    1. Registrar nuevo cliente con `POST /api/clientes/register` o hacer login con `POST /api/clientes/login`
+    2. Obtener el token JWT de la respuesta
+    3. Incluir el token en el header de las requests: `Authorization: Bearer <token>`
+    
+    ## Logout
+    
+    Con JWT stateless no hay sesión del lado del servidor. El logout se realiza del lado del cliente:
+    - Eliminar el token JWT del almacenamiento local (localStorage, cookies, etc.)
+    - No hay endpoint de logout en el servidor ya que el token es independiente del servidor
   version: 1.0.0
   contact:
     name: Equipo DAS - UBP
@@ -13,7 +28,11 @@ servers:
 
 tags:
   - name: Clientes
-    description: Autenticación y gestión de clientes
+    description: |
+      Autenticación y gestión de clientes.
+      
+      **Nota sobre Logout**: Con JWT stateless, el logout es del lado del cliente.
+      Simplemente elimina el token del almacenamiento local. No hay endpoint de logout.
   - name: Promociones
     description: Consulta de promociones y registro de clicks
   - name: Contenidos IA
@@ -42,7 +61,11 @@ paths:
       tags:
         - Clientes
       summary: Registrar nuevo cliente
-      description: Crea un nuevo cliente y retorna un token JWT automáticamente
+      description: |
+        Crea un nuevo cliente y retorna un token JWT automáticamente.
+        
+        El token JWT debe incluirse en el header `Authorization: Bearer <token>` 
+        para acceder a endpoints protegidos.
       security: []
       requestBody:
         required: true
@@ -80,6 +103,35 @@ paths:
       responses:
         '201':
           description: Cliente registrado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Token JWT para autenticación
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  nroCliente:
+                    type: string
+                    format: uuid
+                    description: UUID del cliente
+                  nombre:
+                    type: string
+                    description: Nombre del cliente
+                  apellido:
+                    type: string
+                    description: Apellido del cliente
+                  correo:
+                    type: string
+                    format: email
+                    description: Correo electrónico del cliente
+              example:
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                nroCliente: "12345678-1234-1234-1234-123456789012"
+                nombre: "Juan"
+                apellido: "Pérez"
+                correo: "juan.perez@example.com"
         '400':
           description: Datos inválidos o correo duplicado
         '500':
@@ -90,7 +142,11 @@ paths:
       tags:
         - Clientes
       summary: Iniciar sesión
-      description: Autentica un cliente y retorna un token JWT
+      description: |
+        Autentica un cliente y retorna un token JWT.
+        
+        El token JWT debe incluirse en el header `Authorization: Bearer <token>` 
+        para acceder a endpoints protegidos.
       security: []
       requestBody:
         required: true
@@ -105,13 +161,52 @@ paths:
                 correo:
                   type: string
                   format: email
+                  example: "juan.perez@example.com"
                 password:
                   type: string
+                  example: "miPassword123"
       responses:
         '200':
           description: Login exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Token JWT para autenticación
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  nroCliente:
+                    type: string
+                    format: uuid
+                    description: UUID del cliente
+                  nombre:
+                    type: string
+                    description: Nombre del cliente
+                  apellido:
+                    type: string
+                    description: Apellido del cliente
+                  correo:
+                    type: string
+                    format: email
+                    description: Correo electrónico del cliente
+              example:
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                nroCliente: "12345678-1234-1234-1234-123456789012"
+                nombre: "Juan"
+                apellido: "Pérez"
+                correo: "juan.perez@example.com"
         '401':
           description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Credenciales inválidas"
         '500':
           description: Error interno del servidor
 
@@ -400,20 +495,22 @@ paths:
         '200':
           description: Lista de restaurantes obtenida exitosamente
 
-  /api/restaurantes/{id}:
+  /api/restaurantes/{nroRestaurante}:
     get:
       tags:
         - Restaurantes
-      summary: Obtener restaurante por ID
-      description: Retorna los detalles de un restaurante específico
+      summary: Obtener restaurante por UUID
+      description: Retorna los detalles de un restaurante específico usando su UUID (nroRestaurante)
       security: []
       parameters:
-        - name: id
+        - name: nroRestaurante
           in: path
           required: true
           schema:
-            type: integer
-            format: int64
+            type: string
+            format: uuid
+          description: UUID del restaurante (nro_restaurante)
+          example: "16DEE5C3-9355-4F64-9355-FC79BD28DA63"
       responses:
         '200':
           description: Restaurante encontrado

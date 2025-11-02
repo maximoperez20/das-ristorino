@@ -52,11 +52,11 @@ public class RestauranteRepository {
     }
     
     /**
-     * Obtener restaurante por ID
+     * Obtener restaurante por UUID (nroRestaurante)
      */
-    public Optional<RestauranteDto> findById(Long id) {
+    public Optional<RestauranteDto> findById(String nroRestaurante) {
         String sql = "EXEC sp_ObtenerRestaurantePorId ?";
-        List<RestauranteDto> restaurantes = jdbcTemplate.query(sql, restauranteRowMapper, id);
+        List<RestauranteDto> restaurantes = jdbcTemplate.query(sql, restauranteRowMapper, nroRestaurante);
         return restaurantes.isEmpty() ? Optional.empty() : Optional.of(restaurantes.get(0));
     }
     

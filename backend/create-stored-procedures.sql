@@ -393,7 +393,7 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE sp_ObtenerRestaurantePorId
-    @id BIGINT
+    @nroRestaurante VARCHAR(36)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -412,6 +412,7 @@ BEGIN
         FROM restaurantes r
         LEFT JOIN sucursales_restaurantes s ON s.nro_restaurante = r.nro_restaurante
         LEFT JOIN turnos_sucursales_restaurantes t ON t.nro_restaurante = r.nro_restaurante
+        WHERE r.nro_restaurante = @nroRestaurante
         GROUP BY r.nro_restaurante, r.razon_social
     ), enumerado AS (
         SELECT 
@@ -437,8 +438,7 @@ BEGIN
         CAST(4.0 AS FLOAT) AS calificacion,
         CAST(1 AS BIT) AS activo,
         CAST(NULL AS VARCHAR(255)) AS imagen_url
-    FROM enumerado e
-    WHERE e.id = @id;
+    FROM enumerado e;
 END;
 GO
 

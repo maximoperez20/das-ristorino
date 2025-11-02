@@ -26,10 +26,10 @@ public class RestauranteService {
     }
     
     /**
-     * Obtener restaurante por ID
+     * Obtener restaurante por UUID (nroRestaurante)
      */
-    public Optional<RestauranteDto> obtenerRestaurantePorId(Long id) {
-        return restauranteRepository.findById(id);
+    public Optional<RestauranteDto> obtenerRestaurantePorId(String nroRestaurante) {
+        return restauranteRepository.findById(nroRestaurante);
     }
     
     /**
