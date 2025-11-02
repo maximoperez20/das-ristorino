@@ -1,10 +1,12 @@
 package ar.edu.ubp.das.backend.service;
 
-import ar.edu.ubp.das.backend.client.RestauranteSoapClient;
+import ar.edu.ubp.das.backend.client.RestauranteClient;
+import ar.edu.ubp.das.backend.client.RestauranteClientFactory;
 import ar.edu.ubp.das.backend.dto.ContenidoGeneradoDto;
 import ar.edu.ubp.das.backend.dto.GenerarContenidoRequestDto;
 import ar.edu.ubp.das.backend.dto.RestauranteContextoDto;
-import ar.edu.ubp.das.backend.dto.soap.RegistrarContenidoSoapDto;
+import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
+import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
 import ar.edu.ubp.das.backend.repository.ContenidoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +30,7 @@ public class ContenidoService {
     private OpenAIService openAIService;
 
     @Autowired
-    private RestauranteSoapClient restauranteSoapClient;
+    private RestauranteClientFactory restauranteClientFactory;
 
     @Value("${openai.prompt.id}")
     private String defaultPromptId;
@@ -106,7 +108,7 @@ public class ContenidoService {
         logger.info("Contenido guardado exitosamente con nro_contenido: {}", resultado.getNroContenido());
 
         try {
-            logger.info("Registrando contenido en SOAP del restaurante...");
+            logger.info("Registrando contenido en el sistema del restaurante...");
 
             String codSucursalRestaurante = null;
             if (request.getNroSucursal() != null && !request.getNroSucursal().trim().isEmpty()) {
@@ -115,13 +117,15 @@ public class ContenidoService {
                     request.getNroSucursal()
                 );
                 if (codSucursalRestaurante == null) {
-                    logger.warn("Sucursal encontrada pero cod_sucursal_restaurante es NULL. La sucursal puede no estar sincronizada con el SOAP.");
+                    logger.warn("Sucursal encontrada pero cod_sucursal_restaurante es NULL. La sucursal puede no estar sincronizada con el sistema del restaurante.");
                 } else {
                     logger.info("Cod sucursal restaurante obtenido: {}", codSucursalRestaurante);
                 }
             }
 
-            RegistrarContenidoSoapDto soapResponse = restauranteSoapClient.registrarContenido(
+            RestauranteClient client = restauranteClientFactory.getClient(request.getNroRestaurante());
+            
+            RegistrarContenidoRequest registroRequest = new RegistrarContenidoRequest(
                 request.getNroRestaurante(),
                 codSucursalRestaurante,
                 contenidoGenerado,
@@ -129,24 +133,26 @@ public class ContenidoService {
                 null
             );
 
-            if (soapResponse.isExitoso()) {
-                logger.info("Contenido registrado en SOAP exitosamente. ID del restaurante: {}", 
-                    soapResponse.getNroContenido());
+            RegistrarContenidoResponse response = client.registrarContenido(registroRequest);
+
+            if (response.isExitoso()) {
+                logger.info("Contenido registrado exitosamente. ID del restaurante: {}", 
+                    response.getNroContenido());
                 
                 contenidoRepository.actualizarCodContenidoRestaurante(
                     request.getNroRestaurante(),
                     request.getNroIdioma(),
                     resultado.getNroContenido(),
-                    soapResponse.getNroContenido()
+                    response.getNroContenido()
                 );
                 
                 logger.info("cod_contenido_restaurante actualizado exitosamente");
             } else {
-                logger.warn("El SOAP no pudo registrar el contenido: {}", soapResponse.getMensaje());
+                logger.warn("No se pudo registrar el contenido: {}", response.getMensaje());
             }
             
         } catch (Exception e) {
-            logger.error("Error al registrar contenido en SOAP (continuando de todas formas): {}", 
+            logger.error("Error al registrar contenido en el sistema del restaurante (continuando de todas formas): {}", 
                 e.getMessage(), e);
         }
 

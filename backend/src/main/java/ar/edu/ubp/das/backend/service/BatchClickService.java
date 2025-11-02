@@ -1,8 +1,10 @@
 package ar.edu.ubp.das.backend.service;
 
-import ar.edu.ubp.das.backend.client.RestauranteSoapClient;
+import ar.edu.ubp.das.backend.client.RestauranteClient;
+import ar.edu.ubp.das.backend.client.RestauranteClientFactory;
 import ar.edu.ubp.das.backend.dto.ClickNoNotificadoDto;
-import ar.edu.ubp.das.backend.dto.soap.NotificarClickSoapDto;
+import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickRequest;
+import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickResponse;
 import ar.edu.ubp.das.backend.repository.ClickRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +26,7 @@ public class BatchClickService {
     private ClickRepository clickRepository;
 
     @Autowired
-    private RestauranteSoapClient restauranteSoapClient;
+    private RestauranteClientFactory restauranteClientFactory;
 
     public void procesarClicksNoNotificados() {
         logger.info("========================================");
@@ -58,7 +60,9 @@ public class BatchClickService {
                         continue;
                     }
 
-                    NotificarClickSoapDto response = restauranteSoapClient.notificarClick(
+                    RestauranteClient client = restauranteClientFactory.getClient(click.getNroRestaurante());
+                    
+                    NotificarClickRequest notificarRequest = new NotificarClickRequest(
                             click.getNroRestaurante(),
                             click.getCodContenidoRestaurante(),
                             click.getNroClick(),
@@ -66,6 +70,8 @@ public class BatchClickService {
                             click.getNroCliente(),
                             click.getCostoClick()
                     );
+
+                    NotificarClickResponse response = client.notificarClick(notificarRequest);
 
                     if (response.isExitoso()) {
                         clickRepository.marcarClickComoNotificado(
