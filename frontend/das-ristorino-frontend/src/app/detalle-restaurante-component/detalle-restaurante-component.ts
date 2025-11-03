@@ -1,10 +1,11 @@
 import { Component, OnInit} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Restaurante, restaurantesLista } from '../data/restaurantes.mock';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-detalle-restaurante-component',
-  imports: [],
+  imports: [NgClass],
   templateUrl: './detalle-restaurante-component.html',
   styleUrl: './detalle-restaurante-component.scss',
 })
@@ -19,7 +20,7 @@ export class DetalleRestauranteComponent implements OnInit{
 
   ngOnInit(): void {
     this._route.params.subscribe(params => {
-      this.restaurante = this.restaurantesLista.find(r => r.id == params['restauranteId']);
+      this.restaurante = this.restaurantesLista.find(r => r.id == params['nroRestaurante']);
       console.log(this.restaurante);
     });
   }

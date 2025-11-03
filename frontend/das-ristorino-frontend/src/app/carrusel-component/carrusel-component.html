@@ -23,7 +23,7 @@
                                 Vigencia hasta: {{ promocion.fechaFin | date:'short' }}
                             </p>
                             <a class="btn btn-primary" (click)="registrarClickPromocion(promocion)"
-                                [routerLink]="['/promociones', promocion.codigoPromocion]">
+                                [routerLink]="['/restaurantes', promocion.nroRestaurante]">
                                 Ver promoción
                             </a>
                         </div>

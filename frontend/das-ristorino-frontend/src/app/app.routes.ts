@@ -8,7 +8,7 @@ export const routes: Routes = [
     {path: '', component: HomeComponent},
     {path: 'carrusel', component: CarruselComponent},
     {path: 'restaurantes', component: RestaurantesComponent},
-    {path: 'restaurantes/:restauranteId', component: DetalleRestauranteComponent},
+    {path: 'restaurantes/:nroRestaurante', component: DetalleRestauranteComponent},
     {path: '**', redirectTo: ''} // Ruta para manejar rutas no definidas
 
 

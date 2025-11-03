@@ -1,0 +1,59 @@
+@if(restaurante) {
+<div class="container py-5">
+    <div class="card shadow-lg mx-auto" style="max-width: 700px;">
+        <div class="row g-0">
+            <!-- Imagen -->
+            <div class="col-md-5">
+                <img [src]="restaurante.imagenUrl || 'https://picsum.photos/seed/' + restaurante.id + '/500/400'"
+                    class="img-fluid rounded-start h-100" alt="{{ restaurante.nombre }}" />
+            </div>
+
+            <!-- Datos -->
+            <div class="col-md-7">
+                <div class="card-body">
+                    <h3 class="card-title mb-3">{{ restaurante.nombre }}</h3>
+                    <p class="text-muted mb-2">
+                        <i class="bi bi-geo-alt-fill"></i> {{ restaurante.direccion }}
+                    </p>
+
+                    <p class="mb-2"><strong>Teléfono:</strong> {{ restaurante.telefono || 'No disponible' }}</p>
+                    <p class="mb-2"><strong>Email:</strong> {{ restaurante.email || 'No disponible' }}</p>
+                    <p class="mb-2"><strong>Categoría:</strong> {{ restaurante.categoria || 'Sin categoría' }}</p>
+                    <p class="mb-2"><strong>Capacidad:</strong> {{ restaurante.capacidad }} personas</p>
+                    <p class="mb-2">
+                        <strong>Horario:</strong> {{ restaurante.horarioApertura }} - {{ restaurante.horarioCierre }}
+                    </p>
+                    <p class="mb-2">
+                        <strong>Días de atención:</strong> {{ restaurante.diasAtencion || 'No especificado' }}
+                    </p>
+
+                    @if (restaurante.activo) {
+                    <span class="badge bg-success mt-2">Activo</span>
+                    } @else {
+                    <span class="badge bg-secondary mt-2">Inactivo</span>
+                    }
+
+                    <div class="mt-4">
+                        <p class="mb-1"><strong>Calificación:</strong></p>
+                        @if (restaurante.calificacion !== undefined && restaurante.calificacion !== null) {
+                        @for (star of [1,2,3,4,5]; track star) {
+                        <i class="bi"
+                            [ngClass]="star <= restaurante.calificacion! ? 'bi-star-fill text-warning' : 'bi-star text-muted'">
+                        </i>
+                        }
+                        } @else {
+                        <span class="text-muted">Sin calificación</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}@else {
+<div class="container py-5">
+    <div class="alert alert-warning text-center" role="alert">
+        Restaurante no encontrado.
+    </div>
+</div>
+}
