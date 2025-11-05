@@ -6,27 +6,16 @@ import jakarta.xml.bind.annotation.*;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class NotificarClickSoapDto {
 
-    @XmlElement(name = "exitoso", namespace = "http://das.ubp.edu.ar/restaurante", required = true)
-    private boolean exitoso;
-
-    @XmlElement(name = "mensaje", namespace = "http://das.ubp.edu.ar/restaurante", required = true)
-    private String mensaje;
+    @XmlElement(name = "jsonResponse", namespace = "http://das.ubp.edu.ar/restaurante", required = true)
+    private String jsonResponse;
 
     public NotificarClickSoapDto() {}
 
-    public boolean isExitoso() {
-        return exitoso;
+    public String getJsonResponse() {
+        return jsonResponse;
     }
 
-    public void setExitoso(boolean exitoso) {
-        this.exitoso = exitoso;
-    }
-
-    public String getMensaje() {
-        return mensaje;
-    }
-
-    public void setMensaje(String mensaje) {
-        this.mensaje = mensaje;
+    public void setJsonResponse(String jsonResponse) {
+        this.jsonResponse = jsonResponse;
     }
 }
