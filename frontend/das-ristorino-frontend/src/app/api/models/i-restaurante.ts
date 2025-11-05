@@ -1,4 +1,4 @@
-export const restaurantesLista: Restaurante[] = [
+export const restaurantesLista: IRestaurante[] = [
   {
         "id": "16DEE5C3-9355-4F64-9355-FC79BD28DA63",
         "nombre": "Los Aroza SRL",
@@ -17,7 +17,7 @@ export const restaurantesLista: Restaurante[] = [
     }
 ]
 
-export interface Restaurante {
+export interface IRestaurante {
   id: string;
   nombre: string;
   direccion: string;

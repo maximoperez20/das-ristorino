@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterLink } from "@angular/router";
-import { PromocionService } from '../promocion-service';
+import { PromocionService } from '../../services/promocion-service';
 import { DatePipe } from '@angular/common';
-import { Promocion, promocionesLista } from '../data/promociones.mock';
+import { Promocion } from '../../api/models/promociones.mock';
 
 
 @Component({

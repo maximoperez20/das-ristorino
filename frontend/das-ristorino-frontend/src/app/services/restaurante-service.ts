@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Restaurante } from './data/restaurantes.mock';
+import { Restaurante } from '../api/models/i-restaurante';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -13,6 +13,10 @@ export class RestauranteService {
 
   obtenerRestaurantes(): Observable<Restaurante[]> {
     return this.http.get<Restaurante[]>(this.apiUrl);
+  }
+
+  obtenerRestaurantePorId(id: string): Observable<Restaurante | undefined> {
+    return this.http.get<Restaurante | undefined>(`${this.apiUrl}/${id}`);
   }
   
   

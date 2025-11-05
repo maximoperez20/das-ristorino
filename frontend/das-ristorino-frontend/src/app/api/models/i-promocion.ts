@@ -1,4 +1,4 @@
-export const promocionesLista: Promocion[] = [
+export const promocionesLista: IPromocion[] = [
   // {
   //   "nroRestaurante": "16DEE5C3-9355-4F64-9355-FC79BD28DA63",
   //   "nroIdioma": "2219E244-8413-474D-ABFC-8EDDD06ED2EB",
@@ -52,7 +52,7 @@ export const promocionesLista: Promocion[] = [
   // }
 ];
 
-export interface Promocion {
+export interface IPromocion {
   nroRestaurante: string;
   nroIdioma: string;
   nroContenido: string;

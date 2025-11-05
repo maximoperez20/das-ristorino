@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { restaurantesLista} from '../data/restaurantes.mock';
+import { restaurantesLista} from '../../api/models/i-restaurante';
 @Component({
   selector: 'app-restaurantes-component',
   imports: [],

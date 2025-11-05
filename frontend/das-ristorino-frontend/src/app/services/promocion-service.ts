@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/internal/Observable';
-import { Promocion } from './data/promociones.mock';
+import { Promocion } from '../api/models/promociones.mock';
 
 @Injectable({
   providedIn: 'root'
