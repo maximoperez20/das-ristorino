@@ -5,14 +5,14 @@ import { NgClass } from '@angular/common';
 import { RestauranteService } from '../../services/restaurante-service';
 
 @Component({
-  selector: 'app-detalle-restaurante-component',
+  selector: 'app-detalle-restaurante',
   imports: [NgClass],
-  templateUrl: './detalle-restaurante-component.html',
-  styleUrl: './detalle-restaurante-component.scss',
+  templateUrl: './detalle-restaurante.html',
+  styleUrl: './detalle-restaurante.scss',
 })
-export class DetalleRestauranteComponent implements OnInit{
+export class DetalleRestauranteComponent implements OnInit {
 
-  restaurante?: IRestaurante;
+      restaurante?: IRestaurante;
   restaurantesLista = restaurantesLista;
 
   restauranteId: string ="";
@@ -25,9 +25,6 @@ export class DetalleRestauranteComponent implements OnInit{
       this.restaurante = this.restaurantesLista.find(r => r.id == params['nroRestaurante']);
       console.log(this.restaurante);
     });
-
-  }
-    
-
+ }
 
 }

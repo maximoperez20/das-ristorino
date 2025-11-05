@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Restaurante } from '../api/models/i-restaurante';
+import { IRestaurante } from '../api/models/i-restaurante';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -11,12 +11,12 @@ export class RestauranteService {
 
   constructor(private http: HttpClient) { }
 
-  obtenerRestaurantes(): Observable<Restaurante[]> {
-    return this.http.get<Restaurante[]>(this.apiUrl);
+  obtenerRestaurantes(): Observable<IRestaurante[]> {
+    return this.http.get<IRestaurante[]>(this.apiUrl);
   }
 
-  obtenerRestaurantePorId(id: string): Observable<Restaurante | undefined> {
-    return this.http.get<Restaurante | undefined>(`${this.apiUrl}/${id}`);
+  obtenerRestaurantePorId(id: string): Observable<IRestaurante | undefined> {
+    return this.http.get<IRestaurante | undefined>(`${this.apiUrl}/${id}`);
   }
   
   

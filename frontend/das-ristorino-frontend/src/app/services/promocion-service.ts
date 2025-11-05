@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/internal/Observable';
-import { Promocion } from '../api/models/promociones.mock';
+import { IPromocion } from '../api/models/i-promocion';
 
 @Injectable({
   providedIn: 'root'
@@ -12,8 +12,8 @@ export class PromocionService {
 
   constructor(private http: HttpClient) { }
 
-  obtenerPromociones(): Observable<Promocion[]> {
-    return this.http.get<Promocion[]>(this.apiUrl);
+  obtenerPromociones(): Observable<IPromocion[]> {
+    return this.http.get<IPromocion[]>(this.apiUrl);
   }
 
   /** Registra un click sobre una promoción */
