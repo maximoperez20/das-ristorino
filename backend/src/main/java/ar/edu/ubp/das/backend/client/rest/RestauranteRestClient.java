@@ -5,6 +5,7 @@ import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
+import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,20 +17,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Implementación REST de RestauranteClient.
- * Realiza llamadas HTTP REST al sistema del restaurante.
+ * 
+ * NOTA: Este cliente envía y recibe JSON usando Gson (igual que SOAP) para facilitar
+ * modificaciones futuras sin necesidad de IA. Los DTOs genéricos se serializan
+ * a JSON usando Gson, y solo se realizan conversiones especiales cuando es necesario
+ * (imagen a base64, fecha a ISO string).
  */
 @Component
 public class RestauranteRestClient implements RestauranteClient {
 
     private static final Logger logger = LoggerFactory.getLogger(RestauranteRestClient.class);
+    private static final DateTimeFormatter ISO_DATE_TIME = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     private final RestTemplate restTemplate;
+    private final Gson gson = new Gson();
 
     @Value("${rest.restaurante.baseUrl:http://localhost:8082/api}")
     private String baseUrl;
@@ -54,29 +62,50 @@ public class RestauranteRestClient implements RestauranteClient {
         try {
             String url = baseUrl + "/restaurantes/" + request.getNroRestaurante() + "/contenidos";
 
-            Map<String, Object> body = new HashMap<>();
-            if (request.getNroSucursal() != null) {
-                body.put("nroSucursal", request.getNroSucursal());
-            }
-            body.put("contenidoAPublicar", request.getContenidoAPublicar());
+            // ============================================
+            // CONSTRUCCIÓN DEL JSON A ENVIAR
+            // ============================================
+            // Para agregar/modificar campos JSON, editar el Map jsonData abajo.
+            // Los campos disponibles en request son:
+            // - nroRestaurante (String)
+            // - nroSucursal (String, opcional)
+            // - contenidoAPublicar (String)
+            // - imagenAPublicar (byte[], se convierte a base64)
+            // - costoClick (BigDecimal, opcional)
+            // ============================================
+            
+            Map<String, Object> jsonData = new HashMap<>();
+            jsonData.put("nroRestaurante", request.getNroRestaurante());
+            jsonData.put("nroSucursal", request.getNroSucursal());
+            jsonData.put("contenidoAPublicar", request.getContenidoAPublicar());
             if (request.getImagenAPublicar() != null) {
-                body.put("imagenAPublicar", Base64.getEncoder().encodeToString(request.getImagenAPublicar()));
+                // Convertir imagen a base64 string para JSON
+                jsonData.put("imagenAPublicar", Base64.getEncoder().encodeToString(request.getImagenAPublicar()));
             }
-            if (request.getCostoClick() != null) {
-                body.put("costoClick", request.getCostoClick());
-            }
+            jsonData.put("costoClick", request.getCostoClick());
+            // AGREGAR NUEVOS CAMPOS AQUÍ: jsonData.put("nuevoCampo", valor);
+            
+            String jsonString = gson.toJson(jsonData);
+            logger.info("JSON a enviar: {}", jsonString);
 
             HttpHeaders headers = createHeaders();
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+            HttpEntity<String> entity = new HttpEntity<>(jsonString, headers);
 
-            ResponseEntity<RegistrarContenidoResponse> response = restTemplate.exchange(
+            ResponseEntity<String> response = restTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     entity,
-                    RegistrarContenidoResponse.class
+                    String.class
             );
 
-            RegistrarContenidoResponse result = response.getBody();
+            // Parsear respuesta JSON con GSON (consistente con SOAP)
+            String responseBody = response.getBody();
+            logger.info("Respuesta JSON recibida: {}", responseBody);
+            
+            RegistrarContenidoResponse result = gson.fromJson(
+                    responseBody != null ? responseBody : "{}",
+                    RegistrarContenidoResponse.class
+            );
             if (result != null && result.isExitoso()) {
                 logger.info("Contenido registrado vía REST exitosamente. ID: {}", result.getNroContenido());
             } else {
@@ -100,27 +129,49 @@ public class RestauranteRestClient implements RestauranteClient {
             String url = baseUrl + "/restaurantes/" + request.getNroRestaurante() + 
                         "/contenidos/" + request.getNroContenido() + "/clicks";
 
-            Map<String, Object> body = new HashMap<>();
-            body.put("nroClick", request.getNroClick());
-            body.put("fechaHoraRegistro", request.getFechaHoraRegistro());
-            if (request.getNroCliente() != null) {
-                body.put("nroCliente", request.getNroCliente());
-            }
-            if (request.getCostoClick() != null) {
-                body.put("costoClick", request.getCostoClick());
-            }
+            // ============================================
+            // CONSTRUCCIÓN DEL JSON A ENVIAR
+            // ============================================
+            // Para agregar/modificar campos JSON, editar el Map jsonData abajo.
+            // Los campos disponibles en request son:
+            // - nroRestaurante (String)
+            // - nroContenido (String)
+            // - nroClick (String)
+            // - fechaHoraRegistro (LocalDateTime, se convierte a ISO string)
+            // - nroCliente (String, opcional)
+            // - costoClick (BigDecimal, opcional)
+            // ============================================
+            
+            Map<String, Object> jsonData = new HashMap<>();
+            jsonData.put("nroRestaurante", request.getNroRestaurante());
+            jsonData.put("nroContenido", request.getNroContenido());
+            jsonData.put("nroClick", request.getNroClick());
+            jsonData.put("fechaHoraRegistro", request.getFechaHoraRegistro().format(ISO_DATE_TIME));
+            jsonData.put("nroCliente", request.getNroCliente());
+            jsonData.put("costoClick", request.getCostoClick());
+            // AGREGAR NUEVOS CAMPOS AQUÍ: jsonData.put("nuevoCampo", valor);
+            
+            String jsonString = gson.toJson(jsonData);
+            logger.info("JSON a enviar: {}", jsonString);
 
             HttpHeaders headers = createHeaders();
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+            HttpEntity<String> entity = new HttpEntity<>(jsonString, headers);
 
-            ResponseEntity<NotificarClickResponse> response = restTemplate.exchange(
+            ResponseEntity<String> response = restTemplate.exchange(
                     url,
                     HttpMethod.POST,
                     entity,
-                    NotificarClickResponse.class
+                    String.class
             );
 
-            NotificarClickResponse result = response.getBody();
+            // Parsear respuesta JSON con GSON (consistente con SOAP)
+            String responseBody = response.getBody();
+            logger.info("Respuesta JSON recibida: {}", responseBody);
+            
+            NotificarClickResponse result = gson.fromJson(
+                    responseBody != null ? responseBody : "{}",
+                    NotificarClickResponse.class
+            );
             if (result != null && result.isExitoso()) {
                 logger.info("Click notificado vía REST exitosamente");
             } else {
