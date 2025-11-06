@@ -8,7 +8,7 @@ import { RestauranteService } from '../../services/restaurante-service';
   selector: 'app-detalle-restaurante',
   imports: [NgClass],
   templateUrl: './detalle-restaurante.html',
-  styleUrl: './detalle-restaurante.scss',
+  styleUrls: ['./detalle-restaurante.scss'],
 })
 export class DetalleRestauranteComponent implements OnInit {
 

@@ -4,8 +4,8 @@ import { Component } from '@angular/core';
   selector: 'app-restaurantes',
   imports: [],
   templateUrl: './restaurantes.html',
-  styleUrl: './restaurantes.scss',
+  styleUrls: ['./restaurantes.scss'],
 })
-export class RestaurantesComponent {
+export class RestaurantesPage {
 
 }

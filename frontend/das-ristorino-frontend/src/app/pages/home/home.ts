@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { NavbarComponent } from '../navbar/navbar';  
+import { HeaderComponent } from '../../components/header/header';  
 
 @Component({
   selector: 'app-home',
-  imports: [RouterOutlet, NavbarComponent],
+  imports: [RouterOutlet, HeaderComponent],
   templateUrl: './home.html',
   styleUrls: ['./home.scss'],
 })
-export class HomeComponent {
+export class HomePage {
 
 }
