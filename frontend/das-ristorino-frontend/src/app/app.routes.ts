@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { HomePage } from './pages/home/home';
 import { PromocionesPage } from './pages/promociones/promociones';
 import { DetalleRestauranteComponent } from './components/detalle-restaurante/detalle-restaurante';
+import { RestauranteResolver } from './resolvers/restaurante.resolver';
 import { RestaurantesPage } from './pages/restaurantes/restaurantes';
 
 export const routes: Routes = [
@@ -9,7 +10,7 @@ export const routes: Routes = [
         children:[
             {path: '', component: PromocionesPage},
             {path: 'restaurantes', component: RestaurantesPage},
-            {path: 'restaurantes/:nroRestaurante', component: DetalleRestauranteComponent},
+            {path: 'restaurantes/:nroRestaurante', component: DetalleRestauranteComponent, resolve: { restaurante: RestauranteResolver}},
             {path: '**', redirectTo: ''} // Ruta para manejar rutas no definidas dentro de home
 
         ],

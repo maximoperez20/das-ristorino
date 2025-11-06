@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
-import { PromocionService } from '../../services/promocion-service';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule} from '@angular/common';
 import { IPromocion } from '../../api/models/i-promocion';
 import { PromocionComponent } from '../../components/promocion/promocion';
+import { PromocionResource } from '../../api/resources/promocion-resource';
 
 @Component({
   selector: 'app-promociones',
@@ -11,12 +11,13 @@ import { PromocionComponent } from '../../components/promocion/promocion';
   styleUrls: ['./promociones.scss'],
 })
 export class PromocionesPage implements OnInit {
-
-  constructor(private _promocionService: PromocionService) { }
   
     promocionesLista: IPromocion[] = [];
     agrupadas: IPromocion[][] = [];
-    
+
+    // Inyectar el servicio de promociones (sintaxis moderna)
+    private _promocionResource = inject(PromocionResource);
+
     ngOnInit(): void {
       this.cargarPromociones();
     }
@@ -36,7 +37,7 @@ export class PromocionesPage implements OnInit {
     // }
 
     cargarPromociones() {
-  this._promocionService.obtenerPromociones().subscribe({
+  this._promocionResource.obtenerPromociones().subscribe({
     next: (data) => {
       this.promocionesLista = data;
       this.agrupadas = [];
@@ -46,15 +47,13 @@ export class PromocionesPage implements OnInit {
     },
   });
 }
-
-    
+  
     registrarClickPromocion(promocion: IPromocion) {
-    this._promocionService
-      .registrarClickPromocion(
-        promocion.nroRestaurante,
-        promocion.nroIdioma,
-        promocion.nroContenido
-      )
+    this._promocionResource.registrarClick({
+        nroRestaurante: promocion.nroRestaurante.toString(),
+        nroIdioma: promocion.nroIdioma.toString(),
+        nroContenido: promocion.nroContenido.toString()
+      })
       .subscribe({
         next: () => console.log('Click registrado correctamente'),
         error: (err) => console.error('Error registrando click', err)

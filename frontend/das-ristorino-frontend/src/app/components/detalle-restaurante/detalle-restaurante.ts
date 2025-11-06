@@ -1,8 +1,7 @@
-import { Component, OnInit} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { IRestaurante, restaurantesLista } from '../../api/models/i-restaurante';
+import { IRestaurante } from '../../api/models/i-restaurante';
 import { NgClass } from '@angular/common';
-import { RestauranteService } from '../../services/restaurante-service';
 
 @Component({
   selector: 'app-detalle-restaurante',
@@ -12,19 +11,16 @@ import { RestauranteService } from '../../services/restaurante-service';
 })
 export class DetalleRestauranteComponent implements OnInit {
 
-      restaurante?: IRestaurante;
-  restaurantesLista = restaurantesLista;
+  restaurante?: IRestaurante | undefined;
 
-  restauranteId: string ="";
-
-  constructor(private _route: ActivatedRoute, private _restauranteService: RestauranteService) { }
+  constructor(private _route: ActivatedRoute) { }
 
   ngOnInit(): void {
-
-    this._route.params.subscribe(params => {
-      this.restaurante = this.restaurantesLista.find(r => r.id == params['nroRestaurante']);
-      console.log(this.restaurante);
+    // Obtener el restaurante resuelto por el RestauranteResolver
+    this._route.data.subscribe(data => {
+      this.restaurante = data['restaurante'];
+      console.log('Restaurante resuelto:', this.restaurante);
     });
- }
+  }
 
 }

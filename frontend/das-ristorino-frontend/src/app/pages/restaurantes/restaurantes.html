@@ -1,1 +1,8 @@
-<p>restaurantes works!</p>
+<p>Aca se van a mostrar los restaurantes.</p>
+<ul>
+    @for (restaurante of restaurantesLista; track restaurante.id) {
+    <li>
+        {{ restaurante.nombre }}
+    </li>
+    }
+</ul>

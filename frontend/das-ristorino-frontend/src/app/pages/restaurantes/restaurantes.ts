@@ -1,4 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { IRestaurante } from '../../api/models/i-restaurante';
+import { RestauranteResource } from '../../api/resources/restaurante-resource';
 
 @Component({
   selector: 'app-restaurantes',
@@ -6,6 +8,22 @@ import { Component } from '@angular/core';
   templateUrl: './restaurantes.html',
   styleUrls: ['./restaurantes.scss'],
 })
-export class RestaurantesPage {
+export class RestaurantesPage implements OnInit {
 
+  restaurantesLista: IRestaurante[] = [];
+
+  private _restauranteResource = inject(RestauranteResource);
+
+  ngOnInit(): void {
+    this.cargarRestaurantes();
+  }
+
+  cargarRestaurantes() {
+    this._restauranteResource.obtenerRestaurantes().subscribe({
+      next: (data) => {
+        this.restaurantesLista = data;
+      },
+    });
+  }
+  
 }
