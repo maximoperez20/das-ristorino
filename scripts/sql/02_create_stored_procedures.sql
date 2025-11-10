@@ -714,7 +714,7 @@ GO
 -- =====================================================
 CREATE OR ALTER PROCEDURE sp_RegistrarClickPromocion
     @nro_restaurante VARCHAR(36),
-    @nro_idioma VARCHAR(36),
+    @nro_idioma INT,
     @nro_contenido VARCHAR(36),
     @nro_cliente VARCHAR(36) = NULL
 AS
@@ -776,7 +776,7 @@ GO
 CREATE OR ALTER PROCEDURE sp_GuardarContenidoGenerado
     @nro_restaurante VARCHAR(36),
     @nro_sucursal VARCHAR(36) = NULL,
-    @nro_idioma VARCHAR(36),
+    @nro_idioma INT,
     @contenido_generado VARCHAR(MAX)
 AS
 BEGIN
@@ -836,7 +836,7 @@ GO
 -- =====================================================
 CREATE OR ALTER PROCEDURE sp_ActualizarCodContenidoRestaurante
     @nro_restaurante VARCHAR(36),
-    @nro_idioma VARCHAR(36),
+    @nro_idioma INT,
     @nro_contenido VARCHAR(36),
     @cod_contenido_restaurante VARCHAR(40)
 AS
@@ -897,7 +897,7 @@ GO
 -- =====================================================
 CREATE OR ALTER PROCEDURE sp_MarcarClickComoNotificado
     @nro_restaurante VARCHAR(36),
-    @nro_idioma VARCHAR(36),
+    @nro_idioma INT,
     @nro_contenido VARCHAR(36),
     @nro_click VARCHAR(36)
 AS

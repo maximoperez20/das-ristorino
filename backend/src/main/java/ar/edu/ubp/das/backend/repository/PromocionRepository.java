@@ -29,7 +29,7 @@ public class PromocionRepository {
             
             // UUIDs (claves reales de la BD)
             promocion.setNroRestaurante(rs.getString("nro_restaurante"));
-            promocion.setNroIdioma(rs.getString("nro_idioma"));
+            promocion.setNroIdioma(rs.getInt("nro_idioma"));
             promocion.setNroContenido(rs.getString("nro_contenido"));
             
             promocion.setTitulo(rs.getString("titulo"));

@@ -8,7 +8,7 @@ public class PromocionDto {
     
     // UUIDs de la base de datos (claves reales)
     private String nroRestaurante;
-    private String nroIdioma;
+    private Integer nroIdioma;
     private String nroContenido;
     
     @NotBlank(message = "El título es obligatorio")
@@ -60,11 +60,11 @@ public class PromocionDto {
         this.nroRestaurante = nroRestaurante;
     }
     
-    public String getNroIdioma() {
+    public Integer getNroIdioma() {
         return nroIdioma;
     }
-    
-    public void setNroIdioma(String nroIdioma) {
+
+    public void setNroIdioma(Integer nroIdioma) {
         this.nroIdioma = nroIdioma;
     }
     

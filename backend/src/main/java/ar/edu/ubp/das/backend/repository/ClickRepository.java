@@ -28,7 +28,7 @@ public class ClickRepository {
             ClickResponseDto click = new ClickResponseDto();
             click.setNroClick(rs.getString("nro_click"));
             click.setNroRestaurante(rs.getString("nro_restaurante"));
-            click.setNroIdioma(rs.getString("nro_idioma"));
+            click.setNroIdioma(rs.getInt("nro_idioma"));
             click.setNroContenido(rs.getString("nro_contenido"));
             click.setFechaHoraRegistro(rs.getTimestamp("fecha_hora_registro").toLocalDateTime());
             click.setNroCliente(rs.getString("nro_cliente"));
@@ -49,7 +49,7 @@ public class ClickRepository {
     /**
      * Registrar un click en una promoción/contenido
      */
-    public ClickResponseDto registrarClick(String nroRestaurante, String nroIdioma, String nroContenido, String nroCliente) {
+    public ClickResponseDto registrarClick(String nroRestaurante, Integer nroIdioma, String nroContenido, String nroCliente) {
         String sql = "EXEC sp_RegistrarClickPromocion ?, ?, ?, ?";
         
         List<ClickResponseDto> clicks = jdbcTemplate.query(sql, clickRowMapper, 
@@ -67,7 +67,7 @@ public class ClickRepository {
         return jdbcTemplate.query(sql, (rs, rowNum) -> {
             ClickNoNotificadoDto dto = new ClickNoNotificadoDto();
             dto.setNroRestaurante(rs.getString("nro_restaurante"));
-            dto.setNroIdioma(rs.getString("nro_idioma"));
+            dto.setNroIdioma(rs.getInt("nro_idioma"));
             dto.setNroContenido(rs.getString("nro_contenido"));
             dto.setNroClick(rs.getString("nro_click"));
             
@@ -92,7 +92,7 @@ public class ClickRepository {
     /**
      * Marca un click como notificado
      */
-    public void marcarClickComoNotificado(String nroRestaurante, String nroIdioma, String nroContenido, String nroClick) {
+    public void marcarClickComoNotificado(String nroRestaurante, Integer nroIdioma, String nroContenido, String nroClick) {
         String sql = "EXEC sp_MarcarClickComoNotificado ?, ?, ?, ?";
         
         jdbcTemplate.update(sql, nroRestaurante, nroIdioma, nroContenido, nroClick);

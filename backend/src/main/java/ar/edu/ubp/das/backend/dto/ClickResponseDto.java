@@ -9,7 +9,7 @@ public class ClickResponseDto {
     
     private String nroClick;
     private String nroRestaurante;
-    private String nroIdioma;
+    private Integer nroIdioma;
     private String nroContenido;
     private LocalDateTime fechaHoraRegistro;
     private String nroCliente;
@@ -36,11 +36,11 @@ public class ClickResponseDto {
         this.nroRestaurante = nroRestaurante;
     }
     
-    public String getNroIdioma() {
+    public Integer getNroIdioma() {
         return nroIdioma;
     }
-    
-    public void setNroIdioma(String nroIdioma) {
+
+    public void setNroIdioma(Integer nroIdioma) {
         this.nroIdioma = nroIdioma;
     }
     

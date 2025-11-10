@@ -1,6 +1,7 @@
 package ar.edu.ubp.das.backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -12,9 +13,8 @@ public class RegistrarClickDto {
     @Size(max = 36, message = "El número de restaurante no puede exceder 36 caracteres")
     private String nroRestaurante;
     
-    @NotBlank(message = "El número de idioma es obligatorio")
-    @Size(max = 36, message = "El número de idioma no puede exceder 36 caracteres")
-    private String nroIdioma;
+    @NotNull(message = "El número de idioma es obligatorio")
+    private Integer nroIdioma;
     
     @NotBlank(message = "El número de contenido es obligatorio")
     @Size(max = 36, message = "El número de contenido no puede exceder 36 caracteres")
@@ -27,7 +27,7 @@ public class RegistrarClickDto {
     // Constructores
     public RegistrarClickDto() {}
     
-    public RegistrarClickDto(String nroRestaurante, String nroIdioma, String nroContenido, String nroCliente) {
+    public RegistrarClickDto(String nroRestaurante, Integer nroIdioma, String nroContenido, String nroCliente) {
         this.nroRestaurante = nroRestaurante;
         this.nroIdioma = nroIdioma;
         this.nroContenido = nroContenido;
@@ -43,11 +43,11 @@ public class RegistrarClickDto {
         this.nroRestaurante = nroRestaurante;
     }
     
-    public String getNroIdioma() {
+    public Integer getNroIdioma() {
         return nroIdioma;
     }
-    
-    public void setNroIdioma(String nroIdioma) {
+
+    public void setNroIdioma(Integer nroIdioma) {
         this.nroIdioma = nroIdioma;
     }
     

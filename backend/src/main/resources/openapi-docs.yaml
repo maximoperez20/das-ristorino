@@ -224,9 +224,8 @@ components:
           format: uuid
           description: UUID del restaurante
         nroIdioma:
-          type: string
-          format: uuid
-          description: UUID del idioma
+          type: integer
+          description: ID del idioma (número entero incremental: 0, 1, 2, 3...)
         nroContenido:
           type: string
           format: uuid
@@ -547,8 +546,7 @@ paths:
                   type: string
                   maxLength: 36
                 nroIdioma:
-                  type: string
-                  maxLength: 36
+                  type: integer
                 nroContenido:
                   type: string
                   maxLength: 36
@@ -632,15 +630,13 @@ paths:
                   description: UUID de la sucursal (opcional, si no se especifica se usa info general)
                   example: "A1B2C3D4-E5F6-7890-1234-567890ABCDEF"
                 nroIdioma:
-                  type: string
-                  format: uuid
-                  maxLength: 36
+                  type: integer
                   description: |
-                    UUID del idioma (obligatorio).
+                    ID del idioma (obligatorio). Es un número entero incremental (0, 1, 2, 3...).
                     El sistema consulta la tabla `idiomas` para obtener el código del idioma (cod_idioma, ej: es-AR, en-US, pt-BR)
                     y genera el contenido publicitario en ese idioma.
                     El texto generado por OpenAI será en el idioma correspondiente al `nroIdioma` especificado.
-                  example: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+                  example: 0
                 contextoAdicional:
                   type: string
                   maxLength: 500
@@ -659,19 +655,19 @@ paths:
                 summary: Generar con prompt por defecto (mínimo)
                 value:
                   nroRestaurante: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
-                  nroIdioma: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+                  nroIdioma: 0
               sucursal_especifica:
                 summary: Generar para sucursal específica con contexto
                 value:
                   nroRestaurante: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
                   nroSucursal: "A1B2C3D4-E5F6-7890-1234-567890ABCDEF"
-                  nroIdioma: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+                  nroIdioma: 0
                   contextoAdicional: "Mencionar la experiencia única y el nuevo menú degustación"
               con_prompt_personalizado:
                 summary: Usar un prompt diferente al configurado
                 value:
                   nroRestaurante: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
-                  nroIdioma: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+                  nroIdioma: 0
                   promptId: "pmpt_OTRO_PROMPT_ID_DIFERENTE"
                   contextoAdicional: "Enfocado en eventos corporativos y reuniones de negocios"
       responses:
@@ -722,7 +718,7 @@ paths:
               example:
                 nroRestaurante: "5EF73536-5316-4D1E-9AD1-E78BEA0F4273"
                 nroSucursal: "A1B2C3D4-E5F6-7890-1234-567890ABCDEF"
-                nroIdioma: "F1E2D3C4-B5A6-9876-5432-10FEDCBA9876"
+                nroIdioma: 0
                 nroContenido: "X1Y2Z3W4-V5U6-7890-ABCD-EF1234567890"
                 nombreRestaurante: "Los Aroza SRL"
                 nombreSucursal: "Los Aroza - Centro"
@@ -842,7 +838,7 @@ paths:
                     minToleranciaReserva: 15
                 promociones:
                   - nroRestaurante: "16DEE5C3-9355-4F64-9355-FC79BD28DA63"
-                    nroIdioma: "2219E244-8413-474D-ABFC-8EDDD06ED2EB"
+                    nroIdioma: 0
                     nroContenido: "7F0B1753-47A0-4DAD-9981-B4AAE13CCA90"
                     titulo: "¡Descuento especial en sushi!"
                     descripcion: "20% de descuento en pedidos de sushi para grupos de 4 o más personas..."

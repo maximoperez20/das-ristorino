@@ -80,7 +80,7 @@ GO
    Idiomas
    =========================== */
 CREATE TABLE dbo.idiomas (
-  nro_idioma  VARCHAR(36)  NOT NULL DEFAULT NEWID(),
+  nro_idioma  INT  NOT NULL IDENTITY(0,1),
   nom_idioma  NVARCHAR(80) NOT NULL,
   cod_idioma  VARCHAR(16) NOT NULL, -- ej.: es-AR, en-US
   CONSTRAINT PK_idiomas PRIMARY KEY (nro_idioma),
@@ -178,7 +178,7 @@ GO
 
 CREATE TABLE dbo.idiomas_categorias_preferencias (
   cod_categoria  VARCHAR(36)   NOT NULL,
-  nro_idioma     VARCHAR(36)   NOT NULL,
+  nro_idioma     INT   NOT NULL,
   categoria      NVARCHAR(120) NOT NULL,
   desc_categoria NVARCHAR(400) NULL,
   CONSTRAINT PK_idiomas_cat PRIMARY KEY (cod_categoria, nro_idioma),
@@ -194,7 +194,7 @@ GO
 CREATE TABLE dbo.idiomas_dominio_cat_preferencias (
   cod_categoria     VARCHAR(36)   NOT NULL,
   nro_valor_dominio INT           NOT NULL,
-  nro_idioma        VARCHAR(36)   NOT NULL,
+  nro_idioma        INT   NOT NULL,
   valor_dominio     NVARCHAR(120) NOT NULL,
   desc_valor_dominio NVARCHAR(400) NULL,
   CONSTRAINT PK_idiomas_dom PRIMARY KEY (cod_categoria, nro_valor_dominio, nro_idioma),
@@ -277,7 +277,7 @@ GO
    =========================== */
 CREATE TABLE dbo.contenidos_restaurantes (
   nro_restaurante        VARCHAR(36)   NOT NULL,
-  nro_idioma             VARCHAR(36)   NOT NULL,
+  nro_idioma             INT   NOT NULL,
   nro_contenido          VARCHAR(36)   NOT NULL DEFAULT NEWID(),
   nro_sucursal           VARCHAR(36)   NULL,
   contenido_promocional  NVARCHAR(MAX) NULL,
@@ -303,7 +303,7 @@ GO
 
 CREATE TABLE dbo.clicks_contenidos_restaurantes (
   nro_restaurante    VARCHAR(36)  NOT NULL,
-  nro_idioma         VARCHAR(36)  NOT NULL,
+  nro_idioma         INT  NOT NULL,
   nro_contenido      VARCHAR(36)  NOT NULL,
   nro_click          VARCHAR(36)  NOT NULL DEFAULT NEWID(),
   fecha_hora_registro DATETIME2(3) NOT NULL DEFAULT SYSDATETIME(),
@@ -359,7 +359,7 @@ CREATE TABLE dbo.idiomas_zonas_suc_restaurantes (
   nro_restaurante VARCHAR(36)   NOT NULL,
   nro_sucursal    VARCHAR(36)   NOT NULL,
   cod_zona        VARCHAR(36)   NOT NULL,
-  nro_idioma      VARCHAR(36)   NOT NULL,
+  nro_idioma      INT   NOT NULL,
   zona            NVARCHAR(120) NOT NULL,
   desc_zona       NVARCHAR(400) NULL,
   CONSTRAINT PK_idiomas_zonas_suc PRIMARY KEY (nro_restaurante, nro_sucursal, cod_zona, nro_idioma),
@@ -404,7 +404,7 @@ GO
 
 CREATE TABLE dbo.idiomas_estados_reservas (
   cod_estado VARCHAR(36)  NOT NULL,
-  nro_idioma VARCHAR(36)  NOT NULL,
+  nro_idioma INT  NOT NULL,
   estado     NVARCHAR(80) NOT NULL,
   CONSTRAINT PK_idiomas_estados PRIMARY KEY (cod_estado, nro_idioma),
   CONSTRAINT FK_idiomas_estados_estado

@@ -72,7 +72,7 @@ public class RestauranteRepository {
         public PromocionDto mapRow(ResultSet rs, int rowNum) throws SQLException {
             PromocionDto promocion = new PromocionDto();
             promocion.setNroRestaurante(rs.getString("nro_restaurante"));
-            promocion.setNroIdioma(rs.getString("nro_idioma"));
+            promocion.setNroIdioma(rs.getInt("nro_idioma"));
             promocion.setNroContenido(rs.getString("nro_contenido"));
             promocion.setTitulo(rs.getString("titulo"));
             promocion.setDescripcion(rs.getString("descripcion"));

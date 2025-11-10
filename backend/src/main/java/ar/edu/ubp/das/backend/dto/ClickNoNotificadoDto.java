@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 public class ClickNoNotificadoDto {
     
     private String nroRestaurante;
-    private String nroIdioma;
+    private Integer nroIdioma;
     private String nroContenido;
     private String nroClick;
     private LocalDateTime fechaHoraRegistro;
@@ -24,11 +24,11 @@ public class ClickNoNotificadoDto {
         this.nroRestaurante = nroRestaurante;
     }
     
-    public String getNroIdioma() {
+    public Integer getNroIdioma() {
         return nroIdioma;
     }
-    
-    public void setNroIdioma(String nroIdioma) {
+
+    public void setNroIdioma(Integer nroIdioma) {
         this.nroIdioma = nroIdioma;
     }
     

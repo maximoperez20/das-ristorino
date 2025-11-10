@@ -1,6 +1,7 @@
 package ar.edu.ubp.das.backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -17,9 +18,8 @@ public class GenerarContenidoRequestDto {
     @Size(max = 36, message = "El número de sucursal no puede exceder 36 caracteres")
     private String nroSucursal;
 
-    @NotBlank(message = "El número de idioma es obligatorio")
-    @Size(max = 36, message = "El número de idioma no puede exceder 36 caracteres")
-    private String nroIdioma;
+    @NotNull(message = "El número de idioma es obligatorio")
+    private Integer nroIdioma;
 
     @Size(max = 500, message = "El contexto adicional no puede exceder 500 caracteres")
     private String contextoAdicional;
@@ -44,11 +44,11 @@ public class GenerarContenidoRequestDto {
         this.nroSucursal = nroSucursal;
     }
 
-    public String getNroIdioma() {
+    public Integer getNroIdioma() {
         return nroIdioma;
     }
 
-    public void setNroIdioma(String nroIdioma) {
+    public void setNroIdioma(Integer nroIdioma) {
         this.nroIdioma = nroIdioma;
     }
 

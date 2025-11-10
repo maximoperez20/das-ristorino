@@ -11,7 +11,7 @@ public class ContenidoGeneradoDto {
 
     private String nroRestaurante;
     private String nroSucursal;
-    private String nroIdioma;
+    private Integer nroIdioma;
     private String nroContenido;
     private String contenidoGenerado;
     private LocalDate fechaIniVigencia;
@@ -22,7 +22,7 @@ public class ContenidoGeneradoDto {
     // Constructors
     public ContenidoGeneradoDto() {}
 
-    public ContenidoGeneradoDto(String nroRestaurante, String nroIdioma, String nroContenido, 
+    public ContenidoGeneradoDto(String nroRestaurante, Integer nroIdioma, String nroContenido, 
                                 String contenidoGenerado, LocalDate fechaIniVigencia, 
                                 LocalDate fechaFinVigencia) {
         this.nroRestaurante = nroRestaurante;
@@ -50,11 +50,11 @@ public class ContenidoGeneradoDto {
         this.nroSucursal = nroSucursal;
     }
 
-    public String getNroIdioma() {
+    public Integer getNroIdioma() {
         return nroIdioma;
     }
 
-    public void setNroIdioma(String nroIdioma) {
+    public void setNroIdioma(Integer nroIdioma) {
         this.nroIdioma = nroIdioma;
     }
 

@@ -161,14 +161,14 @@ public class ContenidoRepository {
      *
      * @param nroRestaurante UUID del restaurante
      * @param nroSucursal UUID de la sucursal (puede ser null)
-     * @param nroIdioma UUID del idioma
+     * @param nroIdioma ID del idioma (INT)
      * @param contenidoGenerado Texto generado por IA
      * @return DTO con los datos del contenido guardado
      */
     public Optional<ContenidoGeneradoDto> guardarContenidoGenerado(
             String nroRestaurante, 
             String nroSucursal, 
-            String nroIdioma, 
+            Integer nroIdioma, 
             String contenidoGenerado) {
         
         String sql = "EXEC sp_GuardarContenidoGenerado ?, ?, ?, ?";
@@ -180,7 +180,7 @@ public class ContenidoRepository {
                     ContenidoGeneradoDto dto = new ContenidoGeneradoDto();
                     dto.setNroRestaurante(rs.getString("nro_restaurante"));
                     dto.setNroSucursal(rs.getString("nro_sucursal"));
-                    dto.setNroIdioma(rs.getString("nro_idioma"));
+                    dto.setNroIdioma(rs.getInt("nro_idioma"));
                     dto.setNroContenido(rs.getString("nro_contenido"));
                     dto.setContenidoGenerado(rs.getString("contenido_a_publicar"));
                     
@@ -211,7 +211,7 @@ public class ContenidoRepository {
 
     public void actualizarCodContenidoRestaurante(
             String nroRestaurante,
-            String nroIdioma,
+            Integer nroIdioma,
             String nroContenido,
             String codContenidoRestaurante) {
         
@@ -260,7 +260,7 @@ public class ContenidoRepository {
         }
     }
 
-    public String obtenerCodIdioma(String nroIdioma) {
+    public String obtenerCodIdioma(Integer nroIdioma) {
         String sql = "SELECT cod_idioma FROM idiomas WHERE nro_idioma = ?";
 
         try {
@@ -282,7 +282,7 @@ public class ContenidoRepository {
         }
     }
 
-    public String obtenerNomIdioma(String nroIdioma) {
+    public String obtenerNomIdioma(Integer nroIdioma) {
         String sql = "SELECT nom_idioma FROM idiomas WHERE nro_idioma = ?";
 
         try {

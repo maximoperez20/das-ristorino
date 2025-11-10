@@ -27,7 +27,7 @@ IF NOT EXISTS (SELECT 1 FROM estados_reservas WHERE nom_estado = N'Cancelada')
     INSERT INTO estados_reservas (nom_estado) VALUES (N'Cancelada');
 
 -- Traducciones de estados (español)
-DECLARE @nro_idioma_es VARCHAR(36);
+DECLARE @nro_idioma_es INT;
 SELECT @nro_idioma_es = nro_idioma FROM idiomas WHERE cod_idioma = N'es-AR';
 
 IF @nro_idioma_es IS NOT NULL
