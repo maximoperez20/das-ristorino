@@ -1,7 +1,7 @@
 /* =========================================================================================
    INSERT DE DATOS AVANZADOS - das_ristorino
    Incluye: estados de reservas, zonas, zonas por turno, categorías de preferencias,
-   clientes de prueba, y traducciones básicas
+   clientes de prueba, traducciones básicas y 2 PROMOCIONES para el restaurante compartido
    ========================================================================================= */
 
 SET NOCOUNT ON;
@@ -66,7 +66,7 @@ PRINT 'Estados de reservas insertados';
    2) Zonas para las Sucursales
    ========================================= */
 
--- Restaurante compartido (Los Aroza)
+-- Restaurante compartido (Los Aroza) - SINCRONIZADO con das-restaurante-soap
 DECLARE @restaurante_compartido_uuid VARCHAR(36) = '12345678-1234-1234-1234-123456789abc';
 DECLARE @nro_sucursal_1 VARCHAR(36);
 SELECT @nro_sucursal_1 = nro_sucursal FROM sucursales_restaurantes 
@@ -74,7 +74,7 @@ WHERE nro_restaurante = @restaurante_compartido_uuid AND nom_sucursal = N'Los Ar
 
 IF @nro_sucursal_1 IS NOT NULL
 BEGIN
-    -- Zona 1: Salón Principal
+    -- Zona 1: Salón Principal (SINCRONIZADO con das-restaurante-soap: 80 comensales)
     IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
                    WHERE nro_restaurante = @restaurante_compartido_uuid 
                    AND nro_sucursal = @nro_sucursal_1 
@@ -83,10 +83,10 @@ BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada)
         VALUES 
-            (@restaurante_compartido_uuid, @nro_sucursal_1, N'Salón Principal', 90, 1, 1);
+            (@restaurante_compartido_uuid, @nro_sucursal_1, N'Salón Principal', 80, 1, 1);
     END
     
-    -- Zona 2: Terraza
+    -- Zona 2: Terraza (SINCRONIZADO con das-restaurante-soap: 60 comensales)
     IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
                    WHERE nro_restaurante = @restaurante_compartido_uuid 
                    AND nro_sucursal = @nro_sucursal_1 
@@ -95,7 +95,7 @@ BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada)
         VALUES 
-            (@restaurante_compartido_uuid, @nro_sucursal_1, N'Terraza', 50, 1, 1);
+            (@restaurante_compartido_uuid, @nro_sucursal_1, N'Terraza', 60, 1, 1);
     END
 END
 
@@ -359,7 +359,7 @@ BEGIN
                                              AND cod_zona = @cod_zona 
                                              AND nro_idioma = @nro_idioma_es)
         INSERT INTO idiomas_zonas_suc_restaurantes (nro_restaurante, nro_sucursal, cod_zona, nro_idioma, zona, desc_zona)
-        VALUES (@restaurante_compartido_uuid, @nro_sucursal_1, @cod_zona, @nro_idioma_es, N'Salón Principal', N'Salón principal del restaurante con capacidad para 90 comensales');
+        VALUES (@restaurante_compartido_uuid, @nro_sucursal_1, @cod_zona, @nro_idioma_es, N'Salón Principal', N'Salón principal del restaurante con capacidad para 80 comensales');
     
     -- Terraza
     SELECT @cod_zona = cod_zona FROM zonas_sucursales_restaurantes 
@@ -370,10 +370,82 @@ BEGIN
                                              AND cod_zona = @cod_zona 
                                              AND nro_idioma = @nro_idioma_es)
         INSERT INTO idiomas_zonas_suc_restaurantes (nro_restaurante, nro_sucursal, cod_zona, nro_idioma, zona, desc_zona)
-        VALUES (@restaurante_compartido_uuid, @nro_sucursal_1, @cod_zona, @nro_idioma_es, N'Terraza', N'Terraza al aire libre con capacidad para 50 comensales');
+        VALUES (@restaurante_compartido_uuid, @nro_sucursal_1, @cod_zona, @nro_idioma_es, N'Terraza', N'Terraza al aire libre con capacidad para 60 comensales');
 END
 
 PRINT 'Traducciones de zonas insertadas';
+
+/* =========================================
+   7) PROMOCIONES para el Restaurante Compartido
+   IMPORTANTE: Estas promociones también deben insertarse en das_restaurante_soap
+   ========================================= */
+
+IF @nro_idioma_es IS NOT NULL AND @nro_sucursal_1 IS NOT NULL
+BEGIN
+    -- Promoción 1: Descuento especial de temporada
+    DECLARE @nro_contenido_1 VARCHAR(36) = NEWID();
+    DECLARE @fecha_ini DATE = CAST(GETDATE() AS DATE);
+    DECLARE @fecha_fin DATE = DATEADD(MONTH, 1, @fecha_ini);
+    
+    IF NOT EXISTS (SELECT 1 FROM contenidos_restaurantes 
+                   WHERE nro_restaurante = @restaurante_compartido_uuid 
+                   AND nro_idioma = @nro_idioma_es 
+                   AND contenido_a_publicar LIKE N'%Descuento especial de temporada%')
+    BEGIN
+        INSERT INTO contenidos_restaurantes (
+            nro_restaurante, nro_idioma, nro_contenido, nro_sucursal,
+            contenido_promocional, contenido_a_publicar,
+            fecha_ini_vigencia, fecha_fin_vigencia, costo_click
+        )
+        VALUES (
+            @restaurante_compartido_uuid, @nro_idioma_es, @nro_contenido_1, @nro_sucursal_1,
+            N'¡Descuento especial de temporada! 20% OFF en todos los platos principales. Válido de lunes a jueves. Reservá tu mesa ahora.',
+            N'¡Descuento especial de temporada! 20% OFF en todos los platos principales. Válido de lunes a jueves. Reservá tu mesa ahora.',
+            @fecha_ini, @fecha_fin, 0.50
+        );
+        PRINT 'Promoción 1 insertada en das_ristorino: ' + @nro_contenido_1;
+    END
+    ELSE
+    BEGIN
+        SELECT @nro_contenido_1 = nro_contenido FROM contenidos_restaurantes 
+        WHERE nro_restaurante = @restaurante_compartido_uuid 
+        AND nro_idioma = @nro_idioma_es 
+        AND contenido_a_publicar LIKE N'%Descuento especial de temporada%';
+        PRINT 'Promoción 1 ya existe en das_ristorino: ' + @nro_contenido_1;
+    END
+    
+    -- Promoción 2: Menú ejecutivo
+    DECLARE @nro_contenido_2 VARCHAR(36) = NEWID();
+    
+    IF NOT EXISTS (SELECT 1 FROM contenidos_restaurantes 
+                   WHERE nro_restaurante = @restaurante_compartido_uuid 
+                   AND nro_idioma = @nro_idioma_es 
+                   AND contenido_a_publicar LIKE N'%Menú ejecutivo%')
+    BEGIN
+        INSERT INTO contenidos_restaurantes (
+            nro_restaurante, nro_idioma, nro_contenido, nro_sucursal,
+            contenido_promocional, contenido_a_publicar,
+            fecha_ini_vigencia, fecha_fin_vigencia, costo_click
+        )
+        VALUES (
+            @restaurante_compartido_uuid, @nro_idioma_es, @nro_contenido_2, @nro_sucursal_1,
+            N'Menú ejecutivo de lunes a viernes. Entrada + plato principal + postre por $3500. Incluye bebida sin alcohol. ¡No te lo pierdas!',
+            N'Menú ejecutivo de lunes a viernes. Entrada + plato principal + postre por $3500. Incluye bebida sin alcohol. ¡No te lo pierdas!',
+            @fecha_ini, @fecha_fin, 0.75
+        );
+        PRINT 'Promoción 2 insertada en das_ristorino: ' + @nro_contenido_2;
+    END
+    ELSE
+    BEGIN
+        SELECT @nro_contenido_2 = nro_contenido FROM contenidos_restaurantes 
+        WHERE nro_restaurante = @restaurante_compartido_uuid 
+        AND nro_idioma = @nro_idioma_es 
+        AND contenido_a_publicar LIKE N'%Menú ejecutivo%';
+        PRINT 'Promoción 2 ya existe en das_ristorino: ' + @nro_contenido_2;
+    END
+    
+    PRINT 'NOTA: Estas promociones también deben insertarse en das_restaurante_soap usando el script 04_insert_datos_avanzados.sql';
+END
 
 /* =========================================
    Resumen
@@ -384,10 +456,13 @@ PRINT 'Datos avanzados insertados exitosamente';
 PRINT '========================================';
 PRINT '- Estados de reservas: 5 estados creados';
 PRINT '- Zonas: 2 zonas por sucursal (6 zonas totales)';
+PRINT '  * Restaurante compartido: Salón Principal (80), Terraza (60) - SINCRONIZADO con das-restaurante-soap';
 PRINT '- Zonas por turno: Todas las zonas habilitadas en sus turnos';
 PRINT '- Categorías de preferencias: 3 categorías con 12 dominios';
 PRINT '- Clientes de prueba: 3 clientes creados';
 PRINT '- Traducciones: Zonas traducidas al español';
+PRINT '- Promociones: 2 promociones creadas para el restaurante compartido';
+PRINT '========================================';
+PRINT 'IMPORTANTE: Ejecutar también 04_insert_datos_avanzados.sql en das_restaurante_soap';
 PRINT '========================================';
 GO
-
