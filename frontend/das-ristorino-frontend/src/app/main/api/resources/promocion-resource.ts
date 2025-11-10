@@ -24,7 +24,7 @@ export class PromocionResource extends Resource{
 
   //GET /api/promociones/click
   @ResourceAction({
-    path: 'click/:nroPromocion',
+    path: '/:nroPromocion',
     method: ResourceRequestMethod.Post,
   })
   declare registrarClick: IResourceMethodObservable<
