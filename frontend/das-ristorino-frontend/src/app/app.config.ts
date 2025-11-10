@@ -6,6 +6,7 @@ import { appHttpInterceptor } from './core/interceptors/app-http-interceptor';
 import { routes } from './app.routes';
 import { ResourceHandlerHttpClient } from '@ngx-resource/handler-ngx-http';
 import { ResourceHandler } from '@ngx-resource/core';
+import { RestauranteResolver } from './main/resolvers/restaurante.resolver';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -13,6 +14,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
   provideHttpClient(withInterceptors([appHttpInterceptor])),
-    { provide: ResourceHandler, useClass: ResourceHandlerHttpClient }
+    { provide: ResourceHandler, useClass: ResourceHandlerHttpClient },
+    RestauranteResolver
   ]
 };
