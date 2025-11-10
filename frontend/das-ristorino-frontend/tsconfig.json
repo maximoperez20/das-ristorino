@@ -11,6 +11,8 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "experimentalDecorators": true,
+    "emitDecoratorMetadata": true, // Indica a TypeScript que emita metadatos de diseño para decoradores. Inyeccion de dependencias.
+    "useDefineForClassFields": false, // Indica al compilador com inicializar los campos de clase.
     "importHelpers": true,
     "target": "ES2022",
     "module": "preserve"

@@ -1,0 +1,11 @@
+<div class="card h-100 text-center">
+    <img [src]="promocion?.imagenUrl" class="card-img-top" alt="imagen promocion" />
+    <div class="card-body">
+        <h5 class="card-title">{{ promocion?.titulo }}</h5>
+        <p class="card-text">{{ promocion?.descripcion }}</p>
+        <p class="text-muted small mb-2">Vigencia hasta: {{ promocion?.fechaFin | date:'short' }}</p>
+        <a class="btn btn-primary" (click)="onVerPromocion()">
+            Ver promoción
+        </a>
+    </div>
+</div>
