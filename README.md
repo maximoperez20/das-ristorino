@@ -1,248 +1,391 @@
 # das-ristorino
+
 Repositorio de app Ristorino - Materia DAS - UBP 2025
 
 ## 📋 Descripción
-Sistema de gestión de reservas para restaurantes desarrollado con Spring Boot y SQL Server.
+
+Sistema de gestión de reservas para restaurantes desarrollado con Spring Boot y SQL Server. Portal central REST para clientes que permite buscar restaurantes, ver promociones, generar contenidos con IA y gestionar reservas.
 
 ## 🛠️ Tecnologías
-- **Backend**: Spring Boot 3.5.5, Java 21
-- **Base de Datos**: Microsoft SQL Server 2022
+
+- **Backend**: Spring Boot 3.5.5, Java 17
+- **Base de Datos**: Microsoft SQL Server (`das_ristorino`)
+- **Puerto**: 8080
+- **Protocolo**: REST/JSON
+- **Autenticación**: JWT (OAuth2 Resource Server)
+- **IA**: OpenAI API (generación de contenidos)
 - **Build Tool**: Maven
-- **Contenedores**: Docker
+- **Frontend**: Angular (separado)
 
 ## 🚀 Configuración Rápida
 
 ### Prerrequisitos
-- Java 21 o superior
+
+- Java 17 o superior
 - Maven 3.6+
-- Docker Desktop
-- Git
+- SQL Server (local o Docker)
+- Docker Desktop (opcional, para SQL Server)
+- OpenAI API Key (opcional, para generación de contenidos)
 
-### 1. Clonar y Configurar
-```bash
-git clone <repository-url>
-cd das-ristorino
+### 1. Configurar Base de Datos
 
-# Configurar base de datos automáticamente
-./setup-database.sh
+#### Opción A: SQL Server en Docker
 
-# Verificar que todo esté funcionando
-./verify-setup.sh
-```
-
-### 2. Ejecutar la Aplicación
-```bash
-cd backend
-./mvnw spring-boot:run
-```
-
-La aplicación estará disponible en: `http://localhost:8080`
-
-## 📊 Estructura de la Base de Datos
-
-### Tablas Principales
-- **provincias**: Catálogo de provincias argentinas
-- **localidades**: Catálogo de localidades por provincia  
-- **restaurantes**: Información de restaurantes
-- **sucursales_restaurantes**: Sucursales de cada restaurante
-- **clientes**: Información de clientes
-- **reservas_restaurantes**: Reservas realizadas
-- **zonas_sucursales_restaurantes**: Zonas dentro de cada sucursal
-- **turnos_sucursales_restaurantes**: Horarios de atención
-- **categorias_preferencias**: Categorías de preferencias
-- **contenidos_restaurantes**: Promociones y contenidos
-
-### Stored Procedures Disponibles
-- `sp_ObtenerTodasLasReservas`: Obtiene todas las reservas
-- `sp_ObtenerReservaPorId`: Obtiene una reserva por ID
-- `sp_CrearReserva`: Crea una nueva reserva
-- `sp_ActualizarReserva`: Actualiza una reserva existente
-- `sp_EliminarReserva`: Elimina una reserva
-- `sp_ObtenerReservasPorEstado`: Filtra reservas por estado
-- `sp_CambiarEstadoReserva`: Cambia el estado de una reserva
-- `sp_ObtenerReservasPorCliente`: Obtiene reservas por email del cliente
-- `sp_ContarReservas`: Cuenta el total de reservas
-- `sp_ExisteReserva`: Verifica si existe una reserva
-- `sp_ObtenerReservasPorRangoFechas`: Filtra reservas por rango de fechas
-- `sp_ObtenerEstadisticasReservas`: Obtiene estadísticas de reservas
-
-## 🔌 API Endpoints
-
-### Reservas
-- `GET /api/reservas` - Obtener todas las reservas
-- `GET /api/reservas/{id}` - Obtener reserva por ID
-- `POST /api/reservas` - Crear nueva reserva
-- `PUT /api/reservas/{id}` - Actualizar reserva
-- `DELETE /api/reservas/{id}` - Eliminar reserva
-- `GET /api/reservas/estado/{estado}` - Obtener reservas por estado
-- `PUT /api/reservas/{id}/estado` - Cambiar estado de reserva
-- `GET /api/reservas/cliente/{email}` - Obtener reservas por cliente
-- `GET /api/reservas/estadisticas` - Obtener estadísticas
-
-### Ejemplo de Crear Reserva
-```bash
-curl -X POST http://localhost:8080/api/reservas \
-  -H "Content-Type: application/json" \
-  -d '{
-    "nombreCliente": "Juan Pérez",
-    "email": "juan@email.com",
-    "telefono": "123456789",
-    "fechaHora": "2025-10-20T19:00:00",
-    "cantidadPersonas": 4,
-    "observaciones": "Mesa cerca de la ventana"
-  }'
-```
-
-## 📁 Estructura del Proyecto
-```
-das-ristorino/
-├── backend/
-│   ├── src/main/java/ar/edu/ubp/das/backend/
-│   │   ├── components/          # SimpleJdbcCallFactory
-│   │   ├── config/             # Configuraciones
-│   │   ├── dto/                # Data Transfer Objects
-│   │   ├── repository/         # Capa de acceso a datos
-│   │   ├── resources/          # Controladores REST
-│   │   └── service/            # Lógica de negocio
-│   ├── src/main/resources/
-│   │   └── application.properties
-│   └── create-stored-procedures.sql
-├── scripts/                    # Scripts SQL de inicialización
-│   ├── 00_risto.sql           # Creación de tablas
-│   ├── 01_insert_basicos.sql  # Datos básicos
-│   ├── 02_insert_resto_sucursal_turnos.sql
-│   ├── 03_insert_zonas_sucursal.sql
-│   ├── 04_insert_zonas_x_turno.sql
-│   ├── 05_insert_categorias_y_dominios.sql
-│   ├── 06_insert_clientes_demo.sql
-│   ├── 07_insert_contenidos_demo.sql
-│   └── 09_insert_preferencias_restaurante.sql
-├── setup-database.sh          # Script de configuración automática
-├── verify-setup.sh            # Script de verificación
-└── README.md
-```
-
-## 🔧 Configuración Manual (si es necesaria)
-
-### Configurar SQL Server con Docker
 ```bash
 # Ejecutar SQL Server en Docker
 docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=DB_Password" \
    -p 1433:1433 --name SQL_Server_Docker \
    -d mcr.microsoft.com/mssql/server:2022-latest
+
+# Esperar 10-15 segundos para que SQL Server inicie
 ```
 
-### Configurar la Base de Datos Manualmente
+#### Opción B: SQL Server Local
+
+Asegúrate de tener SQL Server instalado y corriendo en `localhost:1433`.
+
+### 2. Crear Base de Datos
+
 ```bash
-# Crear la base de datos
+# Conectar a SQL Server y crear la base de datos
 docker exec -it SQL_Server_Docker /opt/mssql-tools/bin/sqlcmd \
    -S localhost -U sa -P DB_Password \
    -Q "CREATE DATABASE das_ristorino;"
+```
 
-# Ejecutar scripts de creación de tablas
+O si usas SQL Server local:
+```sql
+CREATE DATABASE das_ristorino;
+GO
+```
+
+### 3. Ejecutar Scripts SQL
+
+**IMPORTANTE**: Ejecuta los scripts en el siguiente orden:
+
+```bash
+# 1. Crear tablas (usa 00_risto.sql completo)
 docker cp scripts/00_risto.sql SQL_Server_Docker:/tmp/
 docker exec -it SQL_Server_Docker /opt/mssql-tools/bin/sqlcmd \
    -S localhost -U sa -P DB_Password -d das_ristorino -i /tmp/00_risto.sql
 
-# Crear stored procedures
+# 2. Crear stored procedures
 docker cp backend/create-stored-procedures.sql SQL_Server_Docker:/tmp/
 docker exec -it SQL_Server_Docker /opt/mssql-tools/bin/sqlcmd \
    -S localhost -U sa -P DB_Password -d das_ristorino -i /tmp/create-stored-procedures.sql
+
+# 3. Insertar datos básicos (provincias, localidades, idiomas)
+docker cp scripts/01_insert_basicos.sql SQL_Server_Docker:/tmp/
+docker exec -it SQL_Server_Docker /opt/mssql-tools/bin/sqlcmd \
+   -S localhost -U sa -P DB_Password -d das_ristorino -i /tmp/01_insert_basicos.sql
+
+# 4. Insertar restaurantes (3 restaurantes, 1 compartido con restaurante-soap)
+docker cp scripts/03_insert_datos_basicos.sql SQL_Server_Docker:/tmp/
+docker exec -it SQL_Server_Docker /opt/mssql-tools/bin/sqlcmd \
+   -S localhost -U sa -P DB_Password -d das_ristorino -i /tmp/03_insert_datos_basicos.sql
 ```
 
-### application.properties
+**O usando SQL Server Management Studio (SSMS):**
+1. Abre SSMS y conéctate a tu instancia de SQL Server
+2. Abre y ejecuta `scripts/00_risto.sql` (crea todas las tablas)
+3. Abre y ejecuta `backend/create-stored-procedures.sql` (crea stored procedures)
+4. Abre y ejecuta `scripts/01_insert_basicos.sql` (inserta provincias, localidades, idiomas)
+5. Abre y ejecuta `scripts/03_insert_datos_basicos.sql` (inserta 3 restaurantes)
+
+### 4. Verificar Configuración
+
+Verifica que la base de datos tenga datos:
+
+```bash
+docker exec -it SQL_Server_Docker /opt/mssql-tools/bin/sqlcmd \
+   -S localhost -U sa -P DB_Password -d das_ristorino \
+   -Q "SELECT COUNT(*) AS total_restaurantes FROM restaurantes;"
+```
+
+Deberías ver 3 restaurantes.
+
+### 5. Configurar application.properties
+
+Verifica que `backend/src/main/resources/application.properties` tenga:
+
 ```properties
 spring.application.name=backend
-# Configuración de SQL Server
+
+# SQL Server
 spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=das_ristorino;encrypt=false
-spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
 spring.datasource.username=sa
 spring.datasource.password=DB_Password
-# Configuración del pool de conexiones
+spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+# Pool de conexiones
 spring.datasource.hikari.maximum-pool-size=10
 spring.datasource.hikari.minimum-idle=5
 spring.datasource.hikari.connection-timeout=20000
-# Configuración del servidor
+
+# Servidor
 server.port=8080
-# Logging para debugging
-logging.level.org.springframework.jdbc=DEBUG
-logging.level.com.zaxxer.hikari=DEBUG
+
+# JWT
+security.jwt.secret=RISTORINO_BACKEND_2025_SEGURIDAD_SPRINGBOOT_SECRET_KEY
+
+# OpenAI (opcional)
+openai.api.key=${OPENAI_API_KEY:not-configured}
+openai.model=gpt-5-nano
+```
+
+### 6. Configurar Cliente SOAP (das-restaurante-soap)
+
+Verifica que `backend/src/main/resources/application.properties` tenga la configuración del servicio SOAP:
+
+```properties
+# SOAP Restaurante Service
+soap.restaurante.wsdl=http://localhost:8081/ws/restaurantes.wsdl
+soap.restaurante.namespace=http://das.ubp.edu.ar/restaurante
+soap.restaurante.service=RestaurantePortService
+soap.restaurante.port=RestaurantePortSoap11
+```
+
+**IMPORTANTE**: El servicio `das-restaurante-soap` debe estar corriendo en el puerto 8081.
+
+### 7. Compilar y Ejecutar la Aplicación
+
+```bash
+cd backend
+
+# Compilar
+./mvnw clean install
+
+# Ejecutar
+./mvnw spring-boot:run
+```
+
+O desde tu IDE:
+- Importa el proyecto como proyecto Maven
+- Ejecuta la clase `BackendApplication`
+
+### 8. Verificar que la Aplicación Funciona
+
+La aplicación estará disponible en:
+- **REST API**: `http://localhost:8080`
+- **Swagger UI**: `http://localhost:8080/swagger-ui.html`
+- **Health Check**: `http://localhost:8080/actuator/health`
+
+## 📊 Estructura de Scripts SQL
+
+```
+scripts/
+├── 00_risto.sql                    # Crea todas las tablas (ejecutar primero)
+├── 01_insert_basicos.sql          # Inserta provincias, localidades, idiomas
+├── 03_insert_datos_basicos.sql    # Inserta 3 restaurantes (1 compartido)
+└── ...
+
+backend/
+└── create-stored-procedures.sql   # Crea todos los stored procedures
+```
+
+## 📡 API Endpoints REST
+
+### Autenticación (Público)
+- `POST /api/clientes/register` - Registro de cliente
+- `POST /api/clientes/login` - Login con JWT
+
+### Restaurantes (Público)
+- `GET /api/restaurantes` - Buscar restaurantes
+- `GET /api/restaurantes/{id}` - Detalle de restaurante
+- `GET /api/restaurantes/{id}/sucursales` - Sucursales
+- `POST /api/restaurantes/busqueda-nlp` - Búsqueda con NLP
+
+### Promociones (Público)
+- `GET /api/promociones` - Listar promociones
+- `GET /api/promociones/{id}` - Detalle de promoción
+- `POST /api/promociones/{id}/click` - Registrar click
+
+### Reservas (Protegido - JWT)
+- `GET /api/reservas` - Mis reservas
+- `GET /api/reservas/{id}` - Detalle de reserva
+- `POST /api/reservas` - Crear reserva
+- `PUT /api/reservas/{id}` - Actualizar reserva
+- `PUT /api/reservas/{id}/cancelar` - Cancelar reserva
+
+### Contenidos (Protegido - JWT)
+- `POST /api/contenidos/generar` - Generar contenido con IA
+
+## 🔧 Configuración Manual
+
+### application.properties Completo
+
+```properties
+spring.application.name=backend
+
+# SQL Server
+spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=das_ristorino;encrypt=false
+spring.datasource.username=sa
+spring.datasource.password=DB_Password
+spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+# Pool de conexiones
+spring.datasource.hikari.maximum-pool-size=10
+spring.datasource.hikari.minimum-idle=5
+spring.datasource.hikari.connection-timeout=20000
+
+# Servidor
+server.port=8080
+
+# JWT
+security.jwt.secret=RISTORINO_BACKEND_2025_SEGURIDAD_SPRINGBOOT_SECRET_KEY
+
+# SOAP Restaurante Service
+soap.restaurante.wsdl=http://localhost:8081/ws/restaurantes.wsdl
+soap.restaurante.namespace=http://das.ubp.edu.ar/restaurante
+soap.restaurante.service=RestaurantePortService
+soap.restaurante.port=RestaurantePortSoap11
+
+# OpenAI API (opcional)
+openai.api.key=${OPENAI_API_KEY:not-configured}
+openai.model=gpt-5-nano
+openai.prompt.id=pmpt_68f93394cf6c8195955e0767742b9d7f05a21f383241fa79
 ```
 
 ## 🐛 Troubleshooting
 
 ### Error de Conexión a Base de Datos
-- Verificar que el contenedor SQL Server esté corriendo: `docker ps`
-- Verificar que la base de datos `das_ristorino` exista
-- Verificar credenciales en `application.properties`
+
+```bash
+# Verificar que SQL Server esté corriendo
+docker ps | grep SQL_Server_Docker
+
+# Verificar que la base de datos exista
+docker exec -it SQL_Server_Docker /opt/mssql-tools/bin/sqlcmd \
+   -S localhost -U sa -P DB_Password \
+   -Q "SELECT name FROM sys.databases WHERE name='das_ristorino';"
+```
 
 ### Error de Puerto en Uso
-- Cambiar el puerto en `application.properties`: `server.port=8081`
-- O matar el proceso que usa el puerto 8080
 
-### Error de Stored Procedures
-- Verificar que se ejecutaron todos los scripts en orden
-- Re-ejecutar `create-stored-procedures.sql`
-
-### Verificar Configuración
 ```bash
-# Ejecutar script de verificación
-./verify-setup.sh
+# Ver qué proceso usa el puerto 8080
+lsof -i :8080  # macOS/Linux
+netstat -ano | findstr :8080  # Windows
 
-# Si hay errores, reconfigurar
-./setup-database.sh
+# Cambiar el puerto en application.properties
+server.port=8082
 ```
+
+### Error al Conectar con das-restaurante-soap
+
+- Verifica que `das-restaurante-soap` esté corriendo en el puerto 8081
+- Verifica la URL del WSDL en `application.properties`
+- Prueba abrir el WSDL en el navegador: `http://localhost:8081/ws/restaurantes.wsdl`
+
+### Error al Ejecutar Scripts SQL
+
+- Verifica que ejecutaste los scripts en orden:
+  1. `00_risto.sql` (crea tablas)
+  2. `create-stored-procedures.sql` (crea stored procedures)
+  3. `01_insert_basicos.sql` (datos básicos)
+  4. `03_insert_datos_basicos.sql` (restaurantes)
+- Verifica que la base de datos `das_ristorino` existe
+- Revisa los logs de SQL Server para errores específicos
 
 ## 🧪 Testing
 
 ### Probar Endpoints Básicos
+
 ```bash
-# Obtener todas las reservas
-curl http://localhost:8080/api/reservas
+# Obtener todos los restaurantes
+curl http://localhost:8080/api/restaurantes
 
-# Obtener estadísticas
-curl http://localhost:8080/api/reservas/estadisticas
+# Obtener restaurante por ID
+curl http://localhost:8080/api/restaurantes/12345678-1234-1234-1234-123456789abc
 
-# Crear una reserva
-curl -X POST http://localhost:8080/api/reservas \
+# Swagger UI
+open http://localhost:8080/swagger-ui.html
+```
+
+### Registrar Cliente
+
+```bash
+curl -X POST http://localhost:8080/api/clientes/register \
   -H "Content-Type: application/json" \
   -d '{
-    "nombreCliente": "Test User",
-    "email": "test@email.com",
-    "telefono": "123456789",
-    "fechaHora": "2025-12-25T20:00:00",
-    "cantidadPersonas": 2,
-    "observaciones": "Mesa romántica"
+    "nombre": "Juan",
+    "apellido": "Pérez",
+    "correo": "juan@email.com",
+    "password": "password123",
+    "telefonos": "351-555-1234",
+    "nroLocalidad": "<UUID_DE_LOCALIDAD>"
+  }'
+```
+
+### Login y Obtener Token JWT
+
+```bash
+curl -X POST http://localhost:8080/api/clientes/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "correo": "juan@email.com",
+    "password": "password123"
   }'
 ```
 
 ## 📝 Notas Importantes
 
-### Estado Actual del Proyecto
-- ✅ **Base de datos**: Completamente configurada con 24 tablas
-- ✅ **Stored Procedures**: 12 procedures funcionando
-- ✅ **API Endpoints**: Estructura completa implementada
-- ⚠️ **Tipos de ID**: Hay inconsistencias entre `Long` y `String` que necesitan corrección
-- ⚠️ **Datos de prueba**: Algunos scripts de datos pueden tener errores menores
+### Restaurante Compartido
 
-### Próximos Pasos
-1. Corregir tipos de ID en DTOs y servicios
-2. Probar operaciones CRUD completas
-3. Implementar validaciones de negocio
-4. Agregar manejo de errores mejorado
+El script `03_insert_datos_basicos.sql` inserta 3 restaurantes, incluyendo uno compartido con `das-restaurante-soap`:
+- **Restaurante 1 (COMPARTIDO)**: UUID `12345678-1234-1234-1234-123456789abc` - "Los Aroza SRL"
+- **Restaurante 2**: UUID `22345678-2234-2234-2234-223456789abc` - "Parrilla La Esquina SRL"
+- **Restaurante 3**: UUID `32345678-3234-3234-3234-323456789abc` - "Sushi House S.A."
+
+**El restaurante compartido debe existir en ambas bases de datos con el mismo UUID** para que la integración funcione correctamente.
+
+### Orden de Ejecución de Scripts
+
+1. **00_risto.sql** - Crea todas las tablas (ejecutar primero)
+2. **create-stored-procedures.sql** - Crea stored procedures
+3. **01_insert_basicos.sql** - Inserta provincias, localidades, idiomas
+4. **03_insert_datos_basicos.sql** - Inserta restaurantes y datos básicos
+
+### Dependencia con das-restaurante-soap
+
+Esta aplicación depende de `das-restaurante-soap` para:
+- Consultar restaurantes y sucursales
+- Registrar contenidos
+- Notificar clicks
+
+Asegúrate de que `das-restaurante-soap` esté corriendo antes de iniciar esta aplicación.
+
+## 📁 Estructura del Proyecto
+
+```
+das-ristorino/
+├── backend/
+│   ├── src/main/java/ar/edu/ubp/das/backend/
+│   │   ├── resources/          # Controllers REST
+│   │   ├── service/            # Lógica de negocio
+│   │   ├── repository/         # Acceso a datos
+│   │   ├── client/             # Cliente SOAP
+│   │   ├── dto/                # Data Transfer Objects
+│   │   └── config/             # Configuración
+│   ├── src/main/resources/
+│   │   └── application.properties
+│   └── create-stored-procedures.sql
+├── scripts/
+│   ├── 00_risto.sql
+│   ├── 01_insert_basicos.sql
+│   ├── 03_insert_datos_basicos.sql
+│   └── ...
+└── frontend/
+    └── das-ristorino-frontend/  # Angular (separado)
+```
 
 ## 👥 Contribución
+
 1. Fork el proyecto
-2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
 3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
 4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir un Pull Request
-
-## 📞 Soporte
-Para dudas o problemas:
-1. Ejecutar `./verify-setup.sh` para diagnóstico
-2. Revisar logs de la aplicación
-3. Contactar al equipo de desarrollo
+5. Abre un Pull Request
 
 ---
 
