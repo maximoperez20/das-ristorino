@@ -7,6 +7,7 @@ import { routes } from './app.routes';
 import { ResourceHandlerHttpClient } from '@ngx-resource/handler-ngx-http';
 import { ResourceHandler } from '@ngx-resource/core';
 import { RestauranteResolver } from './main/resolvers/restaurante.resolver';
+import { PromocionResource } from './main/api/resources/promocion-resource';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -15,6 +16,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
   provideHttpClient(withInterceptors([appHttpInterceptor])),
     { provide: ResourceHandler, useClass: ResourceHandlerHttpClient },
-    RestauranteResolver
+    RestauranteResolver,
+    PromocionResource
   ]
 };
