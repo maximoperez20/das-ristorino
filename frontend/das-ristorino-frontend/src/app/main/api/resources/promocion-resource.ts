@@ -4,9 +4,7 @@ import type { IResourceMethodObservable } from '@ngx-resource/core';
 import { IPromocion } from '../models/i-promocion';
 import { environment } from '../../../../environments/environment';
 
-@Injectable({
-  providedIn: 'root',
-} )
+@Injectable()
 @ResourceParams({
   pathPrefix: `${environment.apiUrl}/promociones` // 👈 base de la API
 })
@@ -22,9 +20,9 @@ export class PromocionResource extends Resource{
   })
   declare obtenerPromociones: IResourceMethodObservable<void, IPromocion[]>;
 
-  //GET /api/promociones/click
+  //POST /api/promociones/click
   @ResourceAction({
-    path: '/:nroPromocion',
+    path: '/click',
     method: ResourceRequestMethod.Post,
   })
   declare registrarClick: IResourceMethodObservable<

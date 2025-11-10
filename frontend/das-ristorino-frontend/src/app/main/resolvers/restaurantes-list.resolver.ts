@@ -6,13 +6,11 @@ import { RestauranteResource } from '../api/resources/restaurante-resource';
 import { IRestaurante } from '../api/models/i-restaurante';
 
 @Injectable()
-export class RestauranteResolver implements Resolve<IRestaurante | undefined> {
+export class RestaurantesListResolver implements Resolve<IRestaurante[] | undefined> {
   constructor(private _service: RestauranteResource, private router: Router) { }
 
-  resolve(route: ActivatedRouteSnapshot): Observable<IRestaurante | undefined> {
-    const id = route.paramMap.get('nroRestaurante') || '';
-    // RestauranteResource.obtenerRestaurantePorId espera un objeto { id }
-    return this._service.obtenerRestaurantePorId({ id }).pipe(
+  resolve(_route: ActivatedRouteSnapshot): Observable<IRestaurante[] | undefined> {
+    return this._service.obtenerRestaurantes().pipe(
       catchError(err => {
         // En caso de error redirigimos a la home y retornamos undefined
         this.router.navigate(['/']);
