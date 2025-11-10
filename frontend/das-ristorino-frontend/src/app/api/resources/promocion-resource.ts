@@ -4,7 +4,9 @@ import type { IResourceMethodObservable } from '@ngx-resource/core';
 import { IPromocion } from '../models/i-promocion';
 import { environment } from '../../../environments/environment';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+} )
 @ResourceParams({
   pathPrefix: `${environment.apiUrl}/promociones` // 👈 base de la API
 })

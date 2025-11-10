@@ -1,8 +1,9 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule} from '@angular/common';
-import { IPromocion } from '../../api/models/i-promocion';
+import { IPromocion, promocionesLista } from '../../api/models/i-promocion';
 import { PromocionComponent } from '../../components/promocion/promocion';
 import { PromocionResource } from '../../api/resources/promocion-resource';
+import { Router } from '@angular/router';  // ✅ import normal
 
 @Component({
   selector: 'app-promociones',
@@ -12,14 +13,15 @@ import { PromocionResource } from '../../api/resources/promocion-resource';
 })
 export class PromocionesPage implements OnInit {
   
-    promocionesLista: IPromocion[] = [];
+    promocionesLista: IPromocion[] = promocionesLista
     agrupadas: IPromocion[][] = [];
 
     // Inyectar el servicio de promociones (sintaxis moderna)
     private _promocionResource = inject(PromocionResource);
+    private _router = inject(Router);  // ✅ así se obtiene la instancia
 
     ngOnInit(): void {
-      this.cargarPromociones();
+      this.cargarPromocionesFijas();
     }
 
     // cargarPromociones(){
@@ -35,6 +37,14 @@ export class PromocionesPage implements OnInit {
     //     }
     //   });
     // }
+
+    cargarPromocionesFijas() {
+      this.promocionesLista = promocionesLista;
+      this.agrupadas = [];
+      for (let i = 0; i < this.promocionesLista.length; i += 3) {
+        this.agrupadas.push(this.promocionesLista.slice(i, i + 3));
+      }
+    }
 
     cargarPromociones() {
   this._promocionResource.obtenerPromociones().subscribe({
@@ -55,8 +65,14 @@ export class PromocionesPage implements OnInit {
         nroContenido: promocion.nroContenido.toString()
       })
       .subscribe({
-        next: () => console.log('Click registrado correctamente'),
-        error: (err) => console.error('Error registrando click', err)
+        next: () =>{
+          console.log('Click registrado correctamente')
+          this._router.navigate(['/restaurantes', promocion.nroRestaurante]);
+
+        },
+        error: (err) => {console.error('Error registrando click', err)
+        },
+       
       }); 
     }
 

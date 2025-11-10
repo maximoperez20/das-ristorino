@@ -9,7 +9,8 @@ export const routes: Routes = [
     {path: '', component: HomePage, 
         children:[
             {path: '', component: PromocionesPage},
-            {path: 'restaurantes', component: RestaurantesPage},
+            {path: 'restaurantes', 
+                loadComponent: () => import('./pages/restaurantes/restaurantes').then(m => m.RestaurantesPage)},
             {path: 'restaurantes/:nroRestaurante', component: DetalleRestauranteComponent, resolve: { restaurante: RestauranteResolver}},
             {path: '**', redirectTo: ''} // Ruta para manejar rutas no definidas dentro de home
 

@@ -4,7 +4,9 @@ import type { IResourceMethodObservable } from '@ngx-resource/core';
 import { IRestaurante } from '../models/i-restaurante';
 import { environment } from '../../../environments/environment';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 @ResourceParams({
   pathPrefix: `${environment.apiUrl}/restaurantes` // 👈 base de la API
 })

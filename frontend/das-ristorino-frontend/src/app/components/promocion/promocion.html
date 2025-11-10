@@ -4,8 +4,7 @@
         <h5 class="card-title">{{ promocion?.titulo }}</h5>
         <p class="card-text">{{ promocion?.descripcion }}</p>
         <p class="text-muted small mb-2">Vigencia hasta: {{ promocion?.fechaFin | date:'short' }}</p>
-        <a class="btn btn-primary" (click)="onVerPromocion()"
-            [routerLink]="['/restaurantes', promocion?.nroRestaurante]">
+        <a class="btn btn-primary" (click)="onVerPromocion()">
             Ver promoción
         </a>
     </div>

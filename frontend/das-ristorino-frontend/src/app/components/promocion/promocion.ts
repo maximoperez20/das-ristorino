@@ -1,12 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { IPromocion } from '../../api/models/i-promocion';
+import type { IPromocion } from '../../api/models/i-promocion';
 import { CommonModule, DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-promocion',
   standalone: true,
-  imports: [CommonModule, DatePipe, RouterLink],
+  imports: [CommonModule, DatePipe],
   templateUrl: './promocion.html',
   styleUrls: ['./promocion.scss'],
 })
