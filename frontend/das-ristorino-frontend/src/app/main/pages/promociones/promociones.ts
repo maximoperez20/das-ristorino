@@ -13,7 +13,7 @@ import { Router } from '@angular/router';  // ✅ import normal
 })
 export class PromocionesPage implements OnInit {
   
-    promocionesLista: IPromocion[] = promocionesLista
+    promocionesLista: IPromocion[] = [];
     agrupadas: IPromocion[][] = [];
 
     // Inyectar el servicio de promociones (sintaxis moderna)
@@ -21,7 +21,7 @@ export class PromocionesPage implements OnInit {
     private _router = inject(Router);  // ✅ así se obtiene la instancia
 
     ngOnInit(): void {
-      this.cargarPromocionesFijas();
+      this.cargarPromociones();
     }
 
     // cargarPromociones(){

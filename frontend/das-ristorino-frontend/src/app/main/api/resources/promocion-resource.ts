@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import {Resource, ResourceAction, ResourceHandler, ResourceParams, ResourceRequestMethod } from '@ngx-resource/core';
 import type { IResourceMethodObservable } from '@ngx-resource/core';
 import { IPromocion } from '../models/i-promocion';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',

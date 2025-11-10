@@ -1,16 +1,16 @@
 import { Routes } from '@angular/router';
-import { HomePage } from './pages/home/home';
-import { PromocionesPage } from './pages/promociones/promociones';
-import { DetalleRestauranteComponent } from './components/detalle-restaurante/detalle-restaurante';
-import { RestauranteResolver } from './resolvers/restaurante.resolver';
-import { RestaurantesPage } from './pages/restaurantes/restaurantes';
+import { HomePage } from './main/pages/home/home';
+import { PromocionesPage } from './main/pages/promociones/promociones';
+import { DetalleRestauranteComponent } from './main/components/detalle-restaurante/detalle-restaurante';
+import { RestauranteResolver } from './main/resolvers/restaurante.resolver';
+import { RestaurantesPage } from './main/pages/restaurantes/restaurantes';
 
 export const routes: Routes = [
     {path: '', component: HomePage, 
         children:[
             {path: '', component: PromocionesPage},
             {path: 'restaurantes', 
-                loadComponent: () => import('./pages/restaurantes/restaurantes').then(m => m.RestaurantesPage)},
+                loadComponent: () => import('./main/pages/restaurantes/restaurantes').then(m => m.RestaurantesPage)},
             {path: 'restaurantes/:nroRestaurante', component: DetalleRestauranteComponent, resolve: { restaurante: RestauranteResolver}},
             {path: '**', redirectTo: ''} // Ruta para manejar rutas no definidas dentro de home
 

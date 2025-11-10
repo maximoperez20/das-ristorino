@@ -1,6 +1,7 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { appHttpInterceptor } from './core/interceptors/app-http-interceptor';
 
 import { routes } from './app.routes';
 import { ResourceHandlerHttpClient } from '@ngx-resource/handler-ngx-http';
@@ -11,7 +12,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(),
+  provideHttpClient(withInterceptors([appHttpInterceptor])),
     { provide: ResourceHandler, useClass: ResourceHandlerHttpClient }
   ]
 };
