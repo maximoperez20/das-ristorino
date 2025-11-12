@@ -1,0 +1,5 @@
+.login-form { max-width: 380px; margin: 0 auto; }
+.form-group { margin-bottom: 12px; }
+.form-control { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+.btn { padding: 8px 14px; border-radius: 4px; }
+.alert-danger { color: #721c24; background-color: #f8d7da; padding: 8px; border-radius: 4px; margin-top: 6px; }

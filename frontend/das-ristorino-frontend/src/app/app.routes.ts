@@ -3,6 +3,7 @@ import { HomeComponent } from './components/home/home';
 import { PromocionesComponent } from './components/promociones/promociones';
 import { DetalleRestauranteComponent } from './components/detalle-restaurante/detalle-restaurante';
 import { RestaurantesComponent } from './components/restaurantes/restaurantes';
+import { LoginComponent } from './pages/login/login.component';
 
 export const routes: Routes = [
     {path: '', component: HomeComponent, 
@@ -14,6 +15,7 @@ export const routes: Routes = [
     
         ],
     },
+    { path: 'login', component: LoginComponent },
     {path: '**', redirectTo: ''} // Ruta para manejar rutas no definidas
 
 

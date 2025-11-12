@@ -1,0 +1,11 @@
+.login-container {
+  max-width: 480px;
+  margin: 40px auto;
+  padding: 16px;
+  border: 1px solid #e6e6e6;
+  border-radius: 6px;
+}
+
+.alert {
+  margin-bottom: 12px;
+}

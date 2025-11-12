@@ -1,0 +1,5 @@
+<div class="login-container">
+  <h2>Iniciar sesión</h2>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  <app-login-form (submitLogin)="onLoginSubmit($event)"></app-login-form>
+</div>
