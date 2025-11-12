@@ -209,16 +209,31 @@ public class ContenidoRepository {
         }
     }
 
-    public void actualizarCodContenidoRestaurante(
+    /**
+     * Actualiza el cod_contenido_restaurante con el nroContenido devuelto por el sistema SOAP.
+     * Este valor es crítico para identificar clicks que deben ser notificados.
+     * 
+     * @param nroRestaurante UUID del restaurante
+     * @param nroIdioma ID del idioma (INT)
+     * @param nroContenido UUID del contenido en das_ristorino
+     * @param codContenidoRestaurante UUID del contenido en das_restaurante_soap (nroContenido devuelto por SOAP)
+     * @return true si se actualizó correctamente, false en caso contrario
+     */
+    public boolean actualizarCodContenidoRestaurante(
             String nroRestaurante,
             Integer nroIdioma,
             String nroContenido,
             String codContenidoRestaurante) {
         
+        // Validar que codContenidoRestaurante no sea null o vacío
+        if (codContenidoRestaurante == null || codContenidoRestaurante.trim().isEmpty()) {
+            throw new RuntimeException("codContenidoRestaurante no puede ser null o vacío. El sistema SOAP debe devolver un nroContenido válido.");
+        }
+        
         String sql = "EXEC sp_ActualizarCodContenidoRestaurante ?, ?, ?, ?";
         
         try {
-            jdbcTemplate.queryForObject(
+            String resultado = jdbcTemplate.queryForObject(
                 sql,
                 (rs, rowNum) -> {
                     return rs.getString("cod_contenido_restaurante");
@@ -228,8 +243,17 @@ public class ContenidoRepository {
                 nroContenido,
                 codContenidoRestaurante
             );
+            
+            // Verificar que la actualización fue exitosa
+            return resultado != null && resultado.equals(codContenidoRestaurante);
+        } catch (org.springframework.dao.DataAccessException e) {
+            // Si el stored procedure lanza un RAISERROR, se captura aquí
+            throw new RuntimeException("Error al actualizar cod_contenido_restaurante. " +
+                    "Verificar que el contenido existe (nroRestaurante=" + nroRestaurante + 
+                    ", nroIdioma=" + nroIdioma + ", nroContenido=" + nroContenido + "). " +
+                    "Error: " + e.getMessage(), e);
         } catch (Exception e) {
-            throw new RuntimeException("Error al actualizar cod_contenido_restaurante: " + e.getMessage(), e);
+            throw new RuntimeException("Error inesperado al actualizar cod_contenido_restaurante: " + e.getMessage(), e);
         }
     }
 

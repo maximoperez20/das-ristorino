@@ -135,25 +135,51 @@ public class ContenidoService {
 
             RegistrarContenidoResponse response = client.registrarContenido(registroRequest);
 
-            if (response.isExitoso()) {
-                logger.info("Contenido registrado exitosamente. ID del restaurante: {}", 
+            if (response.isExitoso() && response.getNroContenido() != null && !response.getNroContenido().trim().isEmpty()) {
+                logger.info("Contenido registrado exitosamente en SOAP. ID del restaurante (nroContenido SOAP): {}", 
                     response.getNroContenido());
                 
-                contenidoRepository.actualizarCodContenidoRestaurante(
-                    request.getNroRestaurante(),
-                    request.getNroIdioma(),
-                    resultado.getNroContenido(),
-                    response.getNroContenido()
-                );
-                
-                logger.info("cod_contenido_restaurante actualizado exitosamente");
+                try {
+                    boolean actualizado = contenidoRepository.actualizarCodContenidoRestaurante(
+                        request.getNroRestaurante(),
+                        request.getNroIdioma(),
+                        resultado.getNroContenido(),
+                        response.getNroContenido()
+                    );
+                    
+                    if (actualizado) {
+                        logger.info("cod_contenido_restaurante actualizado exitosamente. " +
+                                "nroContenido (ristorino): {}, codContenidoRestaurante (SOAP): {}", 
+                                resultado.getNroContenido(), response.getNroContenido());
+                    } else {
+                        logger.error("ERROR CRÍTICO: No se pudo actualizar cod_contenido_restaurante. " +
+                                "Los clicks no podrán ser notificados. " +
+                                "nroRestaurante: {}, nroIdioma: {}, nroContenido: {}, codContenidoRestaurante: {}",
+                                request.getNroRestaurante(), request.getNroIdioma(), 
+                                resultado.getNroContenido(), response.getNroContenido());
+                    }
+                } catch (Exception e) {
+                    logger.error("ERROR CRÍTICO al actualizar cod_contenido_restaurante. " +
+                            "Los clicks de este contenido NO podrán ser notificados. " +
+                            "nroRestaurante: {}, nroIdioma: {}, nroContenido: {}, codContenidoRestaurante: {}. " +
+                            "Error: {}", 
+                            request.getNroRestaurante(), request.getNroIdioma(), 
+                            resultado.getNroContenido(), response.getNroContenido(), e.getMessage(), e);
+                    // No lanzar excepción para no interrumpir el flujo, pero registrar el error crítico
+                }
             } else {
-                logger.warn("No se pudo registrar el contenido: {}", response.getMensaje());
+                logger.warn("No se pudo registrar el contenido en SOAP o no se devolvió nroContenido. " +
+                        "exitoso: {}, nroContenido: {}, mensaje: {}", 
+                        response.isExitoso(), response.getNroContenido(), response.getMensaje());
+                logger.warn("IMPORTANTE: El cod_contenido_restaurante NO se actualizará. " +
+                        "Los clicks de este contenido NO podrán ser notificados hasta que se registre correctamente en SOAP.");
             }
             
         } catch (Exception e) {
             logger.error("Error al registrar contenido en el sistema del restaurante (continuando de todas formas): {}", 
                 e.getMessage(), e);
+            logger.error("IMPORTANTE: El cod_contenido_restaurante NO se actualizará debido al error. " +
+                    "Los clicks de este contenido NO podrán ser notificados hasta que se registre correctamente en SOAP.");
         }
 
         return resultado;

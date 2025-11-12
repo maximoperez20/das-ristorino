@@ -778,8 +778,8 @@ GO
 CREATE OR ALTER PROCEDURE sp_GuardarContenidoGenerado
     @nro_restaurante VARCHAR(36),
     @nro_sucursal VARCHAR(36) = NULL,
-    @nro_idioma VARCHAR(36),
-    @contenido_generado VARCHAR(MAX)
+    @nro_idioma INT,
+    @contenido_generado NVARCHAR(MAX)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -788,6 +788,28 @@ BEGIN
     DECLARE @fecha_ini DATE = CAST(GETDATE() AS DATE);
     DECLARE @fecha_fin DATE = DATEADD(MONTH, 1, @fecha_ini);
     DECLARE @costo_click DECIMAL(12,2) = 0.00; -- Costo por defecto
+    DECLARE @nro_sucursal_validado VARCHAR(36) = NULL;
+    
+    -- Validar y normalizar nro_sucursal
+    -- Si es NULL, cadena vacía o no existe en la base de datos, establecer a NULL
+    IF @nro_sucursal IS NOT NULL AND LTRIM(RTRIM(@nro_sucursal)) != ''
+    BEGIN
+        -- Verificar que la sucursal existe para este restaurante
+        IF EXISTS (
+            SELECT 1 
+            FROM sucursales_restaurantes 
+            WHERE nro_restaurante = @nro_restaurante 
+              AND nro_sucursal = @nro_sucursal
+        )
+        BEGIN
+            SET @nro_sucursal_validado = @nro_sucursal;
+        END
+        ELSE
+        BEGIN
+            -- Si la sucursal no existe, establecer a NULL para evitar error de foreign key
+            SET @nro_sucursal_validado = NULL;
+        END
+    END
     
     -- Insertar el contenido generado
     INSERT INTO contenidos_restaurantes (
@@ -807,9 +829,9 @@ BEGIN
         @nro_restaurante,
         @nro_idioma,
         @nro_contenido,
-        @nro_sucursal,
+        @nro_sucursal_validado,
         NULL, -- contenido_promocional (null por ahora)
-        NULL, -- imagen_promocional (null por ahora)
+        NULL, -- imagen_promocional (null por ahora, será URL de internet)
         @contenido_generado,
         @fecha_ini,
         @fecha_fin,
@@ -838,19 +860,28 @@ GO
 -- =====================================================
 CREATE OR ALTER PROCEDURE sp_ActualizarCodContenidoRestaurante
     @nro_restaurante VARCHAR(36),
-    @nro_idioma VARCHAR(36),
+    @nro_idioma INT,
     @nro_contenido VARCHAR(36),
     @cod_contenido_restaurante VARCHAR(40)
 AS
 BEGIN
     SET NOCOUNT ON;
     
+    -- Actualizar cod_contenido_restaurante con el nro_contenido del sistema SOAP
     UPDATE contenidos_restaurantes
     SET cod_contenido_restaurante = @cod_contenido_restaurante
     WHERE nro_restaurante = @nro_restaurante
       AND nro_idioma = @nro_idioma
       AND nro_contenido = @nro_contenido;
     
+    -- Verificar si se actualizó correctamente
+    IF @@ROWCOUNT = 0
+    BEGIN
+        -- Si no se encontró el registro, puede ser un problema de tipos o valores
+        RAISERROR('No se encontró el contenido para actualizar. Verificar nro_restaurante, nro_idioma y nro_contenido.', 16, 1);
+    END
+    
+    -- Retornar el registro actualizado
     SELECT 
         nro_restaurante,
         nro_idioma,
