@@ -222,4 +222,51 @@ public class RestauranteRepository {
         return jdbcTemplate.query(sql, restauranteRowMapper, 
             tiposComidaStr, barrioStr, localidadStr, ambienteStr, rangoPrecioStr, palabrasClaveStr);
     }
+    
+    /**
+     * Verificar si un restaurante existe por su nroRestaurante
+     * @param nroRestaurante UUID del restaurante
+     * @return true si existe, false en caso contrario
+     */
+    public boolean existeRestaurante(String nroRestaurante) {
+        String sql = "SELECT COUNT(*) FROM restaurantes WHERE nro_restaurante = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, nroRestaurante);
+        return count != null && count > 0;
+    }
+    
+    /**
+     * Verificar si una sucursal existe y pertenece al restaurante especificado
+     * @param nroRestaurante UUID del restaurante
+     * @param nroSucursal UUID de la sucursal (ID interno de das-ristorino)
+     * @return true si existe y pertenece al restaurante, false en caso contrario
+     */
+    public boolean existeSucursal(String nroRestaurante, String nroSucursal) {
+        String sql = "SELECT COUNT(*) FROM sucursales_restaurantes " +
+                     "WHERE nro_restaurante = ? AND nro_sucursal = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, nroRestaurante, nroSucursal);
+        return count != null && count > 0;
+    }
+    
+    /**
+     * Obtener el cod_sucursal_restaurante (ID de la sucursal en das-restaurante-soap)
+     * a partir del nro_sucursal (ID interno de das-ristorino)
+     * @param nroRestaurante UUID del restaurante
+     * @param nroSucursal UUID de la sucursal (ID interno de das-ristorino)
+     * @return cod_sucursal_restaurante (ID en das-restaurante-soap) o null si no existe
+     */
+    public String obtenerCodSucursalRestaurante(String nroRestaurante, String nroSucursal) {
+        String sql = "SELECT cod_sucursal_restaurante FROM sucursales_restaurantes " +
+                     "WHERE nro_restaurante = ? AND nro_sucursal = ?";
+        try {
+            List<String> result = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getString("cod_sucursal_restaurante"),
+                nroRestaurante,
+                nroSucursal
+            );
+            return result.isEmpty() ? null : result.get(0);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

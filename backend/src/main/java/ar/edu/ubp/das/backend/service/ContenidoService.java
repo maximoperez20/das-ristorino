@@ -43,29 +43,20 @@ public class ContenidoService {
      * @throws RuntimeException si no se encuentra el restaurante o hay error en la generación
      */
     public ContenidoGeneradoDto generarContenido(GenerarContenidoRequestDto request) {
-        logger.info("Iniciando generación de contenido para restaurante: {}, sucursal: {}, idioma: {}", 
-                    request.getNroRestaurante(), 
-                    request.getNroSucursal(), 
-                    request.getNroIdioma());
-
         // Obtener contexto del restaurante desde la BD
         RestauranteContextoDto contexto = contenidoRepository.obtenerContextoRestaurante(
             request.getNroRestaurante(), 
             request.getNroSucursal()
         ).orElseThrow(() -> new RuntimeException("Restaurante no encontrado con ID: " + request.getNroRestaurante()));
-        logger.info("Contexto del restaurante obtenido: {}", contexto);
 
         // Determinar qué prompt ID usar
         String promptId = (request.getPromptId() != null && !request.getPromptId().isEmpty()) 
                           ? request.getPromptId() 
                           : defaultPromptId;
-        
-        logger.info("🎯 Usando Prompt ID: {}", promptId);
 
         // Obtener información del idioma
         String codIdioma = contenidoRepository.obtenerCodIdioma(request.getNroIdioma());
         String nomIdioma = contenidoRepository.obtenerNomIdioma(request.getNroIdioma());
-        logger.info("🌐 Idioma seleccionado: {} ({})", nomIdioma, codIdioma);
 
         // Construir prompt con el contexto e idioma
         String prompt = openAIService.construirPrompt(
@@ -83,13 +74,10 @@ public class ContenidoService {
             nomIdioma
         );
 
-        logger.info("Prompt construido. Longitud: {} caracteres", prompt.length());
-
         // Generar contenido con OpenAI
         String contenidoGenerado;
         try {
             contenidoGenerado = openAIService.generarContenidoPublicitario(prompt, promptId);
-            logger.info("Contenido generado exitosamente. Longitud: {} caracteres", contenidoGenerado.length());
         } catch (Exception e) {
             logger.error("Error al generar contenido con OpenAI: {}", e.getMessage(), e);
             throw new RuntimeException("Error al generar contenido con IA: " + e.getMessage(), e);
@@ -105,11 +93,7 @@ public class ContenidoService {
         resultado.setNombreRestaurante(contexto.getRazonSocial());
         resultado.setNombreSucursal(contexto.getNombreSucursal());
 
-        logger.info("Contenido guardado exitosamente con nro_contenido: {}", resultado.getNroContenido());
-
         try {
-            logger.info("Registrando contenido en el sistema del restaurante...");
-
             String codSucursalRestaurante = null;
             if (request.getNroSucursal() != null && !request.getNroSucursal().trim().isEmpty()) {
                 codSucursalRestaurante = contenidoRepository.obtenerCodSucursalRestaurante(
@@ -118,8 +102,6 @@ public class ContenidoService {
                 );
                 if (codSucursalRestaurante == null) {
                     logger.warn("Sucursal encontrada pero cod_sucursal_restaurante es NULL. La sucursal puede no estar sincronizada con el sistema del restaurante.");
-                } else {
-                    logger.info("Cod sucursal restaurante obtenido: {}", codSucursalRestaurante);
                 }
             }
 
@@ -136,9 +118,6 @@ public class ContenidoService {
             RegistrarContenidoResponse response = client.registrarContenido(registroRequest);
 
             if (response.isExitoso() && response.getNroContenido() != null && !response.getNroContenido().trim().isEmpty()) {
-                logger.info("Contenido registrado exitosamente en SOAP. ID del restaurante (nroContenido SOAP): {}", 
-                    response.getNroContenido());
-                
                 try {
                     boolean actualizado = contenidoRepository.actualizarCodContenidoRestaurante(
                         request.getNroRestaurante(),
@@ -147,11 +126,7 @@ public class ContenidoService {
                         response.getNroContenido()
                     );
                     
-                    if (actualizado) {
-                        logger.info("cod_contenido_restaurante actualizado exitosamente. " +
-                                "nroContenido (ristorino): {}, codContenidoRestaurante (SOAP): {}", 
-                                resultado.getNroContenido(), response.getNroContenido());
-                    } else {
+                    if (!actualizado) {
                         logger.error("ERROR CRÍTICO: No se pudo actualizar cod_contenido_restaurante. " +
                                 "Los clicks no podrán ser notificados. " +
                                 "nroRestaurante: {}, nroIdioma: {}, nroContenido: {}, codContenidoRestaurante: {}",
@@ -165,14 +140,11 @@ public class ContenidoService {
                             "Error: {}", 
                             request.getNroRestaurante(), request.getNroIdioma(), 
                             resultado.getNroContenido(), response.getNroContenido(), e.getMessage(), e);
-                    // No lanzar excepción para no interrumpir el flujo, pero registrar el error crítico
                 }
             } else {
                 logger.warn("No se pudo registrar el contenido en SOAP o no se devolvió nroContenido. " +
-                        "exitoso: {}, nroContenido: {}, mensaje: {}", 
-                        response.isExitoso(), response.getNroContenido(), response.getMensaje());
-                logger.warn("IMPORTANTE: El cod_contenido_restaurante NO se actualizará. " +
-                        "Los clicks de este contenido NO podrán ser notificados hasta que se registre correctamente en SOAP.");
+                        "El cod_contenido_restaurante NO se actualizará. " +
+                        "Mensaje: {}", response.getMensaje() != null ? response.getMensaje() : "Sin mensaje");
             }
             
         } catch (Exception e) {

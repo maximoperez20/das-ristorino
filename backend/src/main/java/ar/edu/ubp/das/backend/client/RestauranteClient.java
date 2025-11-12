@@ -1,9 +1,13 @@
 package ar.edu.ubp.das.backend.client;
 
+import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
+
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Interfaz común para comunicación con restaurantes.
@@ -26,5 +30,23 @@ public interface RestauranteClient {
      * @return Respuesta con el resultado de la notificación
      */
     NotificarClickResponse notificarClick(NotificarClickRequest request);
+
+    /**
+     * Obtiene los horarios disponibles para una sucursal, zona y fecha específica.
+     *
+     * @param nroRestaurante UUID del restaurante
+     * @param nroSucursal UUID de la sucursal
+     * @param codZona UUID de la zona
+     * @param fecha Fecha para consultar disponibilidad
+     * @param cantidad Cantidad de personas (opcional, null para todos los horarios)
+     * @return Lista de horarios disponibles con capacidad y disponibilidad
+     */
+    List<HorarioDisponibleDto> getHorariosDisponibles(
+            String nroRestaurante,
+            String nroSucursal,
+            String codZona,
+            LocalDate fecha,
+            Integer cantidad
+    );
 }
 

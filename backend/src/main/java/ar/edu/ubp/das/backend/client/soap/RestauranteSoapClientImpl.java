@@ -1,10 +1,12 @@
 package ar.edu.ubp.das.backend.client.soap;
 
 import ar.edu.ubp.das.backend.client.RestauranteClient;
+import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
+import ar.edu.ubp.das.backend.dto.soap.GetHorariosDisponiblesSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.NotificarClickSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.RegistrarContenidoSoapDto;
 import ar.edu.ubp.das.backend.utils.SOAPClient;
@@ -14,9 +16,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -49,37 +55,18 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
 
     @Override
     public RegistrarContenidoResponse registrarContenido(RegistrarContenidoRequest request) {
-        logger.info("Registrando contenido vía SOAP - Restaurante: {}", request.getNroRestaurante());
-
         try {
-            // ============================================
-            // CONSTRUCCIÓN DEL JSON A ENVIAR
-            // ============================================
-            // Para agregar/modificar campos JSON, editar el Map jsonData abajo.
-            // Los campos disponibles en request son:
-            // - nroRestaurante (String)
-            // - nroSucursal (String, opcional)
-            // - contenidoAPublicar (String)
-            // - imagenAPublicar (byte[], se convierte a base64)
-            // - costoClick (BigDecimal, opcional)
-            // ============================================
-            
-            // Construir Map manualmente para tener control total sobre el JSON
-            // Esto facilita agregar/modificar campos sin tocar el DTO
+            // Construir JSON a enviar
             Map<String, Object> jsonData = new HashMap<>();
             jsonData.put("nroRestaurante", request.getNroRestaurante());
             jsonData.put("nroSucursal", request.getNroSucursal());
             jsonData.put("contenidoAPublicar", request.getContenidoAPublicar());
             if (request.getImagenAPublicar() != null) {
-                // Convertir imagen a base64 string para JSON
                 jsonData.put("imagenAPublicar", Base64.getEncoder().encodeToString(request.getImagenAPublicar()));
             }
             jsonData.put("costoClick", request.getCostoClick());
-            // AGREGAR NUEVOS CAMPOS AQUÍ: jsonData.put("nuevoCampo", valor);
             
             String jsonString = gson.toJson(jsonData);
-            
-            logger.info("JSON a enviar: {}", jsonString);
 
             // Crear cliente SOAP y enviar JSON
             SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
@@ -99,16 +86,11 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
                     parameters
             );
 
-            logger.info("Respuesta JSON recibida: {}", soapResponse.getJsonResponse());
-
             // Parsear respuesta JSON directamente al DTO genérico
             RegistrarContenidoResponse response = gson.fromJson(
                     soapResponse.getJsonResponse(),
                     RegistrarContenidoResponse.class
             );
-
-            logger.info("Respuesta parseada - Exitoso: {}, ID: {}, Mensaje: {}",
-                    response.isExitoso(), response.getNroContenido(), response.getMensaje());
 
             return response;
         } catch (Exception e) {
@@ -166,20 +148,114 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
                     parameters
             );
 
-            logger.info("Respuesta JSON recibida: {}", soapResponse.getJsonResponse());
-
             // Parsear respuesta JSON directamente al DTO genérico
             NotificarClickResponse response = gson.fromJson(
                     soapResponse.getJsonResponse(),
                     NotificarClickResponse.class
             );
 
-            logger.info("Respuesta parseada - Exitoso: {}, Mensaje: {}",
-                    response.isExitoso(), response.getMensaje());
-
             return response;
         } catch (Exception e) {
             logger.error("Error al llamar al servicio SOAP para notificar click: {}", e.getMessage(), e);
+            throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<HorarioDisponibleDto> getHorariosDisponibles(
+            String nroRestaurante,
+            String nroSucursal,
+            String codZona,
+            LocalDate fecha,
+            Integer cantidad) {
+        try {
+            // Construir JSON a enviar
+            Map<String, Object> jsonData = new HashMap<>();
+            jsonData.put("nroRestaurante", nroRestaurante);
+            jsonData.put("nroSucursal", nroSucursal);
+            jsonData.put("codZona", codZona);
+            jsonData.put("fecha", fecha.format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE));
+            jsonData.put("cantidad", cantidad);
+            
+            String jsonString = gson.toJson(jsonData);
+
+            // Crear cliente SOAP y enviar JSON
+            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
+                    .wsdlUrl(wsdlUrl)
+                    .namespace(namespace)
+                    .serviceName(serviceName)
+                    .portName(portName)
+                    .operationName("getHorariosDisponiblesRequest")
+                    .build();
+
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("jsonData", jsonString);
+
+            GetHorariosDisponiblesSoapDto soapResponse = soapClient.callServiceForObject(
+                    GetHorariosDisponiblesSoapDto.class,
+                    "getHorariosDisponiblesResponse",
+                    parameters
+            );
+
+            // Parsear respuesta JSON que viene agrupada por zonas
+            // La respuesta tiene formato: { "zonas": [...], "totalZonas": N, "fecha": "..." }
+            // Necesitamos aplanar la estructura para devolver List<HorarioDisponibleDto>
+            com.google.gson.reflect.TypeToken<Map<String, Object>> typeToken = new com.google.gson.reflect.TypeToken<Map<String, Object>>(){};
+            Map<String, Object> jsonResponse = gson.fromJson(soapResponse.getJsonResponse(), typeToken.getType());
+            
+            List<HorarioDisponibleDto> horarios = new ArrayList<>();
+            
+            if (jsonResponse.containsKey("zonas")) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> zonas = (List<Map<String, Object>>) jsonResponse.get("zonas");
+                
+                for (Map<String, Object> zona : zonas) {
+                    String codZonaResp = (String) zona.get("codZona");
+                    String nomZona = (String) zona.get("nomZona");
+                    Integer capacidadZona = zona.get("capacidadZona") != null 
+                        ? ((Number) zona.get("capacidadZona")).intValue() : null;
+                    Boolean permiteMenores = zona.get("permiteMenores") != null 
+                        ? (Boolean) zona.get("permiteMenores") : null;
+                    
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> turnos = (List<Map<String, Object>>) zona.get("horarios");
+                    
+                    if (turnos != null) {
+                        for (Map<String, Object> turno : turnos) {
+                            HorarioDisponibleDto horario = new HorarioDisponibleDto();
+                            
+                            // Información de la zona
+                            horario.setCodZona(codZonaResp);
+                            horario.setNomZona(nomZona);
+                            horario.setCapacidadZona(capacidadZona);
+                            horario.setPermiteMenores(permiteMenores);
+                            
+                            // Información del turno
+                            if (turno.containsKey("horaDesde") && turno.get("horaDesde") != null) {
+                                horario.setHoraDesde(LocalTime.parse((String) turno.get("horaDesde")));
+                            }
+                            if (turno.containsKey("horaHasta") && turno.get("horaHasta") != null) {
+                                horario.setHoraHasta(LocalTime.parse((String) turno.get("horaHasta")));
+                            }
+                            if (turno.containsKey("yaReservados")) {
+                                horario.setYaReservados(turno.get("yaReservados") != null 
+                                    ? ((Number) turno.get("yaReservados")).intValue() : 0);
+                            }
+                            if (turno.containsKey("disponibilidad")) {
+                                horario.setDisponibilidad(turno.get("disponibilidad") != null 
+                                    ? ((Number) turno.get("disponibilidad")).intValue() : 0);
+                            }
+                            
+                            horarios.add(horario);
+                        }
+                    }
+                }
+            }
+
+            return horarios;
+
+        } catch (Exception e) {
+            logger.error("Error al consultar horarios disponibles vía SOAP: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
         }
     }
