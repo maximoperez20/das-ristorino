@@ -132,9 +132,6 @@ public class RestauranteResource {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
             @RequestParam(required = false) Integer cantidad) {
         try {
-            logger.info("Consultando horarios disponibles - Restaurante: {}, Sucursal: {}, Zona: {} (null = todas), Fecha: {}, Cantidad: {}", 
-                    nroRestaurante, nroSucursal, codZona, fecha, cantidad);
-            
             List<HorarioDisponibleDto> horarios = restauranteService.obtenerHorariosDisponibles(
                     nroRestaurante, nroSucursal, codZona, fecha, cantidad);
             

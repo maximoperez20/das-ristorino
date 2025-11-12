@@ -12,15 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
 public class BatchClickService {
 
     private static final Logger logger = LoggerFactory.getLogger(BatchClickService.class);
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
     private ClickRepository clickRepository;
@@ -29,19 +26,12 @@ public class BatchClickService {
     private RestauranteClientFactory restauranteClientFactory;
 
     public void procesarClicksNoNotificados() {
-        logger.info("========================================");
-        logger.info("Iniciando batch de notificación de clicks - {}", LocalDateTime.now().format(DATE_FORMATTER));
-        logger.info("========================================");
-
         try {
             List<ClickNoNotificadoDto> clicksNoNotificados = clickRepository.obtenerClicksNoNotificados();
             
             if (clicksNoNotificados.isEmpty()) {
-                logger.info("No hay clicks pendientes de notificar");
                 return;
             }
-
-            logger.info("Clicks pendientes de notificar: {}", clicksNoNotificados.size());
 
             int exitosos = 0;
             int fallidos = 0;
@@ -81,7 +71,6 @@ public class BatchClickService {
                                 click.getNroClick()
                         );
                         exitosos++;
-                        logger.info("Click {} notificado exitosamente", click.getNroClick());
                     } else {
                         fallidos++;
                         logger.warn("Click {} no pudo ser notificado: {}", click.getNroClick(), response.getMensaje());
@@ -93,12 +82,8 @@ public class BatchClickService {
                 }
             }
 
-            logger.info("========================================");
-            logger.info("Batch de notificación completado");
-            logger.info("Total procesados: {}", procesados);
-            logger.info("Exitosos: {}", exitosos);
-            logger.info("Fallidos: {}", fallidos);
-            logger.info("========================================");
+            logger.info("Batch de notificación completado - Procesados: {}, Exitosos: {}, Fallidos: {}", 
+                    procesados, exitosos, fallidos);
 
         } catch (Exception e) {
             logger.error("Error crítico en batch de notificación de clicks: {}", e.getMessage(), e);

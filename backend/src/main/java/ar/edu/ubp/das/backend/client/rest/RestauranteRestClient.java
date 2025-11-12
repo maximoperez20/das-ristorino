@@ -109,26 +109,11 @@ public class RestauranteRestClient implements RestauranteClient {
 
     @Override
     public NotificarClickResponse notificarClick(NotificarClickRequest request) {
-        logger.info("Notificando click vía REST - Restaurante: {}, Contenido: {}, Click: {}", 
-                request.getNroRestaurante(), request.getNroContenido(), request.getNroClick());
-
         try {
             String url = baseUrl + "/restaurantes/" + request.getNroRestaurante() + 
                         "/contenidos/" + request.getNroContenido() + "/clicks";
 
-            // ============================================
-            // CONSTRUCCIÓN DEL JSON A ENVIAR
-            // ============================================
-            // Para agregar/modificar campos JSON, editar el Map jsonData abajo.
-            // Los campos disponibles en request son:
-            // - nroRestaurante (String)
-            // - nroContenido (String)
-            // - nroClick (String)
-            // - fechaHoraRegistro (LocalDateTime, se convierte a ISO string)
-            // - nroCliente (String, opcional)
-            // - costoClick (BigDecimal, opcional)
-            // ============================================
-            
+            // Construir JSON a enviar
             Map<String, Object> jsonData = new HashMap<>();
             jsonData.put("nroRestaurante", request.getNroRestaurante());
             jsonData.put("nroContenido", request.getNroContenido());
@@ -136,10 +121,8 @@ public class RestauranteRestClient implements RestauranteClient {
             jsonData.put("fechaHoraRegistro", request.getFechaHoraRegistro().format(ISO_DATE_TIME));
             jsonData.put("nroCliente", request.getNroCliente());
             jsonData.put("costoClick", request.getCostoClick());
-            // AGREGAR NUEVOS CAMPOS AQUÍ: jsonData.put("nuevoCampo", valor);
             
             String jsonString = gson.toJson(jsonData);
-            logger.info("JSON a enviar: {}", jsonString);
 
             HttpHeaders headers = createHeaders();
             HttpEntity<String> entity = new HttpEntity<>(jsonString, headers);
