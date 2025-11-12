@@ -1,23 +1,27 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, ErrorHandler, importProvidersFrom, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { appHttpInterceptor } from './core/interceptors/app-http-interceptor';
-
-import { routes } from './app.routes';
 import { ResourceHandlerHttpClient } from '@ngx-resource/handler-ngx-http';
 import { ResourceHandler } from '@ngx-resource/core';
+
+import { routes } from './app.routes';
 import { PromocionResource } from './main/api/resources/promocion-resource';
 import { RestauranteResource } from './main/api/resources/restaurante-resource';
-import { promocionesListResolver } from './main/resolvers/promociones-list.resolver';
-import { restauranteListResolver } from './main/resolvers/restaurantes-list.resolver';
+import { CoreModule } from './core/core-module';
+import { AppErrorHandler } from './core/handlers/app-error-handler';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-  provideHttpClient(withInterceptors([appHttpInterceptor])),
+  provideHttpClient(
+    withInterceptors([appHttpInterceptor])
+  ),
+  importProvidersFrom(CoreModule),
     { provide: ResourceHandler, useClass: ResourceHandlerHttpClient },
+    { provide: ErrorHandler, useClass: AppErrorHandler },
     PromocionResource,
     RestauranteResource,
   ]

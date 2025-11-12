@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LoaderService } from './services/loader-service';
+import { AppMessageService } from './services/app-message-service';
 
 @NgModule({
   declarations: [ ],
@@ -8,7 +9,8 @@ import { LoaderService } from './services/loader-service';
     CommonModule
   ],
   providers: [
-    LoaderService
+    LoaderService,
+    AppMessageService
   ],
   exports: [ ]
 })
