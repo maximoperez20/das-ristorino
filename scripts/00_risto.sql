@@ -281,7 +281,7 @@ CREATE TABLE dbo.contenidos_restaurantes (
   nro_contenido          VARCHAR(36)   NOT NULL DEFAULT NEWID(),
   nro_sucursal           VARCHAR(36)   NULL,
   contenido_promocional  NVARCHAR(MAX) NULL,
-  imagen_promocional     VARBINARY(MAX) NULL,
+  imagen_promocional     NVARCHAR(500) NULL,  -- URL de la imagen en internet
   contenido_a_publicar   NVARCHAR(MAX) NULL,
   fecha_ini_vigencia     DATE          NULL,
   fecha_fin_vigencia     DATE          NULL,

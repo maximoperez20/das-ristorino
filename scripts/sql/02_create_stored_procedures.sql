@@ -536,7 +536,8 @@ BEGIN
         CASE WHEN cr.fecha_ini_vigencia IS NOT NULL AND cr.fecha_fin_vigencia IS NOT NULL 
              AND CAST(GETDATE() AS DATE) BETWEEN cr.fecha_ini_vigencia AND cr.fecha_fin_vigencia 
              THEN 'ACTIVA' ELSE 'INACTIVA' END AS estado,
-        CAST(NULL AS NVARCHAR(255)) AS imagen_url,
+        -- Devolver directamente la URL de la imagen almacenada
+        cr.imagen_promocional AS imagen_url,
         CAST(NULL AS INT) AS min_personas,
         CAST(NULL AS INT) AS max_personas,
         cr.cod_contenido_restaurante AS codigo_promocion,
@@ -699,7 +700,8 @@ BEGIN
             WHEN cr.fecha_ini_vigencia IS NOT NULL AND cr.fecha_fin_vigencia IS NOT NULL 
                  AND CAST(GETDATE() AS DATE) BETWEEN cr.fecha_ini_vigencia AND cr.fecha_fin_vigencia 
             THEN 'ACTIVA' ELSE 'INACTIVA' END AS estado,
-        CAST(NULL AS NVARCHAR(255)) AS imagen_url,
+        -- Devolver directamente la URL de la imagen almacenada
+        cr.imagen_promocional AS imagen_url,
         CAST(NULL AS INT) AS min_personas,
         CAST(NULL AS INT) AS max_personas,
         cr.cod_contenido_restaurante AS codigo_promocion,

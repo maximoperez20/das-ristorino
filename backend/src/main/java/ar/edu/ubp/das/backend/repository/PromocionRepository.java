@@ -49,11 +49,20 @@ public class PromocionRepository {
             }
             
             promocion.setEstado(rs.getString("estado"));
-            promocion.setImagenUrl(rs.getString("imagen_url"));
-            promocion.setMinPersonas(rs.getInt("min_personas"));
-            promocion.setMaxPersonas(rs.getInt("max_personas"));
+            // imagen_url puede ser NULL
+            String imagenUrl = rs.getString("imagen_url");
+            if (!rs.wasNull()) {
+                promocion.setImagenUrl(imagenUrl);
+            }
+            // min_personas y max_personas pueden ser NULL
+            int minPersonas = rs.getInt("min_personas");
+            promocion.setMinPersonas(rs.wasNull() ? null : minPersonas);
+            int maxPersonas = rs.getInt("max_personas");
+            promocion.setMaxPersonas(rs.wasNull() ? null : maxPersonas);
             promocion.setCodigoPromocion(rs.getString("codigo_promocion"));
-            promocion.setRequiereCodigo(rs.getBoolean("requiere_codigo"));
+            // requiere_codigo puede ser NULL
+            boolean requiereCodigo = rs.getBoolean("requiere_codigo");
+            promocion.setRequiereCodigo(rs.wasNull() ? false : requiereCodigo);
             return promocion;
         }
     };
@@ -81,7 +90,7 @@ public class PromocionRepository {
                     "CASE WHEN cr.fecha_ini_vigencia IS NOT NULL AND cr.fecha_fin_vigencia IS NOT NULL " +
                     "     AND CAST(GETDATE() AS DATE) BETWEEN cr.fecha_ini_vigencia AND cr.fecha_fin_vigencia " +
                     "     THEN 'ACTIVA' ELSE 'INACTIVA' END AS estado, " +
-                    "CAST(NULL AS NVARCHAR(255)) AS imagen_url, " +
+                    "cr.imagen_promocional AS imagen_url, " +
                     "CAST(NULL AS INT) AS min_personas, " +
                     "CAST(NULL AS INT) AS max_personas, " +
                     "cr.cod_contenido_restaurante AS codigo_promocion, " +
