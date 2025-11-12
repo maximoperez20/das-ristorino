@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { IRestaurante } from '../../api/models/i-restaurante';
 import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-detalle-restaurante',
+  standalone: true,
   imports: [NgClass],
   templateUrl: './detalle-restaurante.html',
   styleUrls: ['./detalle-restaurante.scss'],
@@ -12,15 +13,15 @@ import { NgClass } from '@angular/common';
 export class DetalleRestauranteComponent implements OnInit {
 
   restaurante?: IRestaurante | undefined;
-
-  constructor(private _route: ActivatedRoute) { }
+  private _route = inject(ActivatedRoute);
 
   ngOnInit(): void {
-    // Obtener el restaurante resuelto por el RestauranteResolver
+    // Leer el restaurante resuelto por el RestauranteResolver (route.data.restaurante)
     this._route.data.subscribe(data => {
-      this.restaurante = data['restaurante'];
-      console.log('Restaurante resuelto:', this.restaurante);
+      this.restaurante = data?.['restaurante'];
+      console.log('Restaurante resuelto en componente:', this.restaurante);
     });
   }
 
 }
+

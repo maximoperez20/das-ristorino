@@ -4,9 +4,7 @@ import type { IResourceMethodObservable } from '@ngx-resource/core';
 import { IRestaurante } from '../models/i-restaurante';
 import { environment } from '../../../../environments/environment';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 @ResourceParams({
   pathPrefix: `${environment.apiUrl}/restaurantes` // 👈 base de la API
 })
@@ -24,7 +22,7 @@ export class RestauranteResource extends Resource{
 
   //GET /api/restaurantes/:id
   @ResourceAction({
-    path: ':id',
+    path: '/{!id}',
     method: ResourceRequestMethod.Get,
   })
   declare obtenerRestaurantePorId: IResourceMethodObservable<{ id: string }, IRestaurante>;
