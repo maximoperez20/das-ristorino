@@ -1,26 +1,48 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { IRestaurante } from '../../api/models/i-restaurante';
+import { ISucursal } from '../../api/models/i-sucursal';
 import { NgClass } from '@angular/common';
+import { HorariosDisponiblesComponent } from '../horarios-disponibles/horarios-disponibles';
 
 @Component({
   selector: 'app-detalle-restaurante',
   standalone: true,
-  imports: [NgClass],
+  imports: [NgClass, HorariosDisponiblesComponent],
   templateUrl: './detalle-restaurante.html',
   styleUrls: ['./detalle-restaurante.scss'],
 })
 export class DetalleRestauranteComponent implements OnInit {
 
   restaurante?: IRestaurante | undefined;
+  sucursalSeleccionada?: ISucursal;
+  fechaSeleccionada: Date = new Date();
+  nroRestaurante: string = '';
+
   private _route = inject(ActivatedRoute);
 
   ngOnInit(): void {
-    // Leer el restaurante resuelto por el RestauranteResolver (route.data.restaurante)
+    this.nroRestaurante = this._route.snapshot.paramMap.get('nroRestaurante') || '';
+    
     this._route.data.subscribe(data => {
       this.restaurante = data?.['restaurante'];
-      console.log('Restaurante resuelto en componente:', this.restaurante);
+      if (this.restaurante && !this.restaurante.nroRestaurante) {
+        this.restaurante.nroRestaurante = this.nroRestaurante;
+      }
+      this.seleccionarPrimeraSucursal();
     });
+  }
+
+  seleccionarPrimeraSucursal(): void {
+    if (this.restaurante?.sucursales && this.restaurante.sucursales.length > 0) {
+      this.sucursalSeleccionada = this.restaurante.sucursales[0];
+      console.log('Sucursal seleccionada:', this.sucursalSeleccionada);
+      console.log('nroRestaurante:', this.nroRestaurante);
+    }
+  }
+
+  seleccionarSucursal(sucursal: ISucursal): void {
+    this.sucursalSeleccionada = sucursal;
   }
 
   formatearHorario(horario: string | null): string {
@@ -35,7 +57,6 @@ export class DetalleRestauranteComponent implements OnInit {
   obtenerImagenPrincipal(): string {
     if (!this.restaurante) return 'https://picsum.photos/seed/food/800/400';
     
-    // Priorizar imagenes array, luego imagenUrl, luego placeholder
     if (this.restaurante.imagenes && this.restaurante.imagenes.length > 0) {
       return this.restaurante.imagenes[0];
     }
@@ -45,5 +66,8 @@ export class DetalleRestauranteComponent implements OnInit {
     return 'https://picsum.photos/seed/food/800/400';
   }
 
-}
+  esSucursalSeleccionada(sucursal: ISucursal): boolean {
+    return this.sucursalSeleccionada?.nroSucursal === sucursal.nroSucursal;
+  }
 
+}

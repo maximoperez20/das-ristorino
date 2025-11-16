@@ -140,7 +140,14 @@
                 <div class="row g-4">
                     @for (sucursal of restaurante.sucursales; track sucursal.nroSucursal) {
                         <div class="col-md-6">
-                            <div class="sucursal-card">
+                            <div class="sucursal-card" 
+                                 [class.selected]="esSucursalSeleccionada(sucursal)"
+                                 (click)="seleccionarSucursal(sucursal)">
+                                @if (esSucursalSeleccionada(sucursal)) {
+                                    <div class="selected-badge">
+                                        <i class="bi bi-check-circle-fill"></i> Seleccionada
+                                    </div>
+                                }
                                 <h5 class="mb-3">{{ sucursal.nombre }}</h5>
                                 <div class="sucursal-info">
                                     <p class="mb-2">
@@ -165,6 +172,19 @@
                     }
                 </div>
             </div>
+
+            <!-- Horarios Disponibles -->
+            @if (sucursalSeleccionada && nroRestaurante) {
+                <div class="section-divider"></div>
+                <div class="mb-5">
+                    <horarios-disponibles
+                        [nroRestaurante]="nroRestaurante"
+                        [nroSucursal]="sucursalSeleccionada.nroSucursal"
+                        [nombreSucursal]="sucursalSeleccionada.nombre"
+                        [fechaSeleccionada]="fechaSeleccionada">
+                    </horarios-disponibles>
+                </div>
+            }
         }
 
         <!-- Promociones -->
