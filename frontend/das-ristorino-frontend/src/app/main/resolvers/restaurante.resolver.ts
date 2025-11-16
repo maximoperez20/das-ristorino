@@ -22,6 +22,7 @@ import { IRestaurante } from '../api/models/i-restaurante';
 // }
 
 export const restauranteResolver : ResolveFn<IRestaurante> = (route, state) => {
-  const id = route.paramMap.get('nroRestaurante') || '';
-  return inject(RestauranteResource).obtenerRestaurantePorId({ id });
+  const nroRestaurante = route.paramMap.get('nroRestaurante') || '';
+  // El resource espera { id: string }, pero usamos nroRestaurante como id
+  return inject(RestauranteResource).obtenerRestaurantePorId({ id: nroRestaurante });
 }

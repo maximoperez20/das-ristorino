@@ -4,7 +4,7 @@
         <div class="row g-0">
             <!-- Imagen -->
             <div class="col-md-5">
-                <img [src]="restaurante.imagenUrl || 'https://picsum.photos/seed/' + restaurante.id + '/500/400'"
+                <img [src]="restaurante.imagenUrl || 'https://picsum.photos/seed/restaurante + restaurante.nroRestaurante + '/500/400'"
                     class="img-fluid rounded-start h-100" alt="{{ restaurante.nombre }}" />
             </div>
 
