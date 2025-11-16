@@ -1,10 +1,11 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { IRestaurante } from '../../api/models/i-restaurante';
 import { ActivatedRoute } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-restaurantes',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './restaurantes.html',
   styleUrls: ['./restaurantes.scss'],
 })
@@ -24,6 +25,26 @@ export class RestaurantesPage implements OnInit {
         this.restaurantesLista = [];
       }
     });
+  }
+
+  formatearHorario(horario: string | null): string {
+    if (!horario) return 'No disponible';
+    // Formato esperado: "HH:mm:ss" -> convertir a "HH:mm"
+    const partes = horario.split(':');
+    if (partes.length >= 2) {
+      return `${partes[0]}:${partes[1]}`;
+    }
+    return horario;
+  }
+
+  obtenerEstrellas(calificacion: number): string {
+    const estrellasLlenas = Math.floor(calificacion);
+    const tieneMedia = calificacion % 1 >= 0.5;
+    let resultado = '★'.repeat(estrellasLlenas);
+    if (tieneMedia) {
+      resultado += '½';
+    }
+    return resultado;
   }
   
 }
