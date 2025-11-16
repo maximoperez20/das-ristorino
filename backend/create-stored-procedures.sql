@@ -370,7 +370,7 @@ BEGIN
         GROUP BY r.nro_restaurante, r.razon_social
     )
     SELECT 
-        CAST(ROW_NUMBER() OVER (ORDER BY razon_social) AS BIGINT) AS id,
+        nro_restaurante AS nro_restaurante,
         razon_social AS nombre,
         LTRIM(RTRIM(
             ISNULL(calle,'') +
@@ -414,29 +414,24 @@ BEGIN
         LEFT JOIN turnos_sucursales_restaurantes t ON t.nro_restaurante = r.nro_restaurante
         WHERE r.nro_restaurante = @nroRestaurante
         GROUP BY r.nro_restaurante, r.razon_social
-    ), enumerado AS (
-        SELECT 
-            CAST(ROW_NUMBER() OVER (ORDER BY razon_social) AS BIGINT) AS id,
-            *
-        FROM datos
     )
     SELECT 
-        e.id,
-        e.razon_social AS nombre,
+        nro_restaurante AS nro_restaurante,
+        razon_social AS nombre,
         LTRIM(RTRIM(
-            ISNULL(e.calle,'') +
-            CASE WHEN e.nro_calle IS NOT NULL THEN ' ' + CAST(e.nro_calle AS VARCHAR(10)) ELSE '' END +
-            CASE WHEN e.barrio IS NOT NULL THEN ', ' + e.barrio ELSE '' END
+            ISNULL(calle,'') +
+            CASE WHEN nro_calle IS NOT NULL THEN ' ' + CAST(nro_calle AS VARCHAR(10)) ELSE '' END +
+            CASE WHEN barrio IS NOT NULL THEN ', ' + barrio ELSE '' END
         )) AS direccion,
-        e.telefono AS telefono,
+        telefono AS telefono,
         -- Email desde configuracion_restaurantes (si existe el atributo)
         (SELECT TOP 1 valor FROM configuracion_restaurantes cr 
          JOIN atributos a ON cr.cod_atributo = a.cod_atributo 
          WHERE cr.nro_restaurante = @nroRestaurante 
            AND a.nom_atributo = 'email') AS email,
-        ISNULL(e.capacidad, 0) AS capacidad,
-        ISNULL(e.horario_apertura, CAST('08:00:00' AS TIME(0))) AS horario_apertura,
-        ISNULL(e.horario_cierre,  CAST('23:00:00' AS TIME(0))) AS horario_cierre,
+        ISNULL(capacidad, 0) AS capacidad,
+        ISNULL(horario_apertura, CAST('08:00:00' AS TIME(0))) AS horario_apertura,
+        ISNULL(horario_cierre,  CAST('23:00:00' AS TIME(0))) AS horario_cierre,
         -- Descripción desde contenidos_restaurantes (contenido general, no de sucursal específica)
         (SELECT TOP 1 contenido_a_publicar FROM contenidos_restaurantes 
          WHERE nro_restaurante = @nroRestaurante 
@@ -456,7 +451,56 @@ BEGIN
         CAST(4.0 AS FLOAT) AS calificacion,
         CAST(1 AS BIT) AS activo,
         CAST(NULL AS VARCHAR(255)) AS imagen_url  -- Imágenes se obtienen en otro stored procedure
-    FROM enumerado e;
+    FROM datos;
+END;
+GO
+
+-- =============================
+-- Buscar restaurantes por nombre (búsqueda parcial)
+-- =============================
+CREATE OR ALTER PROCEDURE sp_BuscarRestaurantesPorNombre
+    @nombre NVARCHAR(150)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    ;WITH datos AS (
+        SELECT 
+            r.nro_restaurante,
+            r.razon_social,
+            MIN(s.calle) AS calle,
+            MIN(s.nro_calle) AS nro_calle,
+            MIN(s.barrio) AS barrio,
+            MIN(s.telefonos) AS telefono,
+            MAX(s.total_comensales) AS capacidad,
+            MIN(t.hora_desde) AS horario_apertura,
+            MAX(t.hora_hasta) AS horario_cierre
+        FROM restaurantes r
+        LEFT JOIN sucursales_restaurantes s ON s.nro_restaurante = r.nro_restaurante
+        LEFT JOIN turnos_sucursales_restaurantes t ON t.nro_restaurante = r.nro_restaurante
+        WHERE r.razon_social LIKE @nombre
+        GROUP BY r.nro_restaurante, r.razon_social
+    )
+    SELECT 
+        nro_restaurante AS nro_restaurante,
+        razon_social AS nombre,
+        LTRIM(RTRIM(
+            ISNULL(calle,'') +
+            CASE WHEN nro_calle IS NOT NULL THEN ' ' + CAST(nro_calle AS VARCHAR(10)) ELSE '' END +
+            CASE WHEN barrio IS NOT NULL THEN ', ' + barrio ELSE '' END
+        )) AS direccion,
+        telefono AS telefono,
+        CAST(NULL AS VARCHAR(100)) AS email,
+        ISNULL(capacidad, 0) AS capacidad,
+        ISNULL(horario_apertura, CAST('08:00:00' AS TIME(0))) AS horario_apertura,
+        ISNULL(horario_cierre,  CAST('23:00:00' AS TIME(0))) AS horario_cierre,
+        CAST(NULL AS VARCHAR(500)) AS descripcion,
+        CAST(NULL AS VARCHAR(100)) AS categoria,
+        CAST(4.0 AS FLOAT) AS calificacion,
+        CAST(1 AS BIT) AS activo,
+        CAST(NULL AS VARCHAR(255)) AS imagen_url
+    FROM datos
+    ORDER BY nombre;
 END;
 GO
 
@@ -639,7 +683,7 @@ BEGIN
             )
     )
     SELECT 
-        CAST(ROW_NUMBER() OVER (ORDER BY razon_social) AS BIGINT) AS id,
+        rf.nro_restaurante AS nro_restaurante,
         rf.razon_social AS nombre,
         LTRIM(RTRIM(
             ISNULL(MIN(s.calle), '') +

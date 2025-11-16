@@ -30,7 +30,16 @@ public class RestauranteRepository {
         @Override
         public RestauranteDto mapRow(ResultSet rs, int rowNum) throws SQLException {
             RestauranteDto restaurante = new RestauranteDto();
-            restaurante.setId(rs.getLong("id"));
+            // El id ya no se devuelve desde los stored procedures, solo nro_restaurante
+            // Verificamos si existe la columna id antes de intentar leerla
+            try {
+                rs.findColumn("id");
+                restaurante.setId(rs.getLong("id"));
+            } catch (SQLException e) {
+                // Campo id no existe en el ResultSet, dejarlo null
+                restaurante.setId(null);
+            }
+            restaurante.setNroRestaurante(rs.getString("nro_restaurante"));
             restaurante.setNombre(rs.getString("nombre"));
             restaurante.setDireccion(rs.getString("direccion"));
             restaurante.setTelefono(rs.getString("telefono"));
