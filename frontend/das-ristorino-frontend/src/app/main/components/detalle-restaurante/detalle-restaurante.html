@@ -1,59 +1,186 @@
 @if(restaurante) {
-<div class="container py-5">
-    <div class="card shadow-lg mx-auto" style="max-width: 700px;">
-        <div class="row g-0">
-            <!-- Imagen -->
-            <div class="col-md-5">
-                <img [src]="restaurante.imagenUrl || 'https://picsum.photos/seed/restaurante + restaurante.nroRestaurante + '/500/400'"
-                    class="img-fluid rounded-start h-100" alt="{{ restaurante.nombre }}" />
-            </div>
-
-            <!-- Datos -->
-            <div class="col-md-7">
-                <div class="card-body">
-                    <h3 class="card-title mb-3">{{ restaurante.nombre }}</h3>
-                    <p class="text-muted mb-2">
-                        <i class="bi bi-geo-alt-fill"></i> {{ restaurante.direccion }}
-                    </p>
-
-                    <p class="mb-2"><strong>Teléfono:</strong> {{ restaurante.telefono || 'No disponible' }}</p>
-                    <p class="mb-2"><strong>Email:</strong> {{ restaurante.email || 'No disponible' }}</p>
-                    <p class="mb-2"><strong>Categoría:</strong> {{ restaurante.categoria || 'Sin categoría' }}</p>
-                    <p class="mb-2"><strong>Capacidad:</strong> {{ restaurante.capacidad }} personas</p>
-                    <p class="mb-2">
-                        <strong>Horario:</strong> {{ restaurante.horarioApertura }} - {{ restaurante.horarioCierre }}
-                    </p>
-                    <p class="mb-2">
-                        <strong>Días de atención:</strong> {{ restaurante.diasAtencion || 'No especificado' }}
-                    </p>
-
-                    @if (restaurante.activo) {
-                    <span class="badge bg-success mt-2">Activo</span>
-                    } @else {
-                    <span class="badge bg-secondary mt-2">Inactivo</span>
-                    }
-
-                    <div class="mt-4">
-                        <p class="mb-1"><strong>Calificación:</strong></p>
-                        @if (restaurante.calificacion !== undefined && restaurante.calificacion !== null) {
+<div class="detalle-restaurante-container">
+    <!-- Hero Section con Imagen -->
+    <div class="hero-section">
+        <img [src]="obtenerImagenPrincipal()" 
+             class="hero-image" 
+             [alt]="restaurante.nombre" />
+        <div class="hero-overlay">
+            <div class="container">
+                <h1 class="hero-title">{{ restaurante.nombre }}</h1>
+                @if (restaurante.calificacion) {
+                    <div class="hero-rating">
                         @for (star of [1,2,3,4,5]; track star) {
-                        <i class="bi"
-                            [ngClass]="star <= restaurante.calificacion! ? 'bi-star-fill text-warning' : 'bi-star text-muted'">
-                        </i>
+                            <i class="bi" 
+                               [ngClass]="star <= restaurante.calificacion! ? 'bi-star-fill text-warning' : 'bi-star text-muted'">
+                            </i>
                         }
-                        } @else {
-                        <span class="text-muted">Sin calificación</span>
-                        }
+                        <span class="ms-2 rating-value">({{ restaurante.calificacion.toFixed(1) }})</span>
                     </div>
-                </div>
+                }
             </div>
         </div>
     </div>
+
+    <div class="container py-5">
+        <!-- Información Principal -->
+        <div class="row mb-5">
+            <div class="col-lg-8">
+                <div class="info-section">
+                    @if (restaurante.descripcion) {
+                        <div class="mb-4">
+                            <h3 class="section-title">Sobre el restaurante</h3>
+                            <p class="text-muted">{{ restaurante.descripcion }}</p>
+                        </div>
+                    }
+
+                    <div class="info-grid mb-4">
+                        <div class="info-item">
+                            <i class="bi bi-geo-alt-fill text-primary"></i>
+                            <div>
+                                <strong>Dirección</strong>
+                                <p class="mb-0">{{ restaurante.direccion }}</p>
+                            </div>
+                        </div>
+
+                        @if (restaurante.telefono) {
+                            <div class="info-item">
+                                <i class="bi bi-telephone-fill text-primary"></i>
+                                <div>
+                                    <strong>Teléfono</strong>
+                                    <p class="mb-0">{{ restaurante.telefono }}</p>
+                                </div>
+                            </div>
+                        }
+
+                        @if (restaurante.email) {
+                            <div class="info-item">
+                                <i class="bi bi-envelope-fill text-primary"></i>
+                                <div>
+                                    <strong>Email</strong>
+                                    <p class="mb-0">{{ restaurante.email }}</p>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="info-item">
+                            <i class="bi bi-clock-fill text-primary"></i>
+                            <div>
+                                <strong>Horario</strong>
+                                <p class="mb-0">
+                                    {{ formatearHorario(restaurante.horarioApertura) }} - {{ formatearHorario(restaurante.horarioCierre) }}
+                                </p>
+                            </div>
+                        </div>
+
+                        @if (restaurante.diasAtencion) {
+                            <div class="info-item">
+                                <i class="bi bi-calendar-week text-primary"></i>
+                                <div>
+                                    <strong>Días de atención</strong>
+                                    <p class="mb-0">{{ restaurante.diasAtencion }}</p>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="info-item">
+                            <i class="bi bi-people-fill text-primary"></i>
+                            <div>
+                                <strong>Capacidad</strong>
+                                <p class="mb-0">{{ restaurante.capacidad }} personas</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (restaurante.tipoCocina && restaurante.tipoCocina.length > 0) {
+                        <div class="mb-4">
+                            <h3 class="section-title">Tipo de cocina</h3>
+                            <div class="tags-container">
+                                @for (tipo of restaurante.tipoCocina; track tipo) {
+                                    <span class="badge bg-secondary me-2 mb-2">{{ tipo }}</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="sidebar-card">
+                    <h4 class="mb-3">Información</h4>
+                    
+                    @if (restaurante.activo) {
+                        <span class="badge bg-success mb-3 d-block">Activo</span>
+                    } @else {
+                        <span class="badge bg-secondary mb-3 d-block">Inactivo</span>
+                    }
+
+                    @if (restaurante.calificacion) {
+                        <div class="mb-3">
+                            <strong>Calificación</strong>
+                            <div class="mt-2">
+                                @for (star of [1,2,3,4,5]; track star) {
+                                    <i class="bi fs-5" 
+                                       [ngClass]="star <= restaurante.calificacion! ? 'bi-star-fill text-warning' : 'bi-star text-muted'">
+                                    </i>
+                                }
+                                <span class="ms-2">{{ restaurante.calificacion.toFixed(1) }}</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sucursales -->
+        @if (restaurante.sucursales && restaurante.sucursales.length > 0) {
+            <div class="section-divider"></div>
+            <div class="mb-5">
+                <h2 class="section-title mb-4">Sucursales</h2>
+                <div class="row g-4">
+                    @for (sucursal of restaurante.sucursales; track sucursal.nroSucursal) {
+                        <div class="col-md-6">
+                            <div class="sucursal-card">
+                                <h5 class="mb-3">{{ sucursal.nombre }}</h5>
+                                <div class="sucursal-info">
+                                    <p class="mb-2">
+                                        <i class="bi bi-geo-alt-fill text-primary"></i>
+                                        {{ sucursal.direccion }}
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="bi bi-building text-primary"></i>
+                                        {{ sucursal.localidad }}, {{ sucursal.provincia }}
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="bi bi-telephone-fill text-primary"></i>
+                                        {{ sucursal.telefonos }}
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="bi bi-people-fill text-primary"></i>
+                                        Capacidad: {{ sucursal.capacidad }} personas
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Promociones -->
+        @if (restaurante.promociones && restaurante.promociones.length > 0) {
+            <div class="section-divider"></div>
+            <div class="mb-5">
+                <h2 class="section-title mb-4">Promociones</h2>
+                <!-- Aquí se pueden agregar las promociones cuando estén disponibles -->
+            </div>
+        }
+    </div>
 </div>
-}@else {
+} @else {
 <div class="container py-5">
     <div class="alert alert-warning text-center" role="alert">
-        Restaurante no encontrado.
+        <i class="bi bi-exclamation-triangle"></i> Restaurante no encontrado.
     </div>
 </div>
 }

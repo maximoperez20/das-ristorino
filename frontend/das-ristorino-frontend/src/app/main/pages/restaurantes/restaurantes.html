@@ -20,8 +20,8 @@
         @for (restaurante of restaurantesLista; track restaurante.nroRestaurante) {
           <div class="col-12 col-md-6 col-lg-4">
             <div class="card restaurante-card h-100 shadow-sm">
-              @if (restaurante.imagenUrl) {
-                <img [src]="restaurante.imagenUrl" 
+              @if (obtenerImagen(restaurante)) {
+                <img [src]="obtenerImagen(restaurante)" 
                      class="card-img-top restaurante-imagen" 
                      [alt]="restaurante.nombre"
                      onerror="this.src='https://via.placeholder.com/400x250?text=Restaurante'">

@@ -23,5 +23,27 @@ export class DetalleRestauranteComponent implements OnInit {
     });
   }
 
+  formatearHorario(horario: string | null): string {
+    if (!horario) return 'No disponible';
+    const partes = horario.split(':');
+    if (partes.length >= 2) {
+      return `${partes[0]}:${partes[1]}`;
+    }
+    return horario;
+  }
+
+  obtenerImagenPrincipal(): string {
+    if (!this.restaurante) return 'https://picsum.photos/seed/food/800/400';
+    
+    // Priorizar imagenes array, luego imagenUrl, luego placeholder
+    if (this.restaurante.imagenes && this.restaurante.imagenes.length > 0) {
+      return this.restaurante.imagenes[0];
+    }
+    if (this.restaurante.imagenUrl) {
+      return this.restaurante.imagenUrl;
+    }
+    return 'https://picsum.photos/seed/food/800/400';
+  }
+
 }
 

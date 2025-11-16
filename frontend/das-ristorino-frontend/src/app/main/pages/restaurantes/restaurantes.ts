@@ -46,5 +46,16 @@ export class RestaurantesPage implements OnInit {
     }
     return resultado;
   }
+
+  obtenerImagen(restaurante: IRestaurante): string | null {
+    // Priorizar imagenes array, luego imagenUrl
+    if (restaurante.imagenes && restaurante.imagenes.length > 0) {
+      return restaurante.imagenes[0];
+    }
+    if (restaurante.imagenUrl) {
+      return restaurante.imagenUrl;
+    }
+    return null;
+  }
   
 }
