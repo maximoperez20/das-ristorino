@@ -422,6 +422,7 @@ BEGIN
     )
     SELECT 
         e.id,
+        e.nro_restaurante,
         e.razon_social AS nombre,
         LTRIM(RTRIM(
             ISNULL(e.calle,'') +
