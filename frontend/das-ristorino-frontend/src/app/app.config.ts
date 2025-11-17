@@ -8,6 +8,8 @@ import { ResourceHandler } from '@ngx-resource/core';
 import { routes } from './app.routes';
 import { PromocionResource } from './main/api/resources/promocion-resource';
 import { RestauranteResource } from './main/api/resources/restaurante-resource';
+import { ReservaResource } from './main/api/resources/reserva-resource';
+import { ClienteResource } from './main/api/resources/cliente-resource';
 import { CoreModule } from './core/core-module';
 import { AppErrorHandler } from './core/handlers/app-error-handler';
 
@@ -24,5 +26,7 @@ export const appConfig: ApplicationConfig = {
     { provide: ErrorHandler, useClass: AppErrorHandler },
     PromocionResource,
     RestauranteResource,
+    ReservaResource,
+    ClienteResource,
   ]
 };
