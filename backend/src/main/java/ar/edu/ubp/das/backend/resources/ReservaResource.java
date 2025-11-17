@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -141,6 +143,36 @@ public class ReservaResource {
             logger.error("Error inesperado al cambiar estado de reserva: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al cambiar el estado: " + e.getMessage()));
+        }
+    }
+    
+    // GET /api/reservas/mis-reservas - Obtener reservas del usuario autenticado
+    @GetMapping("/mis-reservas")
+    public ResponseEntity<?> getMisReservas(Authentication authentication) {
+        try {
+            if (authentication == null || !(authentication.getPrincipal() instanceof Jwt)) {
+                logger.warn("Intento de acceso sin autenticación válida");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "No autenticado"));
+            }
+            
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            String nroCliente = jwt.getClaimAsString("nroCliente");
+            
+            if (nroCliente == null || nroCliente.isEmpty()) {
+                logger.warn("Token JWT no contiene nroCliente");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Token inválido: falta nroCliente"));
+            }
+            
+            logger.info("Obteniendo reservas para cliente: {}", nroCliente);
+            List<ReservaResponseDto> reservas = reservaService.obtenerReservasPorNroCliente(nroCliente);
+            return ResponseEntity.ok(reservas);
+            
+        } catch (Exception e) {
+            logger.error("Error inesperado al obtener reservas del usuario", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al obtener reservas: " + e.getMessage()));
         }
     }
 }

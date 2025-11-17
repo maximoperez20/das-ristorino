@@ -98,4 +98,13 @@ public class ReservaRepository {
         }
         return false;
     }
+    
+    /**
+     * Obtener reservas por nro_cliente
+     */
+    public List<ReservaResponseDto> findByNroCliente(String nroCliente) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("nro_cliente", nroCliente);
+        return jdbcCallFactory.executeQuery("sp_ObtenerReservasPorNroCliente", "dbo", params, "reservas", ReservaResponseDto.class);
+    }
 }

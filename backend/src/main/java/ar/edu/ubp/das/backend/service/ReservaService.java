@@ -67,4 +67,11 @@ public class ReservaService {
     public boolean existeReserva(String id) {
         return reservaRepository.existsById(id);
     }
+    
+    /**
+     * Obtener reservas por nro_cliente
+     */
+    public List<ReservaResponseDto> obtenerReservasPorNroCliente(String nroCliente) {
+        return reservaRepository.findByNroCliente(nroCliente);
+    }
 }

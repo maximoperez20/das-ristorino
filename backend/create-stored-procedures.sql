@@ -280,6 +280,45 @@ BEGIN
 END;
 GO
 
+-- 8.1. Obtener reservas por nro_cliente
+CREATE OR ALTER PROCEDURE sp_ObtenerReservasPorNroCliente
+    @nro_cliente VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT
+        rr.nro_reserva as id,
+        c.nombre + ' ' + c.apellido as nombre_cliente,
+        c.correo as email,
+        c.telefonos as telefono,
+        CAST(CAST(rr.fecha_reserva AS VARCHAR(10)) + ' ' + CAST(rr.hora_desde AS VARCHAR(8)) AS DATETIME2) as fecha_hora,
+        (rr.cant_adultos + rr.cant_menores) as cantidad_personas,
+        CASE 
+            WHEN rr.cancelada = 1 THEN 'CANCELADA'
+            WHEN er.nom_estado IS NOT NULL THEN er.nom_estado
+            ELSE 'PENDIENTE'
+        END as estado,
+        rr.notas as observaciones,
+        rr.fecha_hora_registro as fecha_creacion,
+        rr.fecha_hora_cancelacion as fecha_actualizacion,
+        r.razon_social as nombre_restaurante,
+        s.nom_sucursal as nombre_sucursal,
+        (SELECT TOP 1 iz.zona 
+         FROM idiomas_zonas_suc_restaurantes iz
+         WHERE iz.nro_restaurante = rr.nro_restaurante 
+           AND iz.nro_sucursal = rr.nro_sucursal 
+           AND iz.cod_zona = rr.cod_zona
+         ORDER BY iz.nro_idioma) as nombre_zona
+    FROM reservas_restaurantes rr
+    LEFT JOIN clientes c ON c.nro_cliente = rr.nro_cliente
+    LEFT JOIN estados_reservas er ON er.cod_estado = rr.cod_estado
+    LEFT JOIN restaurantes r ON r.nro_restaurante = rr.nro_restaurante
+    LEFT JOIN sucursales_restaurantes s ON s.nro_restaurante = rr.nro_restaurante AND s.nro_sucursal = rr.nro_sucursal
+    WHERE rr.nro_cliente = @nro_cliente
+    ORDER BY rr.fecha_reserva DESC, rr.hora_desde DESC;
+END;
+GO
+
 -- 9. Contar total de reservas
 CREATE OR ALTER PROCEDURE sp_ContarReservas
 AS
