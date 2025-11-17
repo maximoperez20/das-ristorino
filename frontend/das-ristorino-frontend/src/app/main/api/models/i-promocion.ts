@@ -1,5 +1,3 @@
-export const promocionesLista: IPromocion[] = [];
-
 export interface IPromocion {
   nroRestaurante: string;
   nroIdioma: string;

@@ -1,9 +1,9 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule} from '@angular/common';
-import { IPromocion, promocionesLista } from '../../api/models/i-promocion';
+import { IPromocion } from '../../api/models/i-promocion';
 import { PromocionComponent } from '../../components/promocion/promocion';
 import { PromocionResource } from '../../api/resources/promocion-resource';
-import { Router, ActivatedRoute } from '@angular/router';  // ✅ import normal
+import { ActivatedRoute } from '@angular/router';  // ✅ import normal
 
 @Component({
   selector: 'app-promociones',
@@ -18,7 +18,6 @@ export class PromocionesPage implements OnInit {
 
   // Inyectar el servicio de promociones (sintaxis moderna)
   private _promocionResource = inject(PromocionResource);
-  private _router = inject(Router);  // ✅ así se obtiene la instancia
   private _route = inject(ActivatedRoute);
 
     ngOnInit(): void {

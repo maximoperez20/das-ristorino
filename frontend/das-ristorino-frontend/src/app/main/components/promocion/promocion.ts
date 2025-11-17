@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import type { IPromocion } from '../../api/models/i-promocion';
+import { IClick } from '../../api/models/i-click';
 import { CommonModule, DatePipe } from '@angular/common';
 import { PromocionResource } from '../../api/resources/promocion-resource';
 import { Router } from '@angular/router';  // ✅ import normal
@@ -26,17 +27,20 @@ export class PromocionComponent {
     }
   }
 
-      registrarClickPromocion() {
-    this._promocionResource.registrarClick({
-        nroRestaurante: this.promocion?.nroRestaurante.toString() || '',
-        nroIdioma: this.promocion?.nroIdioma.toString() || '',
-        nroContenido: this.promocion?.nroContenido.toString() || ''
-      })
+  registrarClickPromocion() {
+
+    const clickData: IClick = {
+      nroRestaurante: this.promocion?.nroRestaurante.toString() ?? '',
+      nroIdioma: this.promocion?.nroIdioma.toString() ?? '',
+      nroContenido: this.promocion?.nroContenido.toString() ?? ''
+      //Agregar nroCliente si es necesario
+    };
+
+    this._promocionResource.registrarClick(clickData)
       .subscribe({
         next: () =>{
           console.log('Click registrado correctamente')
           this._router.navigate(['/restaurantes', this.promocion?.nroRestaurante]);
-
         },
         error: (err) => {console.error('Error registrando click', err)
         },
