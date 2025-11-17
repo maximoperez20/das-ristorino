@@ -1,0 +1,87 @@
+<div class="login-container">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-6 col-lg-5">
+        <div class="card login-card shadow">
+          <div class="card-body p-4">
+            <div class="text-center mb-4">
+              <h2 class="card-title mb-2">Iniciar Sesión</h2>
+              <p class="text-muted">Ingresa tus credenciales para acceder</p>
+            </div>
+
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+              <div class="mb-3">
+                <label for="correo" class="form-label">Correo electrónico</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  [class.is-invalid]="correo?.invalid && correo?.touched"
+                  id="correo"
+                  formControlName="correo"
+                  placeholder="tu@correo.com"
+                  autocomplete="email">
+                @if (correo?.invalid && correo?.touched) {
+                  <div class="invalid-feedback">
+                    @if (correo?.errors?.['required']) {
+                      El correo es obligatorio
+                    } @else if (correo?.errors?.['email']) {
+                      El formato del correo no es válido
+                    }
+                  </div>
+                }
+              </div>
+
+              <div class="mb-3">
+                <label for="password" class="form-label">Contraseña</label>
+                <div class="input-group">
+                  <input
+                    [type]="mostrarPassword ? 'text' : 'password'"
+                    class="form-control"
+                    [class.is-invalid]="password?.invalid && password?.touched"
+                    id="password"
+                    formControlName="password"
+                    placeholder="Tu contraseña"
+                    autocomplete="current-password">
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    (click)="toggleMostrarPassword()"
+                    [attr.aria-label]="mostrarPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                    <i class="bi" [ngClass]="mostrarPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+                  </button>
+                </div>
+                @if (password?.invalid && password?.touched) {
+                  <div class="invalid-feedback">
+                    @if (password?.errors?.['required']) {
+                      La contraseña es obligatoria
+                    } @else if (password?.errors?.['minlength']) {
+                      La contraseña debe tener al menos 6 caracteres
+                    }
+                  </div>
+                }
+              </div>
+
+              <div class="d-grid mb-3">
+                <button
+                  type="submit"
+                  class="btn btn-primary btn-lg"
+                  [disabled]="loginForm.invalid">
+                  <i class="bi bi-box-arrow-in-right me-2"></i>
+                  Iniciar Sesión
+                </button>
+              </div>
+            </form>
+
+            <div class="text-center">
+              <p class="text-muted small mb-0">
+                ¿No tienes una cuenta?
+                <a routerLink="/register" class="text-decoration-none">Regístrate aquí</a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
