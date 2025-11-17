@@ -43,25 +43,6 @@ export class PromocionesPage implements OnInit {
           }
         },
       });
-    }
+  }
   
-    registrarClickPromocion(promocion: IPromocion) {
-    this._promocionResource.registrarClick({
-        nroRestaurante: promocion.nroRestaurante.toString(),
-        nroIdioma: promocion.nroIdioma.toString(),
-        nroContenido: promocion.nroContenido.toString()
-      })
-      .subscribe({
-        next: () =>{
-          console.log('Click registrado correctamente')
-          this._router.navigate(['/restaurantes', promocion.nroRestaurante]);
-
-        },
-        error: (err) => {console.error('Error registrando click', err)
-        },
-       
-      }); 
-    }
-
-
 }

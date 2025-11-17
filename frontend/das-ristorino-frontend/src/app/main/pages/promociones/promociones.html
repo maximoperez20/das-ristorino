@@ -5,8 +5,7 @@
             <div class="row g-3 justify-content-center">
                 @for (promocion of grupo; track $index) {
                 <div class="col-10 col-md-4">
-                    <app-promocion [promocion]='promocion'
-                        (verPromocion)="registrarClickPromocion(promocion)"></app-promocion>
+                    <app-promocion [promocion]='promocion'></app-promocion>
                 </div>
                 }
             </div>
