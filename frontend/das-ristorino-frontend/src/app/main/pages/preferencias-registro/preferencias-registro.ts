@@ -6,6 +6,7 @@ import { AppMessageService } from '../../../core/services/app-message-service';
 import { AuthService } from '../../../core/services/auth-service';
 import { ICategoriaConDominios } from '../../api/models/i-categoria-con-dominios';
 import { IPreferenciaItem } from '../../api/models/i-preferencia-item';
+import { IPreferenciaCliente } from '../../api/models/i-preferencia-cliente';
 
 @Component({
   selector: 'app-preferencias-registro',
@@ -33,18 +34,36 @@ export class PreferenciasRegistroPage implements OnInit {
       return;
     }
 
-    // Leer categorías resueltas por el resolver
-    const data = this._route.snapshot.data as { categorias?: ICategoriaConDominios[] };
+    // Leer categorías y preferencias resueltas por los resolvers
+    const data = this._route.snapshot.data as { 
+      categorias?: ICategoriaConDominios[];
+      misPreferencias?: IPreferenciaCliente[];
+    };
+    
     if (data && Array.isArray(data.categorias)) {
       this.categorias = data.categorias;
       // Inicializar el mapa de selecciones
       this.categorias.forEach(cat => {
         this.preferenciasSeleccionadas.set(cat.codCategoria, new Set());
       });
+      
+      // Marcar las preferencias existentes como seleccionadas
+      if (data.misPreferencias && Array.isArray(data.misPreferencias)) {
+        this.marcarPreferenciasExistentes(data.misPreferencias);
+      }
     } else {
       // Fallback: cargar directamente si no hay datos resueltos
       this.cargarCategorias();
     }
+  }
+
+  private marcarPreferenciasExistentes(preferencias: IPreferenciaCliente[]): void {
+    preferencias.forEach(pref => {
+      const seleccionados = this.preferenciasSeleccionadas.get(pref.codCategoria);
+      if (seleccionados) {
+        seleccionados.add(pref.nroValorDominio);
+      }
+    });
   }
 
   private cargarCategorias(): void {
@@ -56,7 +75,18 @@ export class PreferenciasRegistroPage implements OnInit {
         this.categorias.forEach(cat => {
           this.preferenciasSeleccionadas.set(cat.codCategoria, new Set());
         });
-        this.cargando = false;
+        
+        // Cargar preferencias existentes y marcarlas
+        this._preferenciaResource.obtenerMisPreferencias().subscribe({
+          next: (preferencias) => {
+            this.marcarPreferenciasExistentes(preferencias);
+            this.cargando = false;
+          },
+          error: (err) => {
+            console.error('Error al cargar preferencias existentes:', err);
+            this.cargando = false;
+          }
+        });
       },
       error: (err) => {
         console.error('Error al cargar categorías:', err);

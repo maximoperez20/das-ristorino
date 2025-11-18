@@ -8,6 +8,7 @@ import { promocionesListResolver } from './main/resolvers/promociones-list.resol
 import { misReservasResolver } from './main/resolvers/mis-reservas.resolver';
 import { localidadesResolver } from './main/resolvers/localidades.resolver';
 import { preferenciasResolver } from './main/resolvers/preferencias.resolver';
+import { misPreferenciasResolver } from './main/resolvers/mis-preferencias.resolver';
 import { RestaurantesPage } from './main/pages/restaurantes/restaurantes';
 import { PromocionResource } from './main/api/resources/promocion-resource';
 import { RestauranteResource } from './main/api/resources/restaurante-resource';
@@ -67,7 +68,18 @@ export const routes: Routes = [
                 import('./main/pages/preferencias-registro/preferencias-registro').then(
                     m => m.PreferenciasRegistroPage
                 ),
-                resolve: { categorias: preferenciasResolver },
+                resolve: { 
+                    categorias: preferenciasResolver,
+                    misPreferencias: misPreferenciasResolver
+                },
+                providers: [PreferenciaResource]
+            },
+            {
+                path: 'mi-perfil',
+                loadComponent: () =>
+                import('./main/pages/mi-perfil/mi-perfil').then(
+                    m => m.MiPerfilPage
+                ),
                 providers: [PreferenciaResource]
             },
             {

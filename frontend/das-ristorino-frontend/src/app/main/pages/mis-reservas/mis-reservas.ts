@@ -1,28 +1,25 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { IReserva } from '../../api/models/i-reserva';
 import { AuthService } from '../../../core/services/auth-service';
 
 @Component({
   selector: 'app-mis-reservas',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './mis-reservas.html',
   styleUrls: ['./mis-reservas.scss'],
 })
 export class MisReservasPage implements OnInit {
 
   reservas: IReserva[] = [];
-  usuario: any = null;
 
   private _auth = inject(AuthService);
   private _router = inject(Router);
   private _route = inject(ActivatedRoute);
 
   ngOnInit(): void {
-    this.usuario = this._auth.getUser();
-    
     if (!this._auth.isAuthenticated()) {
       this._router.navigate(['/login']);
       return;

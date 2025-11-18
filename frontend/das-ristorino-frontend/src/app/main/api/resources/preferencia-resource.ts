@@ -4,6 +4,7 @@ import type { IResourceMethodObservable } from '@ngx-resource/core';
 import { ICategoriaConDominios } from '../models/i-categoria-con-dominios';
 import { IGuardarPreferencias } from '../models/i-guardar-preferencias';
 import { IGuardarPreferenciasResponse } from '../models/i-guardar-preferencias-response';
+import { IPreferenciaCliente } from '../models/i-preferencia-cliente';
 import { environment } from '../../../../environments/environment';
 
 @Injectable()
@@ -27,6 +28,12 @@ export class PreferenciaResource extends Resource {
     method: ResourceRequestMethod.Post,
   })
   declare guardarPreferencias: IResourceMethodObservable<IGuardarPreferencias, IGuardarPreferenciasResponse>;
+
+  @ResourceAction({
+    path: '/mis-preferencias',
+    method: ResourceRequestMethod.Get,
+  })
+  declare obtenerMisPreferencias: IResourceMethodObservable<void, IPreferenciaCliente[]>;
 
 }
 

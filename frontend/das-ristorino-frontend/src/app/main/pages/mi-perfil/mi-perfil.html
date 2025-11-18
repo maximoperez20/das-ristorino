@@ -1,0 +1,104 @@
+<div class="mi-perfil-container">
+  <div class="container-fluid py-4">
+    <div class="row mb-4">
+      <div class="col-12">
+        <h1 class="text-center mb-4">Mi Perfil</h1>
+      </div>
+    </div>
+
+    @if (usuario) {
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="card user-info-card shadow-sm mb-4">
+            <div class="card-body">
+              <div class="row align-items-center">
+                <div class="col-auto">
+                  <div class="user-avatar">
+                    <i class="bi bi-person-circle"></i>
+                  </div>
+                </div>
+                <div class="col">
+                  <h5 class="mb-1">
+                    {{ usuario.nombre }} {{ usuario.apellido }}
+                  </h5>
+                  <div class="user-details">
+                    <div class="detail-item">
+                      <i class="bi bi-envelope-fill"></i>
+                      <span>{{ usuario.correo }}</span>
+                    </div>
+                    <div class="detail-item">
+                      <i class="bi bi-person-badge"></i>
+                      <span class="small">Cliente #{{ usuario.nroCliente.substring(0, 8) }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-auto">
+                  <a routerLink="/mis-reservas" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-calendar-check me-1"></i>
+                    Ver mis reservas
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Sección de Preferencias Gastronómicas -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card preferencias-card shadow-sm">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">
+              <i class="bi bi-heart-fill text-danger me-2"></i>
+              Mis Preferencias Gastronómicas
+            </h5>
+          </div>
+          <div class="card-body">
+            @if (cargandoPreferencias) {
+              <div class="text-center py-3">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                  <span class="visually-hidden">Cargando preferencias...</span>
+                </div>
+              </div>
+            } @else if (preferencias.length === 0) {
+              <div class="alert alert-info mb-0" role="alert">
+                <i class="bi bi-info-circle me-2"></i>
+                No has configurado preferencias gastronómicas aún.
+                <a routerLink="/preferencias-registro" class="alert-link ms-2">
+                  Configurar preferencias
+                </a>
+              </div>
+            } @else {
+              <div class="preferencias-list">
+                @for (categoria of obtenerCategorias(); track categoria) {
+                  <div class="preferencia-categoria mb-3">
+                    <h6 class="categoria-title mb-2">
+                      <i class="bi bi-tag-fill text-primary me-2"></i>
+                      {{ categoria }}
+                    </h6>
+                    <div class="preferencias-chips">
+                      @for (pref of obtenerPreferenciasPorCategoria(categoria); track pref.nroValorDominio) {
+                        <span class="badge bg-primary preferencia-chip me-2 mb-2">
+                          {{ pref.nombreDominio }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+              <div class="mt-3">
+                <a routerLink="/preferencias-registro" class="btn btn-outline-primary btn-sm">
+                  <i class="bi bi-pencil me-1"></i>
+                  Editar preferencias
+                </a>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
