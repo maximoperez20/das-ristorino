@@ -41,6 +41,7 @@ public class SecurityConfig {
                            "/actuator/health",
                            "/api/restaurantes/**",     // Consulta de restaurantes y búsqueda NLP - PÚBLICO
                            "/api/promociones/**",      // Consulta de promociones - PÚBLICO
+                           "/api/localidades/**",      // Consulta de localidades - PÚBLICO
                            "/api/clientes/register",   // Registro de cliente - PÚBLICO
                            "/api/clientes/login",      // Login de cliente - PÚBLICO
                            // Swagger UI (documentación API)
