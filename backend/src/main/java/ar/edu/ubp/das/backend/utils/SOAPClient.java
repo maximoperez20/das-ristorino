@@ -108,6 +108,60 @@ public class SOAPClient {
         return callServiceForList(clazz, responseElementName, null);
     }
 
+    /**
+     * Extrae el jsonResponse directamente del XML sin usar JAXB.
+     * Útil cuando hay problemas con el unmarshalling JAXB.
+     */
+    public String extractJsonResponse(String responseElementName, Map<String, Object> parameters) throws Exception {
+        try {
+            SOAPMessage soapRequest = createRequest(parameters);
+            SOAPMessage soapResponse = sendRequest(soapRequest);
+
+            SOAPBody body = soapResponse.getSOAPBody();
+
+            if (body.hasFault()) {
+                SOAPFault fault = body.getFault();
+                throw new RuntimeException("SOAP Fault: " + fault.getFaultCode() + " - " + fault.getFaultString());
+            }
+
+            // Buscar el elemento de respuesta
+            Iterator<Node> iterator = body.getChildElements();
+            while (iterator.hasNext()) {
+                Node node = iterator.next();
+                if (node instanceof SOAPElement) {
+                    SOAPElement element = (SOAPElement) node;
+                    if (element.getLocalName().equals(responseElementName)) {
+                        // Buscar el elemento jsonResponse dentro
+                        Iterator<Node> jsonIterator = element.getChildElements();
+                        while (jsonIterator.hasNext()) {
+                            Node jsonNode = jsonIterator.next();
+                            if (jsonNode instanceof SOAPElement) {
+                                SOAPElement jsonElement = (SOAPElement) jsonNode;
+                                if (jsonElement.getLocalName().equals("jsonResponse")) {
+                                    // Obtener el texto del elemento (puede tener hijos de texto)
+                                    return jsonElement.getTextContent();
+                                }
+                            }
+                        }
+                        // Si no se encuentra como hijo directo, intentar obtener el texto del elemento raíz
+                        // (puede que jsonResponse sea el único contenido)
+                        String textContent = element.getTextContent();
+                        if (textContent != null && !textContent.trim().isEmpty()) {
+                            return textContent.trim();
+                        }
+                    }
+                }
+            }
+
+            throw new RuntimeException("No se encontró el elemento jsonResponse en la respuesta");
+        } catch (SOAPFaultException e) {
+            SOAPFault fault = e.getFault();
+            throw new RuntimeException(fault.getFaultCode() + "- " + fault.getFaultString());
+        } catch (Exception e) {
+            throw new RuntimeException("Error al extraer JSON de la respuesta SOAP: " + e.getMessage(), e);
+        }
+    }
+
     private SOAPMessage createRequest(Map<String, Object> parameters) throws Exception {
         MessageFactory messageFactory = MessageFactory.newInstance();
         SOAPMessage soapMessage = messageFactory.createMessage();
@@ -214,20 +268,39 @@ public class SOAPClient {
             throw new RuntimeException("SOAP Fault: " + fault.getFaultCode() + " - " + fault.getFaultString());
         }
 
+        // Crear JAXBContext con la clase
         JAXBContext jaxbContext = JAXBContext.newInstance(clazz);
         Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 
+        // Búsqueda manual por nombre local
         Iterator<Node> iterator = body.getChildElements();
+        SOAPElement targetElement = null;
         while (iterator.hasNext()) {
             Node node = iterator.next();
             if (node instanceof SOAPElement) {
                 SOAPElement element = (SOAPElement) node;
                 if (element.getLocalName().equals(responseElementName)) {
-                    T object = (T) unmarshaller.unmarshal(element);
-                    objectList.add(object);
+                    targetElement = element;
                     break;
                 }
             }
+        }
+
+        if (targetElement == null) {
+            throw new RuntimeException("No se encontró el elemento de respuesta: " + responseElementName);
+        }
+
+        // Intentar unmarshal el elemento
+        try {
+            @SuppressWarnings("unchecked")
+            T object = (T) unmarshaller.unmarshal(targetElement);
+            objectList.add(object);
+        } catch (UnmarshalException e) {
+            // Si falla el unmarshalling, puede ser un problema de namespace
+            // Intentar extraer el contenido directamente si es un DTO simple con jsonResponse
+            throw new RuntimeException("Error al unmarshal elemento " + responseElementName + 
+                    ". Verificar que el namespace y las anotaciones JAXB sean correctas. " + 
+                    "Error: " + e.getMessage(), e);
         }
     }
 

@@ -4,6 +4,8 @@ import ar.edu.ubp.das.backend.client.RestauranteClient;
 import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickResponse;
+import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchRequest;
+import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
 import com.google.gson.Gson;
@@ -150,6 +152,62 @@ public class RestauranteRestClient implements RestauranteClient {
             return result != null ? result : new NotificarClickResponse();
         } catch (Exception e) {
             logger.error("Error al llamar al servicio REST para notificar click: {}", e.getMessage(), e);
+            throw new RuntimeException("Error en comunicación REST: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public NotificarClicksBatchResponse notificarClicksBatch(NotificarClicksBatchRequest request) {
+        try {
+            String url = baseUrl + "/restaurantes/" + request.getNroRestaurante() + "/clicks/batch";
+
+            // Construir JSON a enviar
+            Map<String, Object> jsonData = new HashMap<>();
+            jsonData.put("nroRestaurante", request.getNroRestaurante());
+            
+            List<Map<String, Object>> clicksJson = new ArrayList<>();
+            if (request.getClicks() != null) {
+                for (NotificarClickRequest click : request.getClicks()) {
+                    Map<String, Object> clickJson = new HashMap<>();
+                    clickJson.put("nroContenido", click.getNroContenido());
+                    clickJson.put("nroClick", click.getNroClick());
+                    clickJson.put("fechaHoraRegistro", click.getFechaHoraRegistro().format(ISO_DATE_TIME));
+                    clickJson.put("nroCliente", click.getNroCliente());
+                    clickJson.put("costoClick", click.getCostoClick());
+                    clicksJson.add(clickJson);
+                }
+            }
+            jsonData.put("clicks", clicksJson);
+            
+            String jsonString = gson.toJson(jsonData);
+
+            HttpHeaders headers = createHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(jsonString, headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    String.class
+            );
+
+            // Parsear respuesta JSON con GSON
+            String responseBody = response.getBody();
+            
+            NotificarClicksBatchResponse result = gson.fromJson(
+                    responseBody != null ? responseBody : "{}",
+                    NotificarClicksBatchResponse.class
+            );
+            
+            if (result == null) {
+                result = new NotificarClicksBatchResponse();
+                result.setExitoso(false);
+                result.setMensaje("Respuesta nula del servidor REST");
+            }
+
+            return result;
+        } catch (Exception e) {
+            logger.error("Error al llamar al servicio REST para notificar clicks en bloque: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación REST: " + e.getMessage(), e);
         }
     }

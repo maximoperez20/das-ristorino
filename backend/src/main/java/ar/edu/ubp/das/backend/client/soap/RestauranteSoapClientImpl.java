@@ -4,6 +4,8 @@ import ar.edu.ubp.das.backend.client.RestauranteClient;
 import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickResponse;
+import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchRequest;
+import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
 import ar.edu.ubp.das.backend.dto.soap.GetHorariosDisponiblesSoapDto;
@@ -157,6 +159,93 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             return response;
         } catch (Exception e) {
             logger.error("Error al llamar al servicio SOAP para notificar click: {}", e.getMessage(), e);
+            throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public NotificarClicksBatchResponse notificarClicksBatch(NotificarClicksBatchRequest request) {
+        logger.info("Notificando {} clicks en bloque vía SOAP - Restaurante: {}", 
+                request.getClicks() != null ? request.getClicks().size() : 0, 
+                request.getNroRestaurante());
+
+        try {
+            // Construir JSON con lista de clicks
+            Map<String, Object> jsonData = new HashMap<>();
+            jsonData.put("nroRestaurante", request.getNroRestaurante());
+            
+            List<Map<String, Object>> clicksJson = new ArrayList<>();
+            if (request.getClicks() != null) {
+                for (NotificarClickRequest click : request.getClicks()) {
+                    Map<String, Object> clickJson = new HashMap<>();
+                    clickJson.put("nroContenido", click.getNroContenido());
+                    clickJson.put("nroClick", click.getNroClick());
+                    clickJson.put("fechaHoraRegistro", click.getFechaHoraRegistro().format(ISO_DATE_TIME));
+                    clickJson.put("nroCliente", click.getNroCliente());
+                    clickJson.put("costoClick", click.getCostoClick());
+                    clicksJson.add(clickJson);
+                }
+            }
+            jsonData.put("clicks", clicksJson);
+            
+            String jsonString = gson.toJson(jsonData);
+
+            // Crear cliente SOAP y enviar JSON
+            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
+                    .wsdlUrl(wsdlUrl)
+                    .namespace(namespace)
+                    .serviceName(serviceName)
+                    .portName(portName)
+                    .operationName("notificarClicksBatchRequest")
+                    .build();
+
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("jsonData", jsonString);
+
+            // Extraer JSON directamente del XML (evita problemas de JAXB)
+            String jsonResponseStr = soapClient.extractJsonResponse("notificarClicksBatchResponse", parameters);
+            logger.debug("JSON respuesta extraído: {}", jsonResponseStr);
+            
+            // Parsear respuesta JSON primero como Map para verificar estructura
+            com.google.gson.reflect.TypeToken<Map<String, Object>> mapType = 
+                new com.google.gson.reflect.TypeToken<Map<String, Object>>(){};
+            Map<String, Object> jsonMap = gson.fromJson(jsonResponseStr, mapType.getType());
+            
+            // Construir respuesta manualmente para asegurar correcta deserialización
+            NotificarClicksBatchResponse response = new NotificarClicksBatchResponse();
+            response.setExitoso(jsonMap.get("exitoso") != null && (Boolean) jsonMap.get("exitoso"));
+            response.setMensaje((String) jsonMap.get("mensaje"));
+            response.setTotalClicks(jsonMap.get("totalClicks") != null ? 
+                ((Number) jsonMap.get("totalClicks")).intValue() : 0);
+            response.setClicksExitosos(jsonMap.get("clicksExitosos") != null ? 
+                ((Number) jsonMap.get("clicksExitosos")).intValue() : 0);
+            response.setClicksFallidos(jsonMap.get("clicksFallidos") != null ? 
+                ((Number) jsonMap.get("clicksFallidos")).intValue() : 0);
+            
+            // Convertir lista de resultados manualmente
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> resultadosMap = (List<Map<String, Object>>) jsonMap.get("resultados");
+            if (resultadosMap != null) {
+                List<NotificarClicksBatchResponse.ClickProcesadoDto> resultados = new ArrayList<>();
+                for (Map<String, Object> resultadoMap : resultadosMap) {
+                    NotificarClicksBatchResponse.ClickProcesadoDto dto = 
+                        new NotificarClicksBatchResponse.ClickProcesadoDto();
+                    dto.setNroClick((String) resultadoMap.get("nroClick"));
+                    dto.setExitoso(resultadoMap.get("exitoso") != null && (Boolean) resultadoMap.get("exitoso"));
+                    dto.setMensaje((String) resultadoMap.get("mensaje"));
+                    resultados.add(dto);
+                }
+                response.setResultados(resultados);
+            }
+
+            logger.debug("Respuesta parseada - Total: {}, Exitosos: {}, Fallidos: {}, Resultados: {}", 
+                    response.getTotalClicks(), response.getClicksExitosos(), 
+                    response.getClicksFallidos(), 
+                    response.getResultados() != null ? response.getResultados().size() : 0);
+
+            return response;
+        } catch (Exception e) {
+            logger.error("Error al llamar al servicio SOAP para notificar clicks en bloque: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
         }
     }
