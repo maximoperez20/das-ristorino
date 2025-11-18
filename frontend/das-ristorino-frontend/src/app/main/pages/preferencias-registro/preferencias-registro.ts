@@ -144,7 +144,7 @@ export class PreferenciasRegistroPage implements OnInit {
         text: 'No se seleccionaron preferencias. Puedes continuar.',
         title: 'Sin preferencias'
       });
-      this._router.navigate(['/mis-reservas']);
+      this._router.navigate(['/mi-perfil']);
       return;
     }
 
@@ -155,7 +155,7 @@ export class PreferenciasRegistroPage implements OnInit {
           text: 'Tus preferencias gastronómicas han sido guardadas exitosamente.',
           title: 'Preferencias guardadas'
         });
-        this._router.navigate(['/mis-reservas']);
+        this._router.navigate(['/mi-perfil']);
       },
       error: (err) => {
         console.error('Error al guardar preferencias:', err);
@@ -166,7 +166,7 @@ export class PreferenciasRegistroPage implements OnInit {
   }
 
   omitir(): void {
-    this._router.navigate(['/mis-reservas']);
+    this._router.navigate(['/mi-perfil']);
   }
 
 }
