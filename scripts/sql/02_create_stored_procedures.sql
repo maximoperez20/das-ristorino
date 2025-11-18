@@ -280,6 +280,45 @@ BEGIN
 END;
 GO
 
+-- 8.1. Obtener reservas por nro_cliente
+CREATE OR ALTER PROCEDURE sp_ObtenerReservasPorNroCliente
+    @nro_cliente VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT
+        rr.nro_reserva as id,
+        c.nombre + ' ' + c.apellido as nombre_cliente,
+        c.correo as email,
+        c.telefonos as telefono,
+        CAST(CAST(rr.fecha_reserva AS VARCHAR(10)) + ' ' + CAST(rr.hora_desde AS VARCHAR(8)) AS DATETIME2) as fecha_hora,
+        (rr.cant_adultos + rr.cant_menores) as cantidad_personas,
+        CASE 
+            WHEN rr.cancelada = 1 THEN 'CANCELADA'
+            WHEN er.nom_estado IS NOT NULL THEN er.nom_estado
+            ELSE 'PENDIENTE'
+        END as estado,
+        rr.notas as observaciones,
+        rr.fecha_hora_registro as fecha_creacion,
+        rr.fecha_hora_cancelacion as fecha_actualizacion,
+        r.razon_social as nombre_restaurante,
+        s.nom_sucursal as nombre_sucursal,
+        (SELECT TOP 1 iz.zona 
+         FROM idiomas_zonas_suc_restaurantes iz
+         WHERE iz.nro_restaurante = rr.nro_restaurante 
+           AND iz.nro_sucursal = rr.nro_sucursal 
+           AND iz.cod_zona = rr.cod_zona
+         ORDER BY iz.nro_idioma) as nombre_zona
+    FROM reservas_restaurantes rr
+    LEFT JOIN clientes c ON c.nro_cliente = rr.nro_cliente
+    LEFT JOIN estados_reservas er ON er.cod_estado = rr.cod_estado
+    LEFT JOIN restaurantes r ON r.nro_restaurante = rr.nro_restaurante
+    LEFT JOIN sucursales_restaurantes s ON s.nro_restaurante = rr.nro_restaurante AND s.nro_sucursal = rr.nro_sucursal
+    WHERE rr.nro_cliente = @nro_cliente
+    ORDER BY rr.fecha_reserva DESC, rr.hora_desde DESC;
+END;
+GO
+
 -- 9. Contar total de reservas
 CREATE OR ALTER PROCEDURE sp_ContarReservas
 AS
@@ -642,6 +681,7 @@ BEGIN
     )
     SELECT 
         CAST(ROW_NUMBER() OVER (ORDER BY razon_social) AS BIGINT) AS id,
+        rf.nro_restaurante AS nro_restaurante,
         rf.razon_social AS nombre,
         LTRIM(RTRIM(
             ISNULL(MIN(s.calle), '') +
@@ -950,7 +990,158 @@ BEGIN
         AND nro_contenido = @nro_contenido
         AND nro_click = @nro_click;
     
-    SELECT @@ROWCOUNT AS filas_actualizadas;
+    IF @@ROWCOUNT = 0
+    BEGIN
+        RAISERROR('No se encontró el click para marcar como notificado. Verificar parámetros: nro_restaurante=%s, nro_idioma=%d, nro_contenido=%s, nro_click=%s', 
+                  16, 1, @nro_restaurante, @nro_idioma, @nro_contenido, @nro_click);
+    END
+    ELSE
+    BEGIN
+        SELECT @@ROWCOUNT AS filas_actualizadas;
+    END
+END;
+GO
+
+-- =====================================================
+-- STORED PROCEDURES PARA LOCALIDADES
+-- =====================================================
+
+-- Obtener todas las localidades con su provincia
+CREATE OR ALTER PROCEDURE sp_ObtenerTodasLasLocalidades
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        l.nro_localidad AS nroLocalidad,
+        l.nom_localidad AS nombre,
+        p.nom_provincia AS provincia
+    FROM localidades l
+    INNER JOIN provincias p ON l.cod_provincia = p.cod_provincia
+    ORDER BY p.nom_provincia, l.nom_localidad;
+END;
+GO
+
+-- =====================================================
+-- STORED PROCEDURES PARA PREFERENCIAS GASTRONÓMICAS
+-- =====================================================
+
+-- Obtener todas las categorías de preferencias
+CREATE OR ALTER PROCEDURE sp_ObtenerCategoriasPreferencias
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        cod_categoria AS codCategoria,
+        nom_categoria AS nombre
+    FROM categorias_preferencias
+    ORDER BY nom_categoria;
+END;
+GO
+
+-- Obtener todos los dominios de una categoría específica
+CREATE OR ALTER PROCEDURE sp_ObtenerDominiosPorCategoria
+    @cod_categoria VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        cod_categoria AS codCategoria,
+        nro_valor_dominio AS nroValorDominio,
+        nom_valor_dominio AS nombre
+    FROM dominio_categorias_preferencias
+    WHERE cod_categoria = @cod_categoria
+    ORDER BY nro_valor_dominio;
+END;
+GO
+
+-- Obtener todas las categorías con sus dominios (más eficiente para el frontend)
+CREATE OR ALTER PROCEDURE sp_ObtenerTodasLasCategoriasConDominios
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Primero obtener las categorías
+    SELECT 
+        cod_categoria AS codCategoria,
+        nom_categoria AS nombre
+    FROM categorias_preferencias
+    ORDER BY nom_categoria;
+    
+    -- Luego obtener todos los dominios agrupados por categoría
+    SELECT 
+        dcp.cod_categoria AS codCategoria,
+        dcp.nro_valor_dominio AS nroValorDominio,
+        dcp.nom_valor_dominio AS nombre
+    FROM dominio_categorias_preferencias dcp
+    ORDER BY dcp.cod_categoria, dcp.nro_valor_dominio;
+END;
+GO
+
+-- Guardar preferencias de un cliente (reemplaza las existentes)
+CREATE OR ALTER PROCEDURE sp_GuardarPreferenciasCliente
+    @nro_cliente VARCHAR(36),
+    @preferencias NVARCHAR(MAX)  -- JSON con array de {codCategoria, nroValorDominio, observaciones}
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRANSACTION;
+    
+    BEGIN TRY
+        -- Eliminar preferencias existentes del cliente
+        DELETE FROM preferencias_clientes
+        WHERE nro_cliente = @nro_cliente;
+        
+        -- Parsear JSON y insertar nuevas preferencias
+        -- El JSON debe tener formato: [{"codCategoria":"...","nroValorDominio":1,"observaciones":"..."}, ...]
+        -- Usamos OPENJSON para parsear (SQL Server 2016+)
+        INSERT INTO preferencias_clientes (nro_cliente, cod_categoria, nro_valor_dominio, observaciones)
+        SELECT 
+            @nro_cliente,
+            codCategoria,
+            nroValorDominio,
+            observaciones
+        FROM OPENJSON(@preferencias)
+        WITH (
+            codCategoria VARCHAR(36) '$.codCategoria',
+            nroValorDominio INT '$.nroValorDominio',
+            observaciones NVARCHAR(400) '$.observaciones'
+        );
+        
+        COMMIT TRANSACTION;
+        
+        SELECT @@ROWCOUNT AS preferencias_guardadas;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+GO
+
+-- Obtener preferencias de un cliente
+CREATE OR ALTER PROCEDURE sp_ObtenerPreferenciasCliente
+    @nro_cliente VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        pc.cod_categoria AS codCategoria,
+        cp.nom_categoria AS nombreCategoria,
+        pc.nro_valor_dominio AS nroValorDominio,
+        dcp.nom_valor_dominio AS nombreDominio,
+        pc.observaciones
+    FROM preferencias_clientes pc
+    INNER JOIN categorias_preferencias cp ON pc.cod_categoria = cp.cod_categoria
+    INNER JOIN dominio_categorias_preferencias dcp 
+        ON pc.cod_categoria = dcp.cod_categoria 
+        AND pc.nro_valor_dominio = dcp.nro_valor_dominio
+    WHERE pc.nro_cliente = @nro_cliente
+    ORDER BY cp.nom_categoria, dcp.nom_valor_dominio;
 END;
 GO
 
