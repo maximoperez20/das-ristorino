@@ -2,10 +2,6 @@ package ar.edu.ubp.das.backend.dto.restaurante;
 
 import java.util.List;
 
-/**
- * Request para notificar múltiples clicks en bloque a un restaurante.
- * Compatible con SOAP y REST.
- */
 public class NotificarClicksBatchRequest {
 
     private String nroRestaurante;

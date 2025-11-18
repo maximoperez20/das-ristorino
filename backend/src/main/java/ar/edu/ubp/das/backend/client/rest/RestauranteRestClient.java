@@ -161,7 +161,6 @@ public class RestauranteRestClient implements RestauranteClient {
         try {
             String url = baseUrl + "/restaurantes/" + request.getNroRestaurante() + "/clicks/batch";
 
-            // Construir JSON a enviar
             Map<String, Object> jsonData = new HashMap<>();
             jsonData.put("nroRestaurante", request.getNroRestaurante());
             
@@ -191,7 +190,6 @@ public class RestauranteRestClient implements RestauranteClient {
                     String.class
             );
 
-            // Parsear respuesta JSON con GSON
             String responseBody = response.getBody();
             
             NotificarClicksBatchResponse result = gson.fromJson(

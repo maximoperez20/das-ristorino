@@ -1007,13 +1007,9 @@ BEGIN
 END;
 GO
 
--- =====================================================
--- STORED PROCEDURE: sp_MarcarClickComoNotificado
--- Marca un click como notificado
--- =====================================================
 CREATE OR ALTER PROCEDURE sp_MarcarClickComoNotificado
     @nro_restaurante VARCHAR(36),
-    @nro_idioma VARCHAR(36),
+    @nro_idioma INT,
     @nro_contenido VARCHAR(36),
     @nro_click VARCHAR(36)
 AS
@@ -1027,7 +1023,15 @@ BEGIN
         AND nro_contenido = @nro_contenido
         AND nro_click = @nro_click;
     
-    SELECT @@ROWCOUNT AS filas_actualizadas;
+    IF @@ROWCOUNT = 0
+    BEGIN
+        RAISERROR('No se encontró el click para marcar como notificado. Verificar parámetros: nro_restaurante=%s, nro_idioma=%d, nro_contenido=%s, nro_click=%s', 
+                  16, 1, @nro_restaurante, @nro_idioma, @nro_contenido, @nro_click);
+    END
+    ELSE
+    BEGIN
+        SELECT @@ROWCOUNT AS filas_actualizadas;
+    END
 END;
 GO
 

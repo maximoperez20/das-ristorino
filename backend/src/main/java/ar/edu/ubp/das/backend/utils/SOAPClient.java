@@ -108,10 +108,6 @@ public class SOAPClient {
         return callServiceForList(clazz, responseElementName, null);
     }
 
-    /**
-     * Extrae el jsonResponse directamente del XML sin usar JAXB.
-     * Útil cuando hay problemas con el unmarshalling JAXB.
-     */
     public String extractJsonResponse(String responseElementName, Map<String, Object> parameters) throws Exception {
         try {
             SOAPMessage soapRequest = createRequest(parameters);
@@ -124,27 +120,22 @@ public class SOAPClient {
                 throw new RuntimeException("SOAP Fault: " + fault.getFaultCode() + " - " + fault.getFaultString());
             }
 
-            // Buscar el elemento de respuesta
             Iterator<Node> iterator = body.getChildElements();
             while (iterator.hasNext()) {
                 Node node = iterator.next();
                 if (node instanceof SOAPElement) {
                     SOAPElement element = (SOAPElement) node;
                     if (element.getLocalName().equals(responseElementName)) {
-                        // Buscar el elemento jsonResponse dentro
                         Iterator<Node> jsonIterator = element.getChildElements();
                         while (jsonIterator.hasNext()) {
                             Node jsonNode = jsonIterator.next();
                             if (jsonNode instanceof SOAPElement) {
                                 SOAPElement jsonElement = (SOAPElement) jsonNode;
                                 if (jsonElement.getLocalName().equals("jsonResponse")) {
-                                    // Obtener el texto del elemento (puede tener hijos de texto)
                                     return jsonElement.getTextContent();
                                 }
                             }
                         }
-                        // Si no se encuentra como hijo directo, intentar obtener el texto del elemento raíz
-                        // (puede que jsonResponse sea el único contenido)
                         String textContent = element.getTextContent();
                         if (textContent != null && !textContent.trim().isEmpty()) {
                             return textContent.trim();

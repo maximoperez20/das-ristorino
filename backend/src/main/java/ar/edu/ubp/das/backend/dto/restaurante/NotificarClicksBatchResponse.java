@@ -2,10 +2,6 @@ package ar.edu.ubp.das.backend.dto.restaurante;
 
 import java.util.List;
 
-/**
- * Response para notificación de clicks en bloque.
- * Incluye información sobre clicks procesados exitosamente y los que fallaron.
- */
 public class NotificarClicksBatchResponse {
 
     private boolean exitoso;
@@ -76,9 +72,6 @@ public class NotificarClicksBatchResponse {
         this.resultados = resultados;
     }
 
-    /**
-     * DTO interno para representar el resultado de procesar un click individual
-     */
     public static class ClickProcesadoDto {
         private String nroClick;
         private boolean exitoso;

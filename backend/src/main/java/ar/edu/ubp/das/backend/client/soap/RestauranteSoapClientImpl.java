@@ -165,12 +165,7 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
 
     @Override
     public NotificarClicksBatchResponse notificarClicksBatch(NotificarClicksBatchRequest request) {
-        logger.info("Notificando {} clicks en bloque vía SOAP - Restaurante: {}", 
-                request.getClicks() != null ? request.getClicks().size() : 0, 
-                request.getNroRestaurante());
-
         try {
-            // Construir JSON con lista de clicks
             Map<String, Object> jsonData = new HashMap<>();
             jsonData.put("nroRestaurante", request.getNroRestaurante());
             
@@ -190,7 +185,6 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             
             String jsonString = gson.toJson(jsonData);
 
-            // Crear cliente SOAP y enviar JSON
             SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
                     .wsdlUrl(wsdlUrl)
                     .namespace(namespace)
@@ -202,16 +196,12 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("jsonData", jsonString);
 
-            // Extraer JSON directamente del XML (evita problemas de JAXB)
             String jsonResponseStr = soapClient.extractJsonResponse("notificarClicksBatchResponse", parameters);
-            logger.debug("JSON respuesta extraído: {}", jsonResponseStr);
             
-            // Parsear respuesta JSON primero como Map para verificar estructura
             com.google.gson.reflect.TypeToken<Map<String, Object>> mapType = 
                 new com.google.gson.reflect.TypeToken<Map<String, Object>>(){};
             Map<String, Object> jsonMap = gson.fromJson(jsonResponseStr, mapType.getType());
             
-            // Construir respuesta manualmente para asegurar correcta deserialización
             NotificarClicksBatchResponse response = new NotificarClicksBatchResponse();
             response.setExitoso(jsonMap.get("exitoso") != null && (Boolean) jsonMap.get("exitoso"));
             response.setMensaje((String) jsonMap.get("mensaje"));
@@ -222,7 +212,6 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             response.setClicksFallidos(jsonMap.get("clicksFallidos") != null ? 
                 ((Number) jsonMap.get("clicksFallidos")).intValue() : 0);
             
-            // Convertir lista de resultados manualmente
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> resultadosMap = (List<Map<String, Object>>) jsonMap.get("resultados");
             if (resultadosMap != null) {
@@ -237,11 +226,6 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
                 }
                 response.setResultados(resultados);
             }
-
-            logger.debug("Respuesta parseada - Total: {}, Exitosos: {}, Fallidos: {}, Resultados: {}", 
-                    response.getTotalClicks(), response.getClicksExitosos(), 
-                    response.getClicksFallidos(), 
-                    response.getResultados() != null ? response.getResultados().size() : 0);
 
             return response;
         } catch (Exception e) {

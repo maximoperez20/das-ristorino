@@ -2,9 +2,6 @@ package ar.edu.ubp.das.backend.dto.soap;
 
 import jakarta.xml.bind.annotation.*;
 
-/**
- * DTO para encapsular la respuesta JSON del servicio SOAP de notificación de clicks en bloque.
- */
 @XmlRootElement(name = "notificarClicksBatchResponse", namespace = "http://das.ubp.edu.ar/restaurante")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class NotificarClicksBatchSoapDto {

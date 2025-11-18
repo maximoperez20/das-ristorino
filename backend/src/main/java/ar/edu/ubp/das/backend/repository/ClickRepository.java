@@ -12,16 +12,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-/**
- * Repository para gestión de clicks en promociones
- */
 @Repository
 public class ClickRepository {
     
     @Autowired
     private JdbcTemplate jdbcTemplate;
     
-    // RowMapper para convertir ResultSet a ClickResponseDto
     private final RowMapper<ClickResponseDto> clickRowMapper = new RowMapper<ClickResponseDto>() {
         @Override
         public ClickResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -33,7 +29,6 @@ public class ClickRepository {
             click.setFechaHoraRegistro(rs.getTimestamp("fecha_hora_registro").toLocalDateTime());
             click.setNroCliente(rs.getString("nro_cliente"));
             
-            // costo_click puede ser NULL
             Double costoClick = rs.getDouble("costo_click");
             if (rs.wasNull()) {
                 click.setCostoClick(null);
@@ -46,9 +41,6 @@ public class ClickRepository {
         }
     };
     
-    /**
-     * Registrar un click en una promoción/contenido
-     */
     public ClickResponseDto registrarClick(String nroRestaurante, Integer nroIdioma, String nroContenido, String nroCliente) {
         String sql = "EXEC sp_RegistrarClickPromocion ?, ?, ?, ?";
         
@@ -58,9 +50,6 @@ public class ClickRepository {
         return clicks.isEmpty() ? null : clicks.get(0);
     }
     
-    /**
-     * Obtiene todos los clicks no notificados con cod_contenido_restaurante
-     */
     public List<ClickNoNotificadoDto> obtenerClicksNoNotificados() {
         String sql = "EXEC sp_ObtenerClicksNoNotificados";
         
@@ -89,13 +78,16 @@ public class ClickRepository {
         });
     }
     
-    /**
-     * Marca un click como notificado
-     */
     public void marcarClickComoNotificado(String nroRestaurante, Integer nroIdioma, String nroContenido, String nroClick) {
         String sql = "EXEC sp_MarcarClickComoNotificado ?, ?, ?, ?";
         
-        jdbcTemplate.update(sql, nroRestaurante, nroIdioma, nroContenido, nroClick);
+        int filasActualizadas = jdbcTemplate.update(sql, nroRestaurante, nroIdioma, nroContenido, nroClick);
+        
+        if (filasActualizadas == 0) {
+            throw new RuntimeException(String.format(
+                "No se actualizó ningún registro. Parámetros: nroRestaurante=%s, nroIdioma=%d, nroContenido=%s, nroClick=%s",
+                nroRestaurante, nroIdioma, nroContenido, nroClick));
+        }
     }
 }
 
