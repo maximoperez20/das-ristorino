@@ -1051,4 +1051,127 @@ BEGIN
 END;
 GO
 
+-- =====================================================
+-- STORED PROCEDURES PARA PREFERENCIAS GASTRONÓMICAS
+-- =====================================================
+
+-- Obtener todas las categorías de preferencias
+CREATE OR ALTER PROCEDURE sp_ObtenerCategoriasPreferencias
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        cod_categoria AS codCategoria,
+        nom_categoria AS nombre
+    FROM categorias_preferencias
+    ORDER BY nom_categoria;
+END;
+GO
+
+-- Obtener todos los dominios de una categoría específica
+CREATE OR ALTER PROCEDURE sp_ObtenerDominiosPorCategoria
+    @cod_categoria VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        cod_categoria AS codCategoria,
+        nro_valor_dominio AS nroValorDominio,
+        nom_valor_dominio AS nombre
+    FROM dominio_categorias_preferencias
+    WHERE cod_categoria = @cod_categoria
+    ORDER BY nro_valor_dominio;
+END;
+GO
+
+-- Obtener todas las categorías con sus dominios (más eficiente para el frontend)
+CREATE OR ALTER PROCEDURE sp_ObtenerTodasLasCategoriasConDominios
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Primero obtener las categorías
+    SELECT 
+        cod_categoria AS codCategoria,
+        nom_categoria AS nombre
+    FROM categorias_preferencias
+    ORDER BY nom_categoria;
+    
+    -- Luego obtener todos los dominios agrupados por categoría
+    SELECT 
+        dcp.cod_categoria AS codCategoria,
+        dcp.nro_valor_dominio AS nroValorDominio,
+        dcp.nom_valor_dominio AS nombre
+    FROM dominio_categorias_preferencias dcp
+    ORDER BY dcp.cod_categoria, dcp.nro_valor_dominio;
+END;
+GO
+
+-- Guardar preferencias de un cliente (reemplaza las existentes)
+CREATE OR ALTER PROCEDURE sp_GuardarPreferenciasCliente
+    @nro_cliente VARCHAR(36),
+    @preferencias NVARCHAR(MAX)  -- JSON con array de {codCategoria, nroValorDominio, observaciones}
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRANSACTION;
+    
+    BEGIN TRY
+        -- Eliminar preferencias existentes del cliente
+        DELETE FROM preferencias_clientes
+        WHERE nro_cliente = @nro_cliente;
+        
+        -- Parsear JSON y insertar nuevas preferencias
+        -- El JSON debe tener formato: [{"codCategoria":"...","nroValorDominio":1,"observaciones":"..."}, ...]
+        -- Usamos OPENJSON para parsear (SQL Server 2016+)
+        INSERT INTO preferencias_clientes (nro_cliente, cod_categoria, nro_valor_dominio, observaciones)
+        SELECT 
+            @nro_cliente,
+            codCategoria,
+            nroValorDominio,
+            observaciones
+        FROM OPENJSON(@preferencias)
+        WITH (
+            codCategoria VARCHAR(36) '$.codCategoria',
+            nroValorDominio INT '$.nroValorDominio',
+            observaciones NVARCHAR(400) '$.observaciones'
+        );
+        
+        COMMIT TRANSACTION;
+        
+        SELECT @@ROWCOUNT AS preferencias_guardadas;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+GO
+
+-- Obtener preferencias de un cliente
+CREATE OR ALTER PROCEDURE sp_ObtenerPreferenciasCliente
+    @nro_cliente VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        pc.cod_categoria AS codCategoria,
+        cp.nom_categoria AS nombreCategoria,
+        pc.nro_valor_dominio AS nroValorDominio,
+        dcp.nom_valor_dominio AS nombreDominio,
+        pc.observaciones
+    FROM preferencias_clientes pc
+    INNER JOIN categorias_preferencias cp ON pc.cod_categoria = cp.cod_categoria
+    INNER JOIN dominio_categorias_preferencias dcp 
+        ON pc.cod_categoria = dcp.cod_categoria 
+        AND pc.nro_valor_dominio = dcp.nro_valor_dominio
+    WHERE pc.nro_cliente = @nro_cliente
+    ORDER BY cp.nom_categoria, dcp.nom_valor_dominio;
+END;
+GO
+
 PRINT 'Stored procedures creados/actualizados exitosamente!';

@@ -42,6 +42,7 @@ public class SecurityConfig {
                            "/api/restaurantes/**",     // Consulta de restaurantes y búsqueda NLP - PÚBLICO
                            "/api/promociones/**",      // Consulta de promociones - PÚBLICO
                            "/api/localidades/**",      // Consulta de localidades - PÚBLICO
+                           "/api/preferencias/categorias",  // Consulta de categorías de preferencias - PÚBLICO
                            "/api/clientes/register",   // Registro de cliente - PÚBLICO
                            "/api/clientes/login",      // Login de cliente - PÚBLICO
                            // Swagger UI (documentación API)
@@ -53,6 +54,8 @@ public class SecurityConfig {
                 // Endpoints protegidos (requieren token JWT)
                 .requestMatchers(
                     "/api/reservas/**",
+                    "/api/preferencias/guardar",       // Guardar preferencias - PRIVADO
+                    "/api/preferencias/mis-preferencias",  // Obtener preferencias del cliente - PRIVADO
                     "/api/usuarios/**",
                     "/api/contenidos/**"        // Generación de contenido con IA - PRIVADO
                 ).authenticated()
