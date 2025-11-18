@@ -95,17 +95,19 @@
               </div>
 
               <div class="mb-3">
-                <label for="nroLocalidad" class="form-label">Código de Localidad</label>
-                <input
-                  type="text"
-                  class="form-control"
+                <label for="nroLocalidad" class="form-label">Localidad</label>
+                <select
+                  class="form-select"
                   [class.is-invalid]="nroLocalidad?.invalid && nroLocalidad?.touched"
                   id="nroLocalidad"
-                  formControlName="nroLocalidad"
-                  placeholder="UUID de localidad (ej: 12345678-1234-1234-1234-123456789abc)">
-                <small class="form-text text-muted">
-                  Ingresa el código UUID de tu localidad. Por ahora, puedes usar cualquier UUID válido.
-                </small>
+                  formControlName="nroLocalidad">
+                  <option value="">Selecciona una localidad</option>
+                  @for (localidad of localidades; track localidad.nroLocalidad) {
+                    <option [value]="localidad.nroLocalidad">
+                      {{ localidad.nombre }} - {{ localidad.provincia }}
+                    </option>
+                  }
+                </select>
                 @if (nroLocalidad?.invalid && nroLocalidad?.touched) {
                   <div class="invalid-feedback">
                     La localidad es obligatoria
@@ -198,4 +200,3 @@
     </div>
   </div>
 </div>
-

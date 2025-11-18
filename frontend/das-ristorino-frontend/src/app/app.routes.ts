@@ -6,11 +6,13 @@ import { restauranteResolver } from './main/resolvers/restaurante.resolver';
 import { restauranteListResolver } from './main/resolvers/restaurantes-list.resolver';
 import { promocionesListResolver } from './main/resolvers/promociones-list.resolver';
 import { misReservasResolver } from './main/resolvers/mis-reservas.resolver';
+import { localidadesResolver } from './main/resolvers/localidades.resolver';
 import { RestaurantesPage } from './main/pages/restaurantes/restaurantes';
 import { PromocionResource } from './main/api/resources/promocion-resource';
 import { RestauranteResource } from './main/api/resources/restaurante-resource';
 import { ReservaResource } from './main/api/resources/reserva-resource';
 import { ClienteResource } from './main/api/resources/cliente-resource';
+import { LocalidadResource } from './main/api/resources/localidad-resource';
 
 export const routes: Routes = [
     {path: '', component: HomePage, 
@@ -54,7 +56,8 @@ export const routes: Routes = [
                 import('./main/pages/register/register').then(
                     m => m.RegisterPage
                 ),
-                providers: [ClienteResource]
+                resolve: { localidades: localidadesResolver },
+                providers: [ClienteResource, LocalidadResource]
             },
             {
                 path: 'mis-reservas',

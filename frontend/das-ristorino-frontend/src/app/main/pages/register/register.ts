@@ -1,10 +1,11 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { ClienteResource } from '../../api/resources/cliente-resource';
 import { AuthService } from '../../../core/services/auth-service';
 import { AppMessageService } from '../../../core/services/app-message-service';
+import { ILocalidad } from '../../api/models/i-localidad';
 
 @Component({
   selector: 'app-register',
@@ -18,11 +19,13 @@ export class RegisterPage implements OnInit {
   registerForm: FormGroup;
   mostrarPassword = false;
   mostrarConfirmPassword = false;
+  localidades: ILocalidad[] = [];
 
   private _fb = inject(FormBuilder);
   private _clienteResource = inject(ClienteResource);
   private _auth = inject(AuthService);
   private _router = inject(Router);
+  private _route = inject(ActivatedRoute);
   private _messageService = inject(AppMessageService);
 
   constructor() {
@@ -43,6 +46,16 @@ export class RegisterPage implements OnInit {
     // Si ya está autenticado, redirigir a mis reservas
     if (this._auth.isAuthenticated()) {
       this._router.navigate(['/mis-reservas']);
+      return;
+    }
+
+    // Leer localidades resueltas por el resolver
+    const data = this._route.snapshot.data as { localidades?: ILocalidad[] };
+    if (data && Array.isArray(data.localidades)) {
+      this.localidades = data.localidades;
+    } else {
+      // Fallback: si no hay datos resueltos, inicializar vacío
+      this.localidades = [];
     }
   }
 
@@ -145,4 +158,3 @@ export class RegisterPage implements OnInit {
   }
 
 }
-
