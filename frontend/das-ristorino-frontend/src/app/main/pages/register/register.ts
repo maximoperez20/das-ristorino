@@ -96,14 +96,14 @@ export class RegisterPage implements OnInit {
           correo: response.correo
         });
 
-        // Mostrar mensaje de éxito
-        this._messageService.showMessage({
-          text: `¡Bienvenido, ${response.nombre} ${response.apellido}! Tu cuenta ha sido creada exitosamente.`,
-          title: 'Registro exitoso'
-        });
+               // Mostrar mensaje de éxito
+               this._messageService.showMessage({
+                 text: `¡Bienvenido, ${response.nombre} ${response.apellido}! Tu cuenta ha sido creada exitosamente.`,
+                 title: 'Registro exitoso'
+               });
 
-        // Redirigir a mis reservas
-        this._router.navigate(['/mis-reservas']);
+               // Redirigir a preferencias (segundo paso del registro)
+               this._router.navigate(['/preferencias-registro']);
       },
       error: (err) => {
         // El error handler global manejará el error automáticamente

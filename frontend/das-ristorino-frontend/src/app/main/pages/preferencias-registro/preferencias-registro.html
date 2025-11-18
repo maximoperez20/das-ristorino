@@ -1,0 +1,92 @@
+<div class="preferencias-registro-container">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-10">
+        <div class="card preferencias-card shadow">
+          <div class="card-body p-4">
+            <div class="text-center mb-4">
+              <h2 class="card-title mb-2">Preferencias Gastronómicas</h2>
+              <p class="text-muted">Selecciona tus preferencias para personalizar tu experiencia</p>
+              <p class="text-muted small">Puedes seleccionar múltiples opciones en cada categoría</p>
+            </div>
+
+            @if (cargando && categorias.length === 0) {
+              <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Cargando...</span>
+                </div>
+              </div>
+            } @else {
+              @if (categorias.length === 0) {
+                <div class="alert alert-warning text-center" role="alert">
+                  No se pudieron cargar las categorías de preferencias.
+                </div>
+              } @else {
+                <div class="categorias-container">
+                  @for (categoria of categorias; track categoria.codCategoria) {
+                    <div class="categoria-section mb-4">
+                      <h5 class="categoria-title mb-3">
+                        {{ categoria.nombre }}
+                        @if (tieneSelecciones(categoria.codCategoria)) {
+                          <span class="badge bg-primary ms-2">
+                            {{ preferenciasSeleccionadas.get(categoria.codCategoria)?.size || 0 }}
+                          </span>
+                        }
+                      </h5>
+                      
+                      <div class="dominios-container">
+                        @for (dominio of categoria.dominios; track dominio.nroValorDominio) {
+                          <button
+                            type="button"
+                            class="btn dominio-chip"
+                            [class.active]="estaSeleccionado(categoria.codCategoria, dominio.nroValorDominio)"
+                            (click)="togglePreferencia(categoria.codCategoria, dominio.nroValorDominio)">
+                            {{ dominio.nombre }}
+                            @if (estaSeleccionado(categoria.codCategoria, dominio.nroValorDominio)) {
+                              <i class="bi bi-check-circle-fill ms-2"></i>
+                            }
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <div class="resumen-selecciones mb-4">
+                  <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Total seleccionado:</strong> {{ totalSelecciones() }} preferencia{{ totalSelecciones() !== 1 ? 's' : '' }}
+                  </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    (click)="omitir()"
+                    [disabled]="cargando">
+                    <i class="bi bi-skip-forward me-2"></i>
+                    Omitir este paso
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    (click)="guardarPreferencias()"
+                    [disabled]="cargando">
+                    @if (cargando) {
+                      <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    } @else {
+                      <i class="bi bi-check-circle me-2"></i>
+                    }
+                    Guardar y continuar
+                  </button>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
