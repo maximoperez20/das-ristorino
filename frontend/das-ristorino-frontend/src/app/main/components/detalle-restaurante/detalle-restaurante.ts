@@ -4,11 +4,12 @@ import { IRestaurante } from '../../api/models/i-restaurante';
 import { ISucursal } from '../../api/models/i-sucursal';
 import { NgClass } from '@angular/common';
 import { HorariosDisponiblesComponent } from '../horarios-disponibles/horarios-disponibles';
+import { PromocionComponent } from "../promocion/promocion";
 
 @Component({
   selector: 'app-detalle-restaurante',
   standalone: true,
-  imports: [NgClass, HorariosDisponiblesComponent],
+  imports: [NgClass, HorariosDisponiblesComponent, PromocionComponent],
   templateUrl: './detalle-restaurante.html',
   styleUrls: ['./detalle-restaurante.scss'],
 })
@@ -30,6 +31,7 @@ export class DetalleRestauranteComponent implements OnInit {
         this.restaurante.nroRestaurante = this.nroRestaurante;
       }
       this.seleccionarPrimeraSucursal();
+      console.log('Restaurante cargado:', this.restaurante);
     });
   }
 
