@@ -371,6 +371,7 @@ BEGIN
     )
     SELECT 
         CAST(ROW_NUMBER() OVER (ORDER BY razon_social) AS BIGINT) AS id,
+        nro_restaurante,
         razon_social AS nombre,
         LTRIM(RTRIM(
             ISNULL(calle,'') +
@@ -707,7 +708,9 @@ BEGIN
         CAST(NULL AS INT) AS max_personas,
         cr.cod_contenido_restaurante AS codigo_promocion,
         CAST(0 AS BIT) AS requiere_codigo
-    FROM contenidos_restaurantes cr;
+    FROM contenidos_restaurantes cr
+    WHERE cr.fecha_fin_vigencia IS NOT NULL
+      AND CAST(GETDATE() AS DATE) <= cr.fecha_fin_vigencia;
 END;
 GO
 
