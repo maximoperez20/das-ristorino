@@ -71,7 +71,10 @@ public class ContenidoService {
             request.getContextoAdicional(),
             promptId,
             codIdioma,
-            nomIdioma
+            nomIdioma,
+            contexto.getTipoCocina(),
+            contexto.getEstiloAtencion(),
+            contexto.getPlatosEmblematicos()
         );
 
         // Generar contenido con OpenAI

@@ -20,6 +20,11 @@ public class RestauranteContextoDto {
     private List<String> rangosPrecios = new ArrayList<>();
     private List<String> horarios = new ArrayList<>();
     private String observacionesAdicionales;
+    
+    // Identidad gastronómica y comunicacional
+    private String tipoCocina;           // Tipo de cocina del restaurante
+    private String estiloAtencion;        // Estilo de atención (formal, casual, etc.)
+    private String platosEmblematicos;    // Platos emblemáticos (separados por comas)
 
     // Getters y Setters
     public String getRazonSocial() {
@@ -110,6 +115,30 @@ public class RestauranteContextoDto {
         this.observacionesAdicionales = observacionesAdicionales;
     }
 
+    public String getTipoCocina() {
+        return tipoCocina;
+    }
+
+    public void setTipoCocina(String tipoCocina) {
+        this.tipoCocina = tipoCocina;
+    }
+
+    public String getEstiloAtencion() {
+        return estiloAtencion;
+    }
+
+    public void setEstiloAtencion(String estiloAtencion) {
+        this.estiloAtencion = estiloAtencion;
+    }
+
+    public String getPlatosEmblematicos() {
+        return platosEmblematicos;
+    }
+
+    public void setPlatosEmblematicos(String platosEmblematicos) {
+        this.platosEmblematicos = platosEmblematicos;
+    }
+
     @Override
     public String toString() {
         return "RestauranteContextoDto{" +
@@ -123,6 +152,9 @@ public class RestauranteContextoDto {
                 ", ambientes=" + ambientes +
                 ", rangosPrecios=" + rangosPrecios +
                 ", horarios=" + horarios +
+                ", tipoCocina='" + tipoCocina + '\'' +
+                ", estiloAtencion='" + estiloAtencion + '\'' +
+                ", platosEmblematicos='" + platosEmblematicos + '\'' +
                 '}';
     }
 }

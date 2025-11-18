@@ -156,13 +156,15 @@ public class OpenAIService {
                                   String localidad, List<String> tiposComida, 
                                   List<String> ambientes, List<String> rangosPrecios,
                                   String observaciones, String contextoAdicional, String promptId,
-                                  String codIdioma, String nomIdioma) {
+                                  String codIdioma, String nomIdioma,
+                                  String tipoCocina, String estiloAtencion, String platosEmblematicos) {
         
         if (promptId != null && !promptId.isEmpty()) {
             return construirVariablesParaPromptGuardado(razonSocial, sucursal, direccion, 
                                                        localidad, tiposComida, ambientes, 
                                                        rangosPrecios, observaciones, contextoAdicional,
-                                                       codIdioma, nomIdioma);
+                                                       codIdioma, nomIdioma,
+                                                       tipoCocina, estiloAtencion, platosEmblematicos);
         }
         
         // Prompt por defecto
@@ -185,6 +187,19 @@ public class OpenAIService {
         
         if (!rangosPrecios.isEmpty()) {
             prompt.append("💰 Rango de precio: ").append(String.join(", ", rangosPrecios)).append("\n");
+        }
+        
+        // Identidad gastronómica y comunicacional
+        if (tipoCocina != null && !tipoCocina.trim().isEmpty()) {
+            prompt.append("🍳 Tipo de cocina: ").append(tipoCocina).append("\n");
+        }
+        
+        if (estiloAtencion != null && !estiloAtencion.trim().isEmpty()) {
+            prompt.append("👔 Estilo de atención: ").append(estiloAtencion).append("\n");
+        }
+        
+        if (platosEmblematicos != null && !platosEmblematicos.trim().isEmpty()) {
+            prompt.append("⭐ Platos emblemáticos: ").append(platosEmblematicos).append("\n");
         }
         
         if (observaciones != null && !observaciones.isEmpty()) {
@@ -238,7 +253,8 @@ public class OpenAIService {
                                                        String direccion, String localidad, 
                                                        List<String> tiposComida, List<String> ambientes,
                                                        List<String> rangosPrecios, String observaciones, 
-                                                       String contextoAdicional, String codIdioma, String nomIdioma) {
+                                                       String contextoAdicional, String codIdioma, String nomIdioma,
+                                                       String tipoCocina, String estiloAtencion, String platosEmblematicos) {
         StringBuilder json = new StringBuilder();
         json.append("{\n");
         json.append("  \"restaurante\": \"").append(escaparJson(razonSocial != null ? razonSocial : "")).append("\"");
@@ -265,6 +281,19 @@ public class OpenAIService {
         
         if (rangosPrecios != null && !rangosPrecios.isEmpty()) {
             json.append(",\n  \"rango_precio\": \"").append(escaparJson(String.join(", ", rangosPrecios))).append("\"");
+        }
+        
+        // Identidad gastronómica y comunicacional
+        if (tipoCocina != null && !tipoCocina.trim().isEmpty()) {
+            json.append(",\n  \"tipo_cocina\": \"").append(escaparJson(tipoCocina)).append("\"");
+        }
+        
+        if (estiloAtencion != null && !estiloAtencion.trim().isEmpty()) {
+            json.append(",\n  \"estilo_atencion\": \"").append(escaparJson(estiloAtencion)).append("\"");
+        }
+        
+        if (platosEmblematicos != null && !platosEmblematicos.trim().isEmpty()) {
+            json.append(",\n  \"platos_emblematicos\": \"").append(escaparJson(platosEmblematicos)).append("\"");
         }
         
         if (observaciones != null && !observaciones.isEmpty()) {

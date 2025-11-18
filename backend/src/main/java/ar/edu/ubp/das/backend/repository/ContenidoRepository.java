@@ -63,6 +63,9 @@ public class ContenidoRepository {
         // Obtener horarios
         obtenerHorarios(nroRestaurante, nroSucursal, contexto);
 
+        // Obtener identidad gastronómica y comunicacional
+        obtenerIdentidadGastronomica(nroRestaurante, contexto);
+
         return Optional.of(contexto);
     }
 
@@ -154,6 +157,39 @@ public class ContenidoRepository {
             String horario = rs.getString("hora_desde") + " - " + rs.getString("hora_hasta");
             contexto.getHorarios().add(horario);
         }, nroRestaurante, nroSucursal, nroSucursal);
+    }
+
+    /**
+     * Obtiene la identidad gastronómica y comunicacional del restaurante
+     * desde la tabla configuracion_restaurantes.
+     * 
+     * @param nroRestaurante UUID del restaurante
+     * @param contexto DTO donde se almacenarán los atributos
+     */
+    private void obtenerIdentidadGastronomica(String nroRestaurante, RestauranteContextoDto contexto) {
+        String sql = 
+            "SELECT " +
+            "    a.nom_atributo, " +
+            "    cr.valor " +
+            "FROM configuracion_restaurantes cr " +
+            "JOIN atributos a ON cr.cod_atributo = a.cod_atributo " +
+            "WHERE cr.nro_restaurante = ? " +
+            "    AND a.nom_atributo IN ('Tipo de cocina', 'Estilo de atención', 'Platos emblemáticos')";
+
+        jdbcTemplate.query(sql, rs -> {
+            String nomAtributo = rs.getString("nom_atributo");
+            String valor = rs.getString("valor");
+
+            if (valor != null && !valor.trim().isEmpty()) {
+                if (nomAtributo.equalsIgnoreCase("Tipo de cocina")) {
+                    contexto.setTipoCocina(valor.trim());
+                } else if (nomAtributo.equalsIgnoreCase("Estilo de atención")) {
+                    contexto.setEstiloAtencion(valor.trim());
+                } else if (nomAtributo.equalsIgnoreCase("Platos emblemáticos")) {
+                    contexto.setPlatosEmblematicos(valor.trim());
+                }
+            }
+        }, nroRestaurante);
     }
 
     /**
