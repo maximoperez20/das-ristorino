@@ -1,11 +1,11 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { IRestaurante } from '../../api/models/i-restaurante';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-restaurantes',
-  imports: [RouterLink],
+  imports: [],
   templateUrl: './restaurantes.html',
   styleUrls: ['./restaurantes.scss'],
 })
@@ -14,6 +14,7 @@ export class RestaurantesPage implements OnInit {
   restaurantesLista: IRestaurante[] = [];
 
   private _route = inject(ActivatedRoute);
+  private _router = inject(Router);
 
   ngOnInit(): void {
     // Leer restaurantes resueltos por el RestaurantesListResolver
@@ -56,6 +57,10 @@ export class RestaurantesPage implements OnInit {
       return restaurante.imagenUrl;
     }
     return null;
+  }
+
+  redirigirADetalleRestaurante(restaurante: IRestaurante){
+    this._router.navigate(['/restaurantes', restaurante.nroRestaurante])
   }
   
 }

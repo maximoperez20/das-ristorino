@@ -92,7 +92,7 @@
 
                 <div class="mt-auto">
                   <a 
-                    [routerLink]="['/restaurantes', restaurante.nroRestaurante]"
+                    (click)="redirigirADetalleRestaurante(restaurante)"
                     class="btn btn-primary w-100">
                     <i class="bi bi-eye"></i> Ver Detalles
                   </a>

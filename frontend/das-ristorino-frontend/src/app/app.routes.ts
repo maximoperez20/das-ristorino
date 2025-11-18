@@ -7,6 +7,10 @@ import { restauranteListResolver } from './main/resolvers/restaurantes-list.reso
 import { promocionesListResolver } from './main/resolvers/promociones-list.resolver';
 import { misReservasResolver } from './main/resolvers/mis-reservas.resolver';
 import { RestaurantesPage } from './main/pages/restaurantes/restaurantes';
+import { PromocionResource } from './main/api/resources/promocion-resource';
+import { RestauranteResource } from './main/api/resources/restaurante-resource';
+import { ReservaResource } from './main/api/resources/reserva-resource';
+import { ClienteResource } from './main/api/resources/cliente-resource';
 
 export const routes: Routes = [
     {path: '', component: HomePage, 
@@ -16,13 +20,15 @@ export const routes: Routes = [
                 path: '',
                 loadComponent: () =>
                 import('./main/pages/promociones/promociones').then(m => m.PromocionesPage),
-                resolve: { promociones: promocionesListResolver }
+                resolve: { promociones: promocionesListResolver },
+                providers: [PromocionResource]
             },
             {
                 path: 'restaurantes',
                 loadComponent: () =>
                 import('./main/pages/restaurantes/restaurantes').then(m => m.RestaurantesPage),
-                resolve: { restaurantes: restauranteListResolver }
+                resolve: { restaurantes: restauranteListResolver },
+                providers: [RestauranteResource]
             },
             {
                 path: 'restaurantes/:nroRestaurante',
@@ -31,6 +37,7 @@ export const routes: Routes = [
                     m => m.DetalleRestauranteComponent
                 ),
                 resolve: { restaurante: restauranteResolver },
+                providers: [RestauranteResource]
             },
             {
                 path: 'login',
@@ -38,6 +45,8 @@ export const routes: Routes = [
                 import('./main/pages/login/login').then(
                     m => m.LoginPage
                 ),
+                providers: [ClienteResource]
+
             },
             {
                 path: 'register',
@@ -45,6 +54,7 @@ export const routes: Routes = [
                 import('./main/pages/register/register').then(
                     m => m.RegisterPage
                 ),
+                providers: [ClienteResource]
             },
             {
                 path: 'mis-reservas',
@@ -53,6 +63,7 @@ export const routes: Routes = [
                     m => m.MisReservasPage
                 ),
                 resolve: { reservas: misReservasResolver },
+                providers: [ReservaResource]
             },
             { path: '**', redirectTo: '' },
             ],
