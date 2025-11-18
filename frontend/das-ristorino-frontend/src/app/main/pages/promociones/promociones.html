@@ -1,25 +1,64 @@
-<div id="cardsCarousel" class="carousel slide py-4 mx-auto w-75" data-bs-ride="carousel">
-    <div class="carousel-inner">
-        @for (grupo of agrupadas; track $index) {
-        <div class="carousel-item" [class.active]="$index === 0">
-            <div class="row g-3 justify-content-center">
-                @for (promocion of grupo; track $index) {
-                <div class="col-10 col-md-4">
-                    <app-promocion [promocion]='promocion'></app-promocion>
-                </div>
-                }
-            </div>
-        </div>
-        } @empty {
-        <div class="text-center py-4 text-muted">No hay promociones activas</div>
-        }
+<div class="promociones-container">
+  <div class="container-fluid py-5">
+    <div class="row mb-4">
+      <div class="col-12 text-center">
+        <h1 class="display-5 fw-bold mb-3">Promociones Especiales</h1>
+        <p class="lead text-muted">Descubre las mejores ofertas y descuentos en nuestros restaurantes</p>
+      </div>
     </div>
 
+    @if (agrupadas.length === 0) {
+      <div class="row">
+        <div class="col-12">
+          <div class="alert alert-info text-center py-5" role="alert">
+            <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
+            <h5>No hay promociones activas en este momento</h5>
+            <p class="mb-0">Vuelve pronto para descubrir nuevas ofertas especiales</p>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div id="cardsCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000">
+        <div class="carousel-inner">
+          @for (grupo of agrupadas; track $index) {
+            <div class="carousel-item" [class.active]="$index === 0">
+              <div class="row g-4 justify-content-center">
+                @for (promocion of grupo; track promocion.nroContenido) {
+                  <div class="col-12 col-md-6 col-lg-4">
+                    <app-promocion [promocion]="promocion"></app-promocion>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
 
-    <button class="carousel-control-prev" type="button" data-bs-target="#cardsCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon"></span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#cardsCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon"></span>
-    </button>
+        @if (agrupadas.length > 1) {
+          <button class="carousel-control-prev" type="button" data-bs-target="#cardsCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#cardsCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Siguiente</span>
+          </button>
+        }
+
+        @if (agrupadas.length > 1) {
+          <div class="carousel-indicators">
+            @for (grupo of agrupadas; track $index) {
+              <button 
+                type="button" 
+                data-bs-target="#cardsCarousel" 
+                [attr.data-bs-slide-to]="$index"
+                [class.active]="$index === 0"
+                [attr.aria-current]="$index === 0 ? 'true' : null"
+                [attr.aria-label]="'Slide ' + ($index + 1)">
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
 </div>
