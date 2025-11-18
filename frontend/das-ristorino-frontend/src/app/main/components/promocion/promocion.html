@@ -1,6 +1,6 @@
 <div class="card promocion-card h-100 shadow-sm">
   @if (promocion?.imagenUrl) {
-    <img [src]="promocion.imagenUrl" class="card-img-top promocion-image" alt="{{ promocion.titulo }}" />
+    <img [src]="promocion?.imagenUrl" class="card-img-top promocion-image" alt="{{ promocion?.titulo }}" />
   } @else {
     <div class="card-img-top promocion-image-placeholder">
       <i class="bi bi-image"></i>
@@ -11,12 +11,12 @@
     <div class="mb-2">
       @if (promocion?.descuentoPorcentaje) {
         <span class="badge bg-danger fs-6 mb-2">
-          <i class="bi bi-percent"></i> {{ promocion.descuentoPorcentaje }}% OFF
+          <i class="bi bi-percent"></i> {{ promocion?.descuentoPorcentaje }}% OFF
         </span>
       }
       @if (promocion?.descuentoFijo) {
         <span class="badge bg-success fs-6 mb-2">
-          <i class="bi bi-currency-dollar"></i> ${{ promocion.descuentoFijo }} OFF
+          <i class="bi bi-currency-dollar"></i> ${{ promocion?.descuentoFijo }} OFF
         </span>
       }
     </div>
@@ -31,7 +31,7 @@
       @if (promocion?.fechaFin) {
         <div class="info-item mb-2">
           <i class="bi bi-calendar-check text-primary"></i>
-          <span class="small ms-2">Válido hasta: {{ promocion.fechaFin | date:'short' }}</span>
+          <span class="small ms-2">Válido hasta: {{ promocion?.fechaFin | date:'short' }}</span>
         </div>
       }
       
@@ -39,12 +39,12 @@
         <div class="info-item">
           <i class="bi bi-people-fill text-primary"></i>
           <span class="small ms-2">
-            @if (promocion.minPersonas && promocion.maxPersonas) {
-              {{ promocion.minPersonas }} - {{ promocion.maxPersonas }} personas
-            } @else if (promocion.minPersonas) {
-              Mínimo {{ promocion.minPersonas }} personas
-            } @else if (promocion.maxPersonas) {
-              Máximo {{ promocion.maxPersonas }} personas
+            @if (promocion?.minPersonas && promocion?.maxPersonas) {
+              {{ promocion?.minPersonas }} - {{ promocion?.maxPersonas }} personas
+            } @else if (promocion?.minPersonas) {
+              Mínimo {{ promocion?.minPersonas }} personas
+            } @else if (promocion?.maxPersonas) {
+              Máximo {{ promocion?.maxPersonas }} personas
             }
           </span>
         </div>

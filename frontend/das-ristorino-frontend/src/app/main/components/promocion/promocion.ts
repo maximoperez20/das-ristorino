@@ -3,8 +3,7 @@ import type { IPromocion } from '../../api/models/i-promocion';
 import { IClick } from '../../api/models/i-click';
 import { CommonModule, DatePipe } from '@angular/common';
 import { PromocionResource } from '../../api/resources/promocion-resource';
-import { Router } from '@angular/router';  // ✅ import normal
-
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-promocion',
@@ -20,12 +19,6 @@ export class PromocionComponent {
   private _promocionResource = inject(PromocionResource);
   private _router = inject(Router);  // ✅ así se obtiene la instancia
 
-
-  onVerPromocion() {
-    if (this.promocion) {
-      this.verPromocion.emit(this.promocion);
-    }
-  }
 
   registrarClickPromocion() {
 

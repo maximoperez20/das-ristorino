@@ -4,10 +4,11 @@ import { IPromocion } from '../../api/models/i-promocion';
 import { PromocionComponent } from '../../components/promocion/promocion';
 import { PromocionResource } from '../../api/resources/promocion-resource';
 import { ActivatedRoute } from '@angular/router';  // ✅ import normal
+import { BannerHomeComponent } from '../../components/banner-home/banner-home'; 
 
 @Component({
   selector: 'app-promociones',
-  imports: [CommonModule, PromocionComponent],
+  imports: [CommonModule, PromocionComponent, BannerHomeComponent],
   templateUrl: './promociones.html',
   styleUrls: ['./promociones.scss'],
 })
