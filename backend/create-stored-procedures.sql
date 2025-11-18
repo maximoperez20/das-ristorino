@@ -1031,4 +1031,24 @@ BEGIN
 END;
 GO
 
+-- =====================================================
+-- STORED PROCEDURES PARA LOCALIDADES
+-- =====================================================
+
+-- Obtener todas las localidades con su provincia
+CREATE OR ALTER PROCEDURE sp_ObtenerTodasLasLocalidades
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        l.nro_localidad AS nroLocalidad,
+        l.nom_localidad AS nombre,
+        p.nom_provincia AS provincia
+    FROM localidades l
+    INNER JOIN provincias p ON l.cod_provincia = p.cod_provincia
+    ORDER BY p.nom_provincia, l.nom_localidad;
+END;
+GO
+
 PRINT 'Stored procedures creados/actualizados exitosamente!';
