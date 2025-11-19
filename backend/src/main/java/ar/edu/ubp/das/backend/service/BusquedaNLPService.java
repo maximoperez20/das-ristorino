@@ -5,6 +5,7 @@ import ar.edu.ubp.das.backend.dto.BusquedaNLPRequestDto;
 import ar.edu.ubp.das.backend.dto.BusquedaNLPResponseDto;
 import ar.edu.ubp.das.backend.dto.RestauranteDto;
 import ar.edu.ubp.das.backend.repository.BusquedaRepository;
+import ar.edu.ubp.das.backend.repository.ClienteRepository;
 import ar.edu.ubp.das.backend.repository.RestauranteRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -33,6 +34,9 @@ public class BusquedaNLPService {
 
     @Autowired
     private RestauranteRepository restauranteRepository;
+
+    @Autowired
+    private ClienteRepository clienteRepository;
 
     @Value("${openai.prompt.busqueda.id:pmpt_68f9295bc1e48194b2e725a7b5df2b1c0a01e67130022025}")
     private String promptIdBusqueda;
@@ -66,8 +70,26 @@ public class BusquedaNLPService {
 
         // 3. Parsear respuesta JSON de OpenAI
         BusquedaNLPResponseDto respuestaNLP = parsearRespuestaOpenAI(respuestaJson);
+        
+        // 3.1. Si el usuario está autenticado, obtener su localidad y usarla si OpenAI no devolvió una
+        if (nroCliente != null && !nroCliente.isEmpty()) {
+            String localidadUsuario = clienteRepository.obtenerLocalidadPorNroCliente(nroCliente);
+            if (localidadUsuario != null && !localidadUsuario.isEmpty()) {
+                // Si OpenAI no devolvió una localidad específica, usar la del usuario
+                if (respuestaNLP.getLocalidad() == null || respuestaNLP.getLocalidad().isEmpty()) {
+                    respuestaNLP.setLocalidad(localidadUsuario);
+                    logger.info("📍 Usando localidad del usuario autenticado: {}", localidadUsuario);
+                } else {
+                    // Si OpenAI devolvió una localidad diferente, priorizar la del usuario
+                    logger.info("📍 OpenAI devolvió localidad: {}, pero el usuario está en: {}. Priorizando localidad del usuario.", 
+                               respuestaNLP.getLocalidad(), localidadUsuario);
+                    respuestaNLP.setLocalidad(localidadUsuario);
+                }
+            }
+        }
+        
         logger.info("╔════════════════════════════════════════════════════════════════");
-        logger.info("║ INTENCIÓN EXTRAÍDA DE OPENAI");
+        logger.info("║ INTENCIÓN EXTRAÍDA DE OPENAI (después de aplicar localidad del usuario)");
         logger.info("╠════════════════════════════════════════════════════════════════");
         logger.info("║ Tipo comida: {}", respuestaNLP.getTipoComida());
         logger.info("║ Barrio: {}", respuestaNLP.getBarrio());
@@ -343,4 +365,3 @@ public class BusquedaNLPService {
         return jsonExtraido;
     }
 }
-

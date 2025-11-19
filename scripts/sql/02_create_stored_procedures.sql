@@ -39,6 +39,21 @@ BEGIN
 END;
 GO
 
+-- 2. Obtener localidad del cliente por nroCliente
+CREATE OR ALTER PROCEDURE sp_ObtenerLocalidadPorNroCliente
+    @nroCliente VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        l.nom_localidad AS localidad
+    FROM clientes c
+    INNER JOIN localidades l ON c.nro_localidad = l.nro_localidad
+    WHERE c.nro_cliente = @nroCliente;
+END;
+GO
+
 -- =====================================================
 -- STORED PROCEDURES PARA RESERVAS
 -- =====================================================
