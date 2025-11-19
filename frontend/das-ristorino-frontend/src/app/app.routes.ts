@@ -91,6 +91,14 @@ export const routes: Routes = [
                 resolve: { reservas: misReservasResolver },
                 providers: [ReservaResource]
             },
+            {
+                path: 'buscar',
+                loadComponent: () =>
+                import('./main/pages/buscar/buscar').then(
+                    m => m.BuscarPage
+                ),
+                providers: [RestauranteResource]
+            },
             { path: '**', redirectTo: '' },
             ],
     },

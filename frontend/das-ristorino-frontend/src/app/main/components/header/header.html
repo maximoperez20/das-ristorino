@@ -14,6 +14,11 @@
                     <a class="nav-link" routerLink="/restaurantes">Restaurantes</a>
                 </li>
             </ul>
+            <div class="d-flex align-items-center me-3 flex-grow-1 justify-content-center buscador-container">
+                <div class="buscador-header-wrapper">
+                    <app-buscador-nlp></app-buscador-nlp>
+                </div>
+            </div>
             <ul class="navbar-nav">
                 @if (isAuthenticated) {
                     <li class="nav-item dropdown">

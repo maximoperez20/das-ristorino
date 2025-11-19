@@ -2,11 +2,12 @@ import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../core/services/auth-service';
+import { BuscadorNLPComponent } from '../buscador-nlp/buscador-nlp';
 import { filter, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-header',
-  imports: [RouterLink, CommonModule],
+  imports: [RouterLink, CommonModule, BuscadorNLPComponent],
   templateUrl: './header.html',
   styleUrl: './header.scss',
 })

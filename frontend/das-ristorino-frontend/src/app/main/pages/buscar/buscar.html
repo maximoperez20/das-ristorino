@@ -1,0 +1,142 @@
+<div class="buscar-container">
+  <div class="container-fluid py-4">
+    <!-- Barra de búsqueda -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="d-flex justify-content-center">
+          <app-buscador-nlp></app-buscador-nlp>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultados -->
+    @if (consulta) {
+      <div class="row mb-3">
+        <div class="col-12">
+          <h4 class="mb-0">
+            Resultados para: 
+            <span class="text-primary fst-italic">"{{ consulta }}"</span>
+          </h4>
+          @if (!cargando && restaurantes.length > 0) {
+            <p class="text-muted small mb-0">
+              Encontrados {{ restaurantes.length }} restaurante{{ restaurantes.length !== 1 ? 's' : '' }}
+            </p>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Loading -->
+    @if (cargando) {
+      <div class="row">
+        <div class="col-12">
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Buscando restaurantes...</span>
+            </div>
+            <p class="mt-3 text-muted">
+              <i class="bi bi-robot me-2"></i>
+              Analizando tu consulta con inteligencia artificial...
+            </p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Error -->
+    @if (error && !cargando) {
+      <div class="row">
+        <div class="col-12">
+          <div class="alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            {{ error }}
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Sin resultados -->
+    @if (!cargando && !error && consulta && restaurantes.length === 0) {
+      <div class="row">
+        <div class="col-12">
+          <div class="alert alert-info text-center py-5" role="alert">
+            <i class="bi bi-search fs-1 d-block mb-3"></i>
+            <h5>No se encontraron restaurantes</h5>
+            <p class="mb-0">
+              No encontramos restaurantes que coincidan con tu búsqueda.
+              <br>
+              Intenta con diferentes palabras clave o criterios.
+            </p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Lista de restaurantes -->
+    @if (!cargando && restaurantes.length > 0) {
+      <div class="row g-4">
+        @for (restaurante of restaurantes; track restaurante.nroRestaurante) {
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card restaurante-card h-100 shadow-sm" (click)="navegarADetalle(restaurante.nroRestaurante!)" style="cursor: pointer;">
+              <img 
+                [src]="obtenerImagen(restaurante)" 
+                class="card-img-top restaurante-image" 
+                [alt]="restaurante.nombre || 'Restaurante'"
+                onerror="this.src='https://picsum.photos/seed/food/400/300'">
+              <div class="card-body">
+                <h5 class="card-title fw-bold mb-2">
+                  {{ restaurante.nombre || 'Sin nombre' }}
+                </h5>
+                
+                @if (restaurante.direccion) {
+                  <p class="text-muted small mb-2">
+                    <i class="bi bi-geo-alt"></i>
+                    {{ restaurante.direccion }}
+                  </p>
+                }
+
+                @if (restaurante.telefono) {
+                  <p class="text-muted small mb-2">
+                    <i class="bi bi-telephone"></i>
+                    {{ restaurante.telefono }}
+                  </p>
+                }
+
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                  @if (restaurante.calificacion) {
+                    <div>
+                      <i class="bi bi-star-fill text-warning"></i>
+                      <span class="ms-1">{{ restaurante.calificacion.toFixed(1) }}</span>
+                    </div>
+                  }
+                  
+                  @if (restaurante.categoria) {
+                    <span class="badge bg-primary">{{ restaurante.categoria }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Mensaje inicial si no hay consulta -->
+    @if (!consulta && !cargando) {
+      <div class="row">
+        <div class="col-12">
+          <div class="text-center py-5">
+            <i class="bi bi-search fs-1 text-muted d-block mb-3"></i>
+            <h5 class="text-muted">Busca restaurantes con lenguaje natural</h5>
+            <p class="text-muted">
+              Escribe lo que buscas usando palabras naturales.
+              <br>
+              Por ejemplo: "cena romántica con sushi" o "almuerzo vegano económico en Nueva Córdoba"
+            </p>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+

@@ -1,0 +1,101 @@
+.buscador-nlp {
+  width: 100%;
+  max-width: 100%;
+
+  form {
+    width: 100%;
+  }
+
+  .input-group {
+    flex: 1 1 auto;
+    min-width: 0; // Permite que el input se comprima si es necesario
+    
+    .input-group-text {
+      border-right: none;
+      border-color: #dee2e6;
+      flex-shrink: 0;
+
+      i {
+        font-size: 1rem;
+      }
+    }
+
+    .form-control {
+      border-left: none;
+      font-size: 0.95rem;
+      min-width: 200px; // Ancho mínimo para el input
+      
+      &:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+      }
+
+      &.is-invalid {
+        border-color: #dc3545;
+      }
+    }
+  }
+
+  .btn-primary {
+    white-space: nowrap;
+    min-width: 100px;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+
+  .invalid-feedback {
+    font-size: 0.875rem;
+  }
+}
+
+// Responsive
+@media (max-width: 992px) {
+  .buscador-nlp {
+    .input-group {
+      .form-control {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+        
+        &::placeholder {
+          font-size: 0.85rem;
+        }
+      }
+
+      .input-group-text {
+        padding: 0.5rem 0.75rem;
+      }
+    }
+
+    .btn-primary {
+      min-width: 90px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .buscador-nlp {
+    .input-group {
+      flex-wrap: nowrap;
+      
+      .form-control {
+        &::placeholder {
+          font-size: 0.8rem;
+        }
+      }
+    }
+
+    .btn-primary {
+      span {
+        display: none;
+      }
+      
+      i {
+        margin: 0 !important;
+      }
+    }
+  }
+}
+

@@ -1,0 +1,28 @@
+.buscador-container {
+  flex: 1 1 auto;
+  min-width: 0; // Permite que se comprima si es necesario
+  
+  @media (max-width: 992px) {
+    order: 3;
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+}
+
+.buscador-header-wrapper {
+  width: 100%;
+  max-width: 700px;
+  min-width: 300px;
+  margin: 0 auto;
+
+  @media (max-width: 1200px) {
+    max-width: 600px;
+  }
+
+  @media (max-width: 992px) {
+    max-width: 100%;
+    min-width: auto;
+    margin-bottom: 0.5rem;
+  }
+}
+
