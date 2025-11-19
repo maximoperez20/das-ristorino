@@ -112,9 +112,6 @@ public class RestauranteResource {
             if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
                 Jwt jwt = (Jwt) authentication.getPrincipal();
                 nroCliente = jwt.getClaimAsString("nroCliente");
-                if (nroCliente != null && !nroCliente.isEmpty()) {
-                    logger.info("Búsqueda NLP para usuario autenticado: {}", nroCliente);
-                }
             }
             
             List<RestauranteDto> restaurantes = busquedaNLPService.buscarRestaurantesPorNLP(request, nroCliente);

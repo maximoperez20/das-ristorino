@@ -73,33 +73,27 @@ public class BusquedaNLPService {
         
         // 3.1. Si el usuario está autenticado, obtener su localidad y usarla si OpenAI no devolvió una
         if (nroCliente != null && !nroCliente.isEmpty()) {
-            String localidadUsuario = clienteRepository.obtenerLocalidadPorNroCliente(nroCliente);
-            if (localidadUsuario != null && !localidadUsuario.isEmpty()) {
-                // Si OpenAI no devolvió una localidad específica, usar la del usuario
-                if (respuestaNLP.getLocalidad() == null || respuestaNLP.getLocalidad().isEmpty()) {
-                    respuestaNLP.setLocalidad(localidadUsuario);
-                    logger.info("📍 Usando localidad del usuario autenticado: {}", localidadUsuario);
-                } else {
-                    // Si OpenAI devolvió una localidad diferente, priorizar la del usuario
-                    logger.info("📍 OpenAI devolvió localidad: {}, pero el usuario está en: {}. Priorizando localidad del usuario.", 
-                               respuestaNLP.getLocalidad(), localidadUsuario);
-                    respuestaNLP.setLocalidad(localidadUsuario);
+            try {
+                String localidadUsuario = clienteRepository.obtenerLocalidadPorNroCliente(nroCliente);
+                if (localidadUsuario != null && !localidadUsuario.isEmpty()) {
+                    // Si OpenAI no devolvió una localidad específica, usar la del usuario
+                    if (respuestaNLP.getLocalidad() == null || respuestaNLP.getLocalidad().isEmpty()) {
+                        respuestaNLP.setLocalidad(localidadUsuario);
+                        logger.info("📍 Usando localidad del usuario autenticado: {}", localidadUsuario);
+                    } else if (!localidadUsuario.equalsIgnoreCase(respuestaNLP.getLocalidad())) {
+                        // Si OpenAI devolvió una localidad diferente, priorizar la del usuario
+                        respuestaNLP.setLocalidad(localidadUsuario);
+                        logger.info("📍 Priorizando localidad del usuario ({}) sobre la de OpenAI ({})", 
+                                   localidadUsuario, respuestaNLP.getLocalidad());
+                    }
                 }
+            } catch (Exception e) {
+                logger.error("Error al obtener localidad del usuario: {}", e.getMessage());
             }
         }
         
-        logger.info("╔════════════════════════════════════════════════════════════════");
-        logger.info("║ INTENCIÓN EXTRAÍDA DE OPENAI (después de aplicar localidad del usuario)");
-        logger.info("╠════════════════════════════════════════════════════════════════");
-        logger.info("║ Tipo comida: {}", respuestaNLP.getTipoComida());
-        logger.info("║ Barrio: {}", respuestaNLP.getBarrio());
-        logger.info("║ Localidad: {}", respuestaNLP.getLocalidad());
-        logger.info("║ Ambiente: {}", respuestaNLP.getAmbiente());
-        logger.info("║ Rango precio: {}", respuestaNLP.getRangoPrecio());
-        logger.info("║ Palabras clave: {}", respuestaNLP.getPalabrasClave());
-        logger.info("║ Momento del día: {}", respuestaNLP.getMomentoDia());
-        logger.info("║ Intención: {}", respuestaNLP.getIntencion());
-        logger.info("╚════════════════════════════════════════════════════════════════");
+        logger.info("Intención extraída - Tipo: {}, Localidad: {}, Barrio: {}", 
+                   respuestaNLP.getTipoComida(), respuestaNLP.getLocalidad(), respuestaNLP.getBarrio());
 
         // 4. Buscar restaurantes usando stored procedure
         // Si nroCliente está presente, se usará para hacer match con preferencias_clientes
