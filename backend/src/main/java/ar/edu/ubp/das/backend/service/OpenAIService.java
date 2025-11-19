@@ -26,7 +26,7 @@ public class OpenAIService {
     @Value("${openai.api.key}")
     private String apiKey;
 
-    @Value("${openai.model:gpt-4}")
+    @Value("${openai.model:gpt-5-nano}")
     private String model;
 
     @Value("${openai.timeout:60}")
@@ -362,14 +362,72 @@ public class OpenAIService {
             // Crear cliente de OpenAI
             OpenAiService service = new OpenAiService(apiKey, Duration.ofSeconds(timeoutSeconds));
 
-            // Construir mensaje para OpenAI con instrucción explícita de devolver solo JSON
+            // Construir mensaje para OpenAI
             List<ChatMessage> messages = new ArrayList<>();
-            String mensajeCompleto = jsonContexto + "\n\nIMPORTANTE: Responde ÚNICAMENTE con un objeto JSON válido. NO incluyas explicaciones, comentarios ni texto adicional antes o después del JSON. El JSON debe comenzar con '{' y terminar con '}'.";
+            
+            // Siempre usar system message para asegurar que devuelva JSON
+            // El prompt guardado en OpenAI Platform se referencia pero se reforzará con instrucciones explícitas
+            String systemPrompt = "Eres un asistente especializado en procesamiento de lenguaje natural para búsquedas gastronómicas. " +
+                    "Tu tarea es analizar consultas de usuarios en lenguaje natural y extraer información estructurada " +
+                    "para buscar restaurantes. " +
+                    "\n\nREGLAS CRÍTICAS PARA TIPO DE COMIDA:" +
+                    "\n- SIEMPRE intenta asociar la consulta a UNO O MÁS tipos de comida del catálogo proporcionado, incluso si no es una coincidencia exacta." +
+                    "\n- Usa sinónimos y variaciones: 'parrillada' → 'Parrilla', 'sushi' → 'Sushi', 'pizza' → 'Pizzería', 'italiana' → 'Italiana', 'mexicana' → 'Mexicana', 'asiática' → 'Asiática', 'vegana' → 'Vegano'." +
+                    "\n- Si la consulta menciona un tipo de comida aunque sea indirectamente (ej: 'quiero comer una parrillada'), DEBES incluir el tipo de comida correspondiente del catálogo." +
+                    "\n- Si no hay coincidencia exacta, elige el tipo de comida MÁS CERCANO del catálogo que tenga sentido." +
+                    "\n- Solo usa null para tipoComida si la consulta NO menciona NADA relacionado con tipos de comida." +
+                    "\n\nIMPORTANTE: Tu respuesta DEBE ser ÚNICAMENTE un objeto JSON válido, sin explicaciones adicionales, " +
+                    "sin markdown, sin comentarios. El JSON debe comenzar con '{' y terminar con '}'. " +
+                    "NO incluyas texto antes ni después del JSON. NO hagas preguntas al usuario. " +
+                    "Solo devuelve el JSON con la estructura especificada.";
+            
+            ChatMessage systemMessage = new ChatMessage(
+                ChatMessageRole.SYSTEM.value(),
+                systemPrompt
+            );
+            
+            // Mensaje del usuario con JSON de contexto + instrucción reforzada con estructura esperada
+            String mensajeUsuario = jsonContexto + 
+                    "\n\nINSTRUCCIONES ESPECÍFICAS:" +
+                    "\n1. TIPO DE COMIDA: SIEMPRE intenta asociar la consulta a uno o más tipos de comida del catálogo 'tiposComida' proporcionado." +
+                    "\n   - Usa sinónimos: 'parrillada', 'asado', 'parrilla' → 'Parrilla'" +
+                    "\n   - 'sushi', 'japonesa' → 'Sushi' o 'Asiática'" +
+                    "\n   - 'pizza', 'pizzería' → 'Pizzería'" +
+                    "\n   - 'italiana', 'pasta', 'risotto' → 'Italiana'" +
+                    "\n   - 'mexicana', 'tacos', 'burritos' → 'Mexicana'" +
+                    "\n   - 'vegana', 'vegetariana' → 'Vegano'" +
+                    "\n   - Si la consulta menciona un tipo de comida (aunque sea indirectamente), DEBES incluir el tipo correspondiente del catálogo." +
+                    "\n   - Solo usa null si la consulta NO menciona NADA relacionado con tipos de comida." +
+                    "\n2. PALABRAS CLAVE: Incluye palabras relevantes de la consulta que no se mapearon a otros campos." +
+                    "\n3. Otros campos: Usa null si no se mencionan explícitamente o no son inferibles." +
+                    "\n\nESTRUCTURA JSON REQUERIDA:\n" +
+                    "{\n" +
+                    "  \"tipoComida\": [\"Parrilla\"] o null (SIEMPRE intenta asociar si hay mención de comida),\n" +
+                    "  \"barrio\": \"Centro\" o null,\n" +
+                    "  \"localidad\": \"Córdoba\" o null,\n" +
+                    "  \"ambiente\": \"Romántico\" o null,\n" +
+                    "  \"rangoPrecio\": \"Económico\" o null,\n" +
+                    "  \"momentoDia\": \"cena\" o null,\n" +
+                    "  \"intencion\": \"comer\" o null,\n" +
+                    "  \"palabrasClave\": [\"parrillada\"] o null\n" +
+                    "}\n\n" +
+                    "Los campos deben estar en el NIVEL SUPERIOR del JSON (no anidados en \"criterios\" u otro objeto). " +
+                    "NO incluyas explicaciones, comentarios, preguntas ni texto adicional. " +
+                    "NO uses markdown (sin ```json o ```). Solo devuelve el JSON puro comenzando con '{' y terminando con '}'.";
+            
             ChatMessage userMessage = new ChatMessage(
                 ChatMessageRole.USER.value(),
-                mensajeCompleto
+                mensajeUsuario
             );
+            
+            messages.add(systemMessage);
             messages.add(userMessage);
+            
+            if (promptId != null && !promptId.isEmpty()) {
+                logger.info("║ Usando prompt guardado en OpenAI Platform con ID: {} (referencia)", promptId);
+            } else {
+                logger.info("║ Usando system prompt por defecto");
+            }
 
             // Crear request
             ChatCompletionRequest completionRequest = ChatCompletionRequest.builder()

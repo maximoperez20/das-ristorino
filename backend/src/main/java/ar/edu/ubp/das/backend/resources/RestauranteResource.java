@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -87,6 +89,9 @@ public class RestauranteResource {
      * Permite al usuario expresarse libremente en lenguaje natural para recibir 
      * resultados personalizados y contextuales.
      * 
+     * Si el usuario está autenticado, se utilizarán sus preferencias gastronómicas
+     * para mejorar los resultados de búsqueda.
+     * 
      * Ejemplos de consultas:
      * - "quiero comer algo picante en el centro"
      * - "cena romántica con sushi"
@@ -94,12 +99,25 @@ public class RestauranteResource {
      * - "dónde puedo comer algo picante esta noche"
      * 
      * @param request Solicitud con la consulta en lenguaje natural
+     * @param authentication Objeto de autenticación de Spring Security (opcional)
      * @return Lista de restaurantes que coinciden con la intención del usuario
      */
     @PostMapping("/buscar-nlp")
-    public ResponseEntity<?> buscarRestaurantesPorNLP(@Valid @RequestBody BusquedaNLPRequestDto request) {
+    public ResponseEntity<?> buscarRestaurantesPorNLP(
+            @Valid @RequestBody BusquedaNLPRequestDto request,
+            Authentication authentication) {
         try {
-            List<RestauranteDto> restaurantes = busquedaNLPService.buscarRestaurantesPorNLP(request);
+            // Obtener nroCliente del JWT si está autenticado
+            String nroCliente = null;
+            if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
+                Jwt jwt = (Jwt) authentication.getPrincipal();
+                nroCliente = jwt.getClaimAsString("nroCliente");
+                if (nroCliente != null && !nroCliente.isEmpty()) {
+                    logger.info("Búsqueda NLP para usuario autenticado: {}", nroCliente);
+                }
+            }
+            
+            List<RestauranteDto> restaurantes = busquedaNLPService.buscarRestaurantesPorNLP(request, nroCliente);
             return ResponseEntity.ok(restaurantes);
         } catch (RuntimeException e) {
             logger.warn("Error al procesar búsqueda NLP: {}", e.getMessage());

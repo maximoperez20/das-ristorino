@@ -211,12 +211,14 @@ public class RestauranteRepository {
      * @param ambiente Ambiente (puede ser null)
      * @param rangoPrecio Rango de precio (puede ser null)
      * @param palabrasClave Lista de palabras clave para búsqueda en nombre/descripción (puede ser null)
+     * @param nroCliente UUID del cliente autenticado (opcional, puede ser null)
      * @return Lista de restaurantes que coinciden con los criterios
      */
     public List<RestauranteDto> buscarPorNLP(List<String> tiposComida, String barrio, 
-                                             String localidad, String ambiente, 
-                                             String rangoPrecio, List<String> palabrasClave) {
-        String sql = "EXEC sp_BuscarRestaurantesPorNLP ?, ?, ?, ?, ?, ?";
+                                            String localidad, String ambiente, 
+                                            String rangoPrecio, List<String> palabrasClave,
+                                            String nroCliente) {
+        String sql = "EXEC sp_BuscarRestaurantesPorNLP ?, ?, ?, ?, ?, ?, ?";
         
         // Convertir listas a strings separados por comas
         String tiposComidaStr = tiposComida != null && !tiposComida.isEmpty() 
@@ -229,7 +231,7 @@ public class RestauranteRepository {
             ? String.join(",", palabrasClave) : null;
         
         return jdbcTemplate.query(sql, restauranteRowMapper, 
-            tiposComidaStr, barrioStr, localidadStr, ambienteStr, rangoPrecioStr, palabrasClaveStr);
+            tiposComidaStr, barrioStr, localidadStr, ambienteStr, rangoPrecioStr, palabrasClaveStr, nroCliente);
     }
     
     /**
