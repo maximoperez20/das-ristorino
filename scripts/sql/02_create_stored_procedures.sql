@@ -959,7 +959,8 @@ CREATE OR ALTER PROCEDURE sp_GuardarContenidoGenerado
     @nro_restaurante VARCHAR(36),
     @nro_sucursal VARCHAR(36) = NULL,
     @nro_idioma INT,
-    @contenido_generado NVARCHAR(MAX)
+    @contenido_generado NVARCHAR(MAX),
+    @costo_click DECIMAL(12,2) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -967,7 +968,6 @@ BEGIN
     DECLARE @nro_contenido VARCHAR(36) = NEWID();
     DECLARE @fecha_ini DATE = CAST(GETDATE() AS DATE);
     DECLARE @fecha_fin DATE = DATEADD(MONTH, 1, @fecha_ini);
-    DECLARE @costo_click DECIMAL(12,2) = 0.00; -- Costo por defecto
     DECLARE @nro_sucursal_validado VARCHAR(36) = NULL;
     
     -- Validar y normalizar nro_sucursal

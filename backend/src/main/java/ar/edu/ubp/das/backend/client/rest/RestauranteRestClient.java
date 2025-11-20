@@ -320,6 +320,78 @@ public class RestauranteRestClient implements RestauranteClient {
         }
     }
 
+    @Override
+    public java.util.List<java.util.Map<String, Object>> obtenerContenidos(String nroRestaurante, String nroSucursal) {
+        try {
+            String url = baseUrl + "/restaurantes/" + nroRestaurante + "/contenidos";
+            if (nroSucursal != null && !nroSucursal.trim().isEmpty()) {
+                url += "?nroSucursal=" + nroSucursal;
+            }
+
+            HttpHeaders headers = createHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    String.class
+            );
+
+            String responseBody = response.getBody();
+
+            com.google.gson.reflect.TypeToken<java.util.List<java.util.Map<String, Object>>> typeToken =
+                    new com.google.gson.reflect.TypeToken<java.util.List<java.util.Map<String, Object>>>(){};
+
+            java.util.List<java.util.Map<String, Object>> lista = gson.fromJson(
+                    responseBody != null ? responseBody : "[]",
+                    typeToken.getType()
+            );
+
+            return lista != null ? lista : new java.util.ArrayList<>();
+        } catch (Exception e) {
+            logger.error("Error al obtener contenidos vía REST: {}", e.getMessage(), e);
+            throw new RuntimeException("Error en comunicación REST: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public int marcarPublicado(String nroRestaurante, java.util.List<String> nroContenidos) {
+        try {
+            String url = baseUrl + "/restaurantes/" + nroRestaurante + "/contenidos/publish";
+
+            Map<String, Object> jsonData = new HashMap<>();
+            jsonData.put("nroContenidos", nroContenidos);
+
+            String jsonString = gson.toJson(jsonData);
+
+            HttpHeaders headers = createHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(jsonString, headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    String.class
+            );
+
+            String responseBody = response.getBody();
+
+            com.google.gson.reflect.TypeToken<Map<String, Object>> mapType =
+                    new com.google.gson.reflect.TypeToken<Map<String, Object>>(){};
+
+            Map<String, Object> resp = gson.fromJson(responseBody != null ? responseBody : "{}", mapType.getType());
+            if (resp != null && resp.get("actualizados") != null) {
+                Number n = (Number) resp.get("actualizados");
+                return n.intValue();
+            }
+            return 0;
+        } catch (Exception e) {
+            logger.error("Error al marcar publicados vía REST: {}", e.getMessage(), e);
+            throw new RuntimeException("Error en comunicación REST: " + e.getMessage(), e);
+        }
+    }
+
     private HttpHeaders createHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

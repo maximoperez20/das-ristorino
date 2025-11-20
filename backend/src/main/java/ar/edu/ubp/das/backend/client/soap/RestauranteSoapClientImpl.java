@@ -362,7 +362,6 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             parameters.put("nroRestaurante", nroRestaurante);
             parameters.put("nroSucursal", nroSucursal);
             parameters.put("codZona", codZona);
-            // Convertir LocalDate y LocalTime a XMLGregorianCalendar para el SOAP
             parameters.put("fechaReserva", fechaReserva != null ? toXMLGregorianCalendar(fechaReserva) : null);
             parameters.put("horaDesde", horaDesde != null ? toXMLGregorianCalendar(horaDesde) : null);
             parameters.put("cantAdultos", cantAdultos);
@@ -404,16 +403,81 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
      */
     private XMLGregorianCalendar toXMLGregorianCalendar(LocalTime localTime) {
         try {
-            // Crear un XMLGregorianCalendar solo con la hora
             return DatatypeFactory.newInstance().newXMLGregorianCalendarTime(
                     localTime.getHour(),
                     localTime.getMinute(),
                     localTime.getSecond(),
-                    localTime.getNano() / 1000000, // Convertir nanosegundos a milisegundos
-                    0 // Sin timezone offset
+                    localTime.getNano() / 1000000,
+                    0
             );
         } catch (Exception e) {
             throw new RuntimeException("Error al convertir LocalTime a XMLGregorianCalendar: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public java.util.List<java.util.Map<String, Object>> obtenerContenidos(String nroRestaurante, String nroSucursal) {
+        try {
+            java.util.Map<String, Object> jsonData = new java.util.HashMap<>();
+            jsonData.put("nroRestaurante", nroRestaurante);
+            jsonData.put("nroSucursal", nroSucursal);
+
+            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
+                    .wsdlUrl(wsdlUrl)
+                    .namespace(namespace)
+                    .serviceName(serviceName)
+                    .portName(portName)
+                    .operationName("listarContenidosRequest")
+                    .build();
+
+            java.util.Map<String, Object> parameters = new java.util.HashMap<>();
+            parameters.put("jsonData", gson.toJson(jsonData));
+
+            String jsonResponseStr = soapClient.extractJsonResponse("listarContenidosResponse", parameters);
+
+            com.google.gson.reflect.TypeToken<java.util.List<java.util.Map<String, Object>>> typeToken =
+                    new com.google.gson.reflect.TypeToken<java.util.List<java.util.Map<String, Object>>>(){};
+
+            java.util.List<java.util.Map<String, Object>> lista = gson.fromJson(jsonResponseStr, typeToken.getType());
+            return lista != null ? lista : new java.util.ArrayList<>();
+        } catch (Exception e) {
+            logger.error("Error al obtener contenidos vía SOAP: {}", e.getMessage(), e);
+            throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public int marcarPublicado(String nroRestaurante, java.util.List<String> nroContenidos) {
+        try {
+            java.util.Map<String, Object> jsonData = new java.util.HashMap<>();
+            jsonData.put("nroRestaurante", nroRestaurante);
+            jsonData.put("nroContenidos", nroContenidos);
+
+            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
+                    .wsdlUrl(wsdlUrl)
+                    .namespace(namespace)
+                    .serviceName(serviceName)
+                    .portName(portName)
+                    .operationName("marcarPublicadoRequest")
+                    .build();
+
+            java.util.Map<String, Object> parameters = new java.util.HashMap<>();
+            parameters.put("jsonData", gson.toJson(jsonData));
+
+            String jsonResponseStr = soapClient.extractJsonResponse("marcarPublicadoResponse", parameters);
+
+            com.google.gson.reflect.TypeToken<java.util.Map<String, Object>> mapType =
+                    new com.google.gson.reflect.TypeToken<java.util.Map<String, Object>>(){};
+
+            java.util.Map<String, Object> resp = gson.fromJson(jsonResponseStr, mapType.getType());
+            if (resp != null && resp.get("actualizados") != null) {
+                Number n = (Number) resp.get("actualizados");
+                return n.intValue();
+            }
+            return 0;
+        } catch (Exception e) {
+            logger.error("Error al marcar publicados vía SOAP: {}", e.getMessage(), e);
+            throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
         }
     }
 }

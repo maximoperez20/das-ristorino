@@ -1,5 +1,6 @@
 package ar.edu.ubp.das.backend.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
@@ -18,19 +19,23 @@ public class ContenidoGeneradoDto {
     private LocalDate fechaFinVigencia;
     private String nombreRestaurante;
     private String nombreSucursal;
+    private BigDecimal costoClick;
+
 
     // Constructors
     public ContenidoGeneradoDto() {}
 
     public ContenidoGeneradoDto(String nroRestaurante, Integer nroIdioma, String nroContenido, 
                                 String contenidoGenerado, LocalDate fechaIniVigencia, 
-                                LocalDate fechaFinVigencia) {
+                                LocalDate fechaFinVigencia, String nroSucursal, BigDecimal costoClick) {
         this.nroRestaurante = nroRestaurante;
         this.nroIdioma = nroIdioma;
         this.nroContenido = nroContenido;
         this.contenidoGenerado = contenidoGenerado;
         this.fechaIniVigencia = fechaIniVigencia;
         this.fechaFinVigencia = fechaFinVigencia;
+        this.nroSucursal = nroSucursal;
+        this.costoClick = costoClick;
     }
 
     // Getters and Setters
@@ -89,6 +94,15 @@ public class ContenidoGeneradoDto {
     public void setFechaFinVigencia(LocalDate fechaFinVigencia) {
         this.fechaFinVigencia = fechaFinVigencia;
     }
+
+    public BigDecimal getCostoClick() {
+        return costoClick;
+    }
+
+    public void setCostoClick(BigDecimal costoClick) {
+        this.costoClick = costoClick;
+    }
+
 
     public String getNombreRestaurante() {
         return nombreRestaurante;

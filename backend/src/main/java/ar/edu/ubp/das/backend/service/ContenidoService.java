@@ -4,9 +4,7 @@ import ar.edu.ubp.das.backend.client.RestauranteClient;
 import ar.edu.ubp.das.backend.client.RestauranteClientFactory;
 import ar.edu.ubp.das.backend.dto.ContenidoGeneradoDto;
 import ar.edu.ubp.das.backend.dto.GenerarContenidoRequestDto;
-import ar.edu.ubp.das.backend.dto.RestauranteContextoDto;
-import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
-import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
+// removed unused imports after refactor
 import ar.edu.ubp.das.backend.repository.ContenidoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,121 +41,120 @@ public class ContenidoService {
      * @throws RuntimeException si no se encuentra el restaurante o hay error en la generación
      */
     public ContenidoGeneradoDto generarContenido(GenerarContenidoRequestDto request) {
-        // Obtener contexto del restaurante desde la BD
-        RestauranteContextoDto contexto = contenidoRepository.obtenerContextoRestaurante(
-            request.getNroRestaurante(), 
-            request.getNroSucursal()
-        ).orElseThrow(() -> new RuntimeException("Restaurante no encontrado con ID: " + request.getNroRestaurante()));
+        // Nuevo flujo: obtener los contenidos desde el sistema legacy, generar promociones con IA
+        // y guardar solo en das_ristorino. Finalmente marcar como publicados en legacy.
 
-        // Determinar qué prompt ID usar
-        String promptId = (request.getPromptId() != null && !request.getPromptId().isEmpty()) 
-                          ? request.getPromptId() 
-                          : defaultPromptId;
+        String promptId = (request.getPromptId() != null && !request.getPromptId().isEmpty())
+                ? request.getPromptId()
+                : defaultPromptId;
 
         // Obtener información del idioma
-        String codIdioma = contenidoRepository.obtenerCodIdioma(request.getNroIdioma());
         String nomIdioma = contenidoRepository.obtenerNomIdioma(request.getNroIdioma());
 
-        // Construir prompt con el contexto e idioma
-        String prompt = openAIService.construirPrompt(
-            contexto.getRazonSocial(),
-            contexto.getNombreSucursal(),
-            contexto.getDireccion(),
-            contexto.getLocalidad(),
-            contexto.getTiposComida(),
-            contexto.getAmbientes(),
-            contexto.getRangosPrecios(),
-            contexto.getObservacionesAdicionales(),
-            request.getContextoAdicional(),
-            promptId,
-            codIdioma,
-            nomIdioma,
-            contexto.getTipoCocina(),
-            contexto.getEstiloAtencion(),
-            contexto.getPlatosEmblematicos()
-        );
+        RestauranteClient client = restauranteClientFactory.getClient(request.getNroRestaurante());
 
-        // Generar contenido con OpenAI
-        String contenidoGenerado;
-        try {
-            contenidoGenerado = openAIService.generarContenidoPublicitario(prompt, promptId);
-        } catch (Exception e) {
-            logger.error("Error al generar contenido con OpenAI: {}", e.getMessage(), e);
-            throw new RuntimeException("Error al generar contenido con IA: " + e.getMessage(), e);
+        java.util.List<java.util.Map<String, Object>> legacyContenidos = client.obtenerContenidos(request.getNroRestaurante(), request.getNroSucursal());
+
+        if (legacyContenidos == null || legacyContenidos.isEmpty()) {
+            throw new RuntimeException("No se encontraron contenidos en el sistema legacy para el restaurante: " + request.getNroRestaurante());
         }
 
-        // Guardar en la base de datos
-        ContenidoGeneradoDto resultado = contenidoRepository.guardarContenidoGenerado(
-            request.getNroRestaurante(),
-            request.getNroSucursal(),
-            request.getNroIdioma(),
-            contenidoGenerado
-        ).orElseThrow(() -> new RuntimeException("Error al guardar el contenido generado en la base de datos"));
-        resultado.setNombreRestaurante(contexto.getRazonSocial());
-        resultado.setNombreSucursal(contexto.getNombreSucursal());
+        ContenidoGeneradoDto ultimoResultado = null;
+        java.util.List<String> contenidosMarcados = new java.util.ArrayList<>();
 
-        try {
-            String codSucursalRestaurante = null;
-            if (request.getNroSucursal() != null && !request.getNroSucursal().trim().isEmpty()) {
-                codSucursalRestaurante = contenidoRepository.obtenerCodSucursalRestaurante(
-                    request.getNroRestaurante(),
-                    request.getNroSucursal()
-                );
-                if (codSucursalRestaurante == null) {
-                    logger.warn("Sucursal encontrada pero cod_sucursal_restaurante es NULL. La sucursal puede no estar sincronizada con el sistema del restaurante.");
+        for (java.util.Map<String, Object> legacy : legacyContenidos) {
+            try {
+                String contenidoFuente = legacy.get("contenidoAPublicar") != null ? (String) legacy.get("contenidoAPublicar") : "";
+                String legacyNro = legacy.get("nroContenido") != null ? (String) legacy.get("nroContenido") : null;
+
+                StringBuilder promptBuilder = new StringBuilder();
+                promptBuilder.append("Generar un texto promocional breve en ").append(nomIdioma).append(" basado en el siguiente contenido:\n\n");
+                promptBuilder.append(contenidoFuente);
+                if (request.getContextoAdicional() != null && !request.getContextoAdicional().isEmpty()) {
+                    promptBuilder.append("\n\nContexto adicional: ").append(request.getContextoAdicional());
                 }
-            }
 
-            RestauranteClient client = restauranteClientFactory.getClient(request.getNroRestaurante());
-            
-            RegistrarContenidoRequest registroRequest = new RegistrarContenidoRequest(
-                request.getNroRestaurante(),
-                codSucursalRestaurante,
-                contenidoGenerado,
-                null,
-                null
-            );
+                String prompt = promptBuilder.toString();
 
-            RegistrarContenidoResponse response = client.registrarContenido(registroRequest);
+                String contenidoGenerado = openAIService.generarContenidoPublicitario(prompt, promptId);
 
-            if (response.isExitoso() && response.getNroContenido() != null && !response.getNroContenido().trim().isEmpty()) {
-                try {
-                    boolean actualizado = contenidoRepository.actualizarCodContenidoRestaurante(
-                        request.getNroRestaurante(),
-                        request.getNroIdioma(),
-                        resultado.getNroContenido(),
-                        response.getNroContenido()
-                    );
-                    
-                    if (!actualizado) {
-                        logger.error("ERROR CRÍTICO: No se pudo actualizar cod_contenido_restaurante. " +
-                                "Los clicks no podrán ser notificados. " +
-                                "nroRestaurante: {}, nroIdioma: {}, nroContenido: {}, codContenidoRestaurante: {}",
-                                request.getNroRestaurante(), request.getNroIdioma(), 
-                                resultado.getNroContenido(), response.getNroContenido());
+                // Guardar en das_ristorino
+                // Obtener nroSucursal y costoClick desde el contenido legacy si están presentes
+                String legacyNroSucursal = null;
+                Object nroSucursalObj = legacy.get("nroSucursal");
+                if (nroSucursalObj == null) {
+                    nroSucursalObj = legacy.get("nro_sucursal");
+                }
+                if (nroSucursalObj != null) {
+                    if (nroSucursalObj instanceof String) {
+                        legacyNroSucursal = ((String) nroSucursalObj).trim();
+                        if (legacyNroSucursal.isEmpty()) {
+                            legacyNroSucursal = null;
+                        }
+                    } else if (nroSucursalObj instanceof Number) {
+                        legacyNroSucursal = String.valueOf(nroSucursalObj);
+                    } else {
+                        // Fallback: use toString()
+                        legacyNroSucursal = nroSucursalObj.toString();
+                        if (legacyNroSucursal != null && legacyNroSucursal.trim().isEmpty()) {
+                            legacyNroSucursal = null;
+                        }
                     }
-                } catch (Exception e) {
-                    logger.error("ERROR CRÍTICO al actualizar cod_contenido_restaurante. " +
-                            "Los clicks de este contenido NO podrán ser notificados. " +
-                            "nroRestaurante: {}, nroIdioma: {}, nroContenido: {}, codContenidoRestaurante: {}. " +
-                            "Error: {}", 
-                            request.getNroRestaurante(), request.getNroIdioma(), 
-                            resultado.getNroContenido(), response.getNroContenido(), e.getMessage(), e);
                 }
-            } else {
-                logger.warn("No se pudo registrar el contenido en SOAP o no se devolvió nroContenido. " +
-                        "El cod_contenido_restaurante NO se actualizará. " +
-                        "Mensaje: {}", response.getMensaje() != null ? response.getMensaje() : "Sin mensaje");
+
+                java.math.BigDecimal legacyCostoClick = null;
+                Object costoObj = legacy.get("costoClick");
+                if (costoObj == null) {
+                    costoObj = legacy.get("costo_click");
+                }
+                if (costoObj != null) {
+                    try {
+                        if (costoObj instanceof Number) {
+                            legacyCostoClick = java.math.BigDecimal.valueOf(((Number) costoObj).doubleValue());
+                        } else if (costoObj instanceof String && !((String) costoObj).isEmpty()) {
+                            legacyCostoClick = new java.math.BigDecimal((String) costoObj);
+                        }
+                    } catch (Exception ex) {
+                        logger.warn("No se pudo parsear costoClick del contenido legacy: {}", costoObj);
+                    }
+                }
+
+                ContenidoGeneradoDto resultado = contenidoRepository.guardarContenidoGenerado(
+                        request.getNroRestaurante(),
+                        legacyNroSucursal,
+                        request.getNroIdioma(),
+                        contenidoGenerado,
+                        legacyCostoClick
+                ).orElseThrow(() -> new RuntimeException("Error al guardar el contenido generado en la base de datos"));
+
+                ultimoResultado = resultado;
+
+                // Si guardó ok, marcar para publicar en legacy
+                if (legacyNro != null) {
+                    contenidosMarcados.add(legacyNro);
+                }
+
+            } catch (Exception e) {
+                logger.error("Error procesando contenido legacy: {}", e.getMessage(), e);
+                // Continuar con siguientes contenidos
             }
-            
-        } catch (Exception e) {
-            logger.error("Error al registrar contenido en el sistema del restaurante (continuando de todas formas): {}", 
-                e.getMessage(), e);
-            logger.error("IMPORTANTE: El cod_contenido_restaurante NO se actualizará debido al error. " +
-                    "Los clicks de este contenido NO podrán ser notificados hasta que se registre correctamente en SOAP.");
         }
 
-        return resultado;
+        // Marcar como publicados en legacy aquellos que se generaron correctamente
+        if (!contenidosMarcados.isEmpty()) {
+            try {
+                int updated = client.marcarPublicado(request.getNroRestaurante(), contenidosMarcados);
+                logger.info("Contenidos marcados como publicados en legacy: {} (actualizados={})", contenidosMarcados.size(), updated);
+            } catch (Exception e) {
+                logger.error("Error al marcar publicados en legacy: {}", e.getMessage(), e);
+            }
+        }
+
+        if (ultimoResultado == null) {
+            throw new RuntimeException("No se generó ni guardó ningún contenido correctamente.");
+        }
+
+        return ultimoResultado;
     }
 }
 
