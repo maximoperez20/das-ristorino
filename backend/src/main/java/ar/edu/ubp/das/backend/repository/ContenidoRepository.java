@@ -202,12 +202,13 @@ public class ContenidoRepository {
      * @return DTO con los datos del contenido guardado
      */
     public Optional<ContenidoGeneradoDto> guardarContenidoGenerado(
-            String nroRestaurante, 
-            String nroSucursal, 
-            Integer nroIdioma, 
-            String contenidoGenerado) {
-        
-        String sql = "EXEC sp_GuardarContenidoGenerado ?, ?, ?, ?";
+            String nroRestaurante,
+            String nroSucursal,
+            Integer nroIdioma,
+            String contenidoGenerado,
+            java.math.BigDecimal costoClick) {
+
+        String sql = "EXEC sp_GuardarContenidoGenerado ?, ?, ?, ?, ?";
         
         try {
             List<ContenidoGeneradoDto> result = jdbcTemplate.query(
@@ -219,23 +220,29 @@ public class ContenidoRepository {
                     dto.setNroIdioma(rs.getInt("nro_idioma"));
                     dto.setNroContenido(rs.getString("nro_contenido"));
                     dto.setContenidoGenerado(rs.getString("contenido_a_publicar"));
-                    
+
                     java.sql.Date fechaIni = rs.getDate("fecha_ini_vigencia");
                     if (fechaIni != null) {
                         dto.setFechaIniVigencia(fechaIni.toLocalDate());
                     }
-                    
+
                     java.sql.Date fechaFin = rs.getDate("fecha_fin_vigencia");
                     if (fechaFin != null) {
                         dto.setFechaFinVigencia(fechaFin.toLocalDate());
                     }
-                    
+
+                    java.math.BigDecimal costo = rs.getBigDecimal("costo_click");
+                    if (!rs.wasNull()) {
+                        dto.setCostoClick(costo);
+                    }
+
                     return dto;
                 },
                 nroRestaurante,
                 nroSucursal,
                 nroIdioma,
-                contenidoGenerado
+                contenidoGenerado,
+                costoClick
             );
             
             return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));

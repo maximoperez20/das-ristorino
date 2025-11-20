@@ -59,5 +59,17 @@ public interface RestauranteClient {
             LocalDate fecha,
             Integer cantidad
     );
+
+    /**
+     * Obtiene los contenidos ya existentes en el sistema legacy del restaurante.
+     * Cada mapa contiene: nroContenido, contenidoAPublicar, imagenAPublicar (base64|null), costoClick, nroSucursal
+     */
+    java.util.List<java.util.Map<String, Object>> obtenerContenidos(String nroRestaurante, String nroSucursal);
+
+    /**
+     * Marca como publicados (publicado=1) los contenidos legacy indicados.
+     * @return número de filas actualizadas en el sistema legacy.
+     */
+    int marcarPublicado(String nroRestaurante, java.util.List<String> nroContenidos);
 }
 
