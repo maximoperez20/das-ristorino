@@ -27,14 +27,12 @@ public class ReservaResource {
         this.reservaService = reservaService;
     }
 
-    // GET /api/reservas - Obtener todas las reservas
     @GetMapping
     public ResponseEntity<List<ReservaResponseDto>> getAllReservas() {
         List<ReservaResponseDto> reservas = reservaService.obtenerTodasLasReservas();
         return ResponseEntity.ok(reservas);
     }
 
-    // GET /api/reservas/{id} - Obtener una reserva por ID
     @GetMapping("/{id}")
     public ResponseEntity<ReservaResponseDto> getReservaById(@PathVariable String id) {
         return reservaService.obtenerReservaPorId(id)
@@ -42,7 +40,6 @@ public class ReservaResource {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // POST /api/reservas - Crear una nueva reserva
     @PostMapping
     public ResponseEntity<?> createReserva(@Valid @RequestBody CrearReservaDto crearReservaDto) {
         try {
@@ -65,7 +62,6 @@ public class ReservaResource {
         }
     }
 
-    // PUT /api/reservas/{id} - Actualizar una reserva existente
     @PutMapping("/{id}")
     public ResponseEntity<?> updateReserva(@PathVariable String id, @Valid @RequestBody ActualizarReservaDto actualizarReservaDto) {
         if (!reservaService.existeReserva(id)) {
@@ -98,7 +94,6 @@ public class ReservaResource {
         }
     }
 
-    // DELETE /api/reservas/{id} - Eliminar una reserva
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReserva(@PathVariable String id) {
         if (!reservaService.existeReserva(id)) {
@@ -113,7 +108,6 @@ public class ReservaResource {
         }
     }
 
-    // PUT /api/reservas/{id}/estado - Cambiar estado de una reserva
     @PutMapping("/{id}/estado")
     public ResponseEntity<?> updateEstadoReserva(@PathVariable String id, @Valid @RequestBody CambiarEstadoDto cambiarEstadoDto) {
         if (!reservaService.existeReserva(id)) {
@@ -146,7 +140,6 @@ public class ReservaResource {
         }
     }
     
-    // GET /api/reservas/mis-reservas - Obtener reservas del usuario autenticado
     @GetMapping("/mis-reservas")
     public ResponseEntity<?> getMisReservas(Authentication authentication) {
         try {

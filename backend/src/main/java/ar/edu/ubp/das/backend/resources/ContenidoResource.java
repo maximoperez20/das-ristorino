@@ -14,8 +14,7 @@ import java.util.Map;
 
 /**
  * Controlador REST para generación de contenido publicitario con IA.
- * Este endpoint genera contenido usando OpenAI y lo sincroniza con el servicio SOAP del restaurante.
- * Documentación detallada en: openapi-docs.yaml
+ * Genera contenido usando OpenAI y lo guarda en das-ristorino.
  */
 @RestController
 @RequestMapping("/api/contenidos")

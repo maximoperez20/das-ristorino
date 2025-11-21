@@ -310,4 +310,3 @@ PRINT 'NOTA: Los valores específicos para cada atributo están documentados en 
 PRINT '      Estos valores pueden usarse al configurar restaurantes en la tabla configuracion_restaurantes.';
 PRINT '';
 GO
-
