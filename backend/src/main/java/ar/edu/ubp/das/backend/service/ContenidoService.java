@@ -4,8 +4,8 @@ import ar.edu.ubp.das.backend.client.RestauranteClient;
 import ar.edu.ubp.das.backend.client.RestauranteClientFactory;
 import ar.edu.ubp.das.backend.dto.ContenidoGeneradoDto;
 import ar.edu.ubp.das.backend.dto.GenerarContenidoRequestDto;
-// removed unused imports after refactor
 import ar.edu.ubp.das.backend.repository.ContenidoRepository;
+import ar.edu.ubp.das.backend.repository.RestauranteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +23,9 @@ public class ContenidoService {
 
     @Autowired
     private ContenidoRepository contenidoRepository;
+
+    @Autowired
+    private RestauranteRepository restauranteRepository;
 
     @Autowired
     private OpenAIService openAIService;
@@ -54,15 +57,45 @@ public class ContenidoService {
                 ? request.getPromptId()
                 : defaultPromptId;
 
+        // Validar que el restaurante existe en das-ristorino
+        if (!restauranteRepository.existeRestaurante(request.getNroRestaurante())) {
+            throw new RuntimeException("Restaurante no encontrado: " + request.getNroRestaurante());
+        }
+
         // Obtener información del idioma
         String nomIdioma = contenidoRepository.obtenerNomIdioma(request.getNroIdioma());
         String codIdioma = contenidoRepository.obtenerCodIdioma(request.getNroIdioma());
 
+        // Mapear nroSucursal interno a cod_sucursal_restaurante (ID en SOAP) si se proporcionó sucursal
+        String codSucursalRestauranteParaSOAP = null;
+        if (request.getNroSucursal() != null && !request.getNroSucursal().trim().isEmpty()) {
+            // Validar que la sucursal existe y pertenece al restaurante (en das-ristorino)
+            if (!restauranteRepository.existeSucursal(request.getNroRestaurante(), request.getNroSucursal())) {
+                throw new RuntimeException("Sucursal no encontrada: " + request.getNroSucursal() + 
+                                         " para el restaurante: " + request.getNroRestaurante());
+            }
+            
+            // Obtener el cod_sucursal_restaurante (ID de la sucursal en das-restaurante-soap)
+            codSucursalRestauranteParaSOAP = restauranteRepository.obtenerCodSucursalRestaurante(
+                    request.getNroRestaurante(), 
+                    request.getNroSucursal()
+            );
+            
+            // Validar que la sucursal está sincronizada con el sistema del restaurante
+            if (codSucursalRestauranteParaSOAP == null || codSucursalRestauranteParaSOAP.trim().isEmpty()) {
+                throw new RuntimeException("La sucursal " + request.getNroSucursal() + 
+                                         " no está sincronizada con el sistema del restaurante. " +
+                                         "cod_sucursal_restaurante no está configurado.");
+            }
+        }
+
         // 1. Obtener el último contenido PUBLICADO (publicado = 1) desde el sistema das_restaurantes_soap (vía SOAP)
+        // nroRestaurante es el mismo UUID en ambos sistemas
+        // codSucursalRestauranteParaSOAP es el nro_sucursal en el sistema SOAP
         RestauranteClient client = restauranteClientFactory.getClient(request.getNroRestaurante());
         java.util.Map<String, Object> contenidoSoap = client.obtenerContenidos(
                 request.getNroRestaurante(), 
-                request.getNroSucursal()
+                codSucursalRestauranteParaSOAP
         );
 
         if (contenidoSoap == null || contenidoSoap.isEmpty()) {
@@ -108,44 +141,9 @@ public class ContenidoService {
             logger.warn("No se encontró nroContenido en el contenido SOAP. Se generará un código AI_ automático.");
         }
 
-        // Obtener codSucursalRestaurante desde el contenido SOAP (código externo)
-        String codSucursalRestaurante = null;
-        Object nroSucursalObj = contenidoSoap.get("nroSucursal");
-        if (nroSucursalObj == null) {
-            nroSucursalObj = contenidoSoap.get("nro_sucursal");
-        }
-        if (nroSucursalObj != null) {
-            if (nroSucursalObj instanceof String) {
-                codSucursalRestaurante = ((String) nroSucursalObj).trim();
-                if (codSucursalRestaurante.isEmpty()) {
-                    codSucursalRestaurante = null;
-                }
-            } else if (nroSucursalObj instanceof Number) {
-                codSucursalRestaurante = String.valueOf(nroSucursalObj);
-            } else {
-                codSucursalRestaurante = nroSucursalObj.toString();
-                if (codSucursalRestaurante != null && codSucursalRestaurante.trim().isEmpty()) {
-                    codSucursalRestaurante = null;
-                }
-            }
-        }
-
-        // Mapear cod_sucursal_restaurante (SOAP) al nro_sucursal interno de Ristorino
-        String nroSucursalFinal = null;
-        if (request.getNroSucursal() != null && !request.getNroSucursal().isEmpty()) {
-            // Si se especificó nroSucursal en el request, usarlo directamente (ya es interno)
-            nroSucursalFinal = request.getNroSucursal();
-        } else if (codSucursalRestaurante != null && !codSucursalRestaurante.isEmpty()) {
-            // Mapear el código externo del SOAP al nro_sucursal interno
-            nroSucursalFinal = contenidoRepository.obtenerNroSucursalPorCodSucursalRestaurante(
-                    request.getNroRestaurante(),
-                    codSucursalRestaurante
-            );
-            if (nroSucursalFinal == null) {
-                logger.warn("No se encontró mapeo para cod_sucursal_restaurante: {} del restaurante: {}", 
-                        codSucursalRestaurante, request.getNroRestaurante());
-            }
-        }
+        // Usar el nroSucursal del request (ya es interno de das-ristorino)
+        // Si no se proporcionó en el request, será null (contenido a nivel de restaurante)
+        String nroSucursalFinal = request.getNroSucursal();
 
         // Obtener costo_click desde la tabla costos (todos los nuevos contenidos usan el mismo costo activo)
         java.math.BigDecimal costoClick = contenidoRepository.obtenerCostoClickActivo();
@@ -412,4 +410,3 @@ public class ContenidoService {
             .replace("\t", "\\t");
     }
 }
-
