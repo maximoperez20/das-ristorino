@@ -18,9 +18,6 @@ public class LocalidadService {
         this.localidadRepository = localidadRepository;
     }
     
-    /**
-     * Obtener todas las localidades
-     */
     public List<LocalidadDto> obtenerTodasLasLocalidades() {
         return localidadRepository.findAll();
     }

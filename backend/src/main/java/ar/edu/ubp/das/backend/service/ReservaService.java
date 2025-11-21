@@ -31,58 +31,34 @@ public class ReservaService {
         this.reservaRepository = reservaRepository;
     }
     
-    /**
-     * Obtener todas las reservas
-     */
     public List<ReservaResponseDto> obtenerTodasLasReservas() {
         return reservaRepository.findAll();
     }
     
-    /**
-     * Obtener reserva por ID
-     */
     public Optional<ReservaResponseDto> obtenerReservaPorId(String id) {
         return reservaRepository.findById(id);
     }
     
-    /**
-     * Crear nueva reserva
-     */
     public ReservaResponseDto crearReserva(CrearReservaDto crearReservaDto) {
         return reservaRepository.save(crearReservaDto);
     }
     
-    /**
-     * Actualizar reserva existente
-     */
     public boolean actualizarReserva(String id, ActualizarReservaDto actualizarReservaDto) {
         return reservaRepository.update(actualizarReservaDto, id);
     }
     
-    /**
-     * Eliminar (cancelar) reserva
-     */
     public boolean eliminarReserva(String id) {
         return reservaRepository.deleteById(id);
     }
     
-    /**
-     * Cambiar estado de una reserva
-     */
     public boolean cambiarEstadoReserva(String id, String nuevoEstado) {
         return reservaRepository.updateEstado(id, nuevoEstado);
     }
     
-    /**
-     * Verificar si existe una reserva con el ID dado
-     */
     public boolean existeReserva(String id) {
         return reservaRepository.existsById(id);
     }
     
-    /**
-     * Obtener reservas por nro_cliente
-     */
     public List<ReservaResponseDto> obtenerReservasPorNroCliente(String nroCliente) {
         return reservaRepository.findByNroCliente(nroCliente);
     }

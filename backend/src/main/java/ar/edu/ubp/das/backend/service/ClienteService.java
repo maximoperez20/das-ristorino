@@ -25,18 +25,13 @@ public class ClienteService {
         this.passwordEncoder = passwordEncoder;
     }
     
-    /**
-     * Crear un nuevo cliente
-     */
     public ClienteResponseDto crearCliente(CrearClienteDto crearClienteDto) {
         logger.info("Creando cliente con correo: {}", crearClienteDto.getCorreo());
         
-        // Verificar si el correo ya existe
         if (clienteRepository.existsByCorreo(crearClienteDto.getCorreo())) {
             throw new RuntimeException("El correo ya está registrado");
         }
         
-        // Crear el DTO del usuario
         UsuarioDto usuario = new UsuarioDto();
         usuario.setApellido(crearClienteDto.getApellido());
         usuario.setNombre(crearClienteDto.getNombre());
@@ -44,17 +39,12 @@ public class ClienteService {
         usuario.setTelefonos(crearClienteDto.getTelefonos());
         usuario.setNroLocalidad(crearClienteDto.getNroLocalidad());
         usuario.setHabilitado(true);
+        usuario.setClave(passwordEncoder.encode(crearClienteDto.getPassword()));
         
-        // Hashear la contraseña
-        String hashedPassword = passwordEncoder.encode(crearClienteDto.getPassword());
-        usuario.setClave(hashedPassword);
-        
-        // Guardar el cliente
         UsuarioDto clienteCreado = clienteRepository.save(usuario);
         
         logger.info("Cliente creado exitosamente con nro_cliente: {}", clienteCreado.getNroCliente());
         
-        // Convertir a DTO de respuesta (sin exponer la contraseña)
         ClienteResponseDto response = new ClienteResponseDto();
         response.setNroCliente(clienteCreado.getNroCliente());
         response.setApellido(clienteCreado.getApellido());

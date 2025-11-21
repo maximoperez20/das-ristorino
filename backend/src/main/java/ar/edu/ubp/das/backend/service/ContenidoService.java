@@ -89,9 +89,6 @@ public class ContenidoService {
             }
         }
 
-        // 1. Obtener el último contenido PUBLICADO (publicado = 1) desde el sistema das_restaurantes_soap (vía SOAP)
-        // nroRestaurante es el mismo UUID en ambos sistemas
-        // codSucursalRestauranteParaSOAP es el nro_sucursal en el sistema SOAP
         RestauranteClient client = restauranteClientFactory.getClient(request.getNroRestaurante());
         java.util.Map<String, Object> contenidoSoap = client.obtenerContenidos(
                 request.getNroRestaurante(), 
@@ -102,22 +99,19 @@ public class ContenidoService {
             throw new RuntimeException("No se encontraron contenidos en el sistema SOAP para el restaurante: " + request.getNroRestaurante());
         }
 
-        // 2. Obtener atributos y configuracion_restaurantes de das_ristorino
         java.util.Map<String, String> atributosYConfiguracion = contenidoRepository.obtenerTodosLosAtributosYConfiguracion(
                 request.getNroRestaurante()
         );
 
-        // Obtener contexto del restaurante (datos básicos, preferencias, horarios)
         ar.edu.ubp.das.backend.dto.RestauranteContextoDto contextoRestaurante = contenidoRepository
                 .obtenerContextoRestaurante(request.getNroRestaurante(), request.getNroSucursal())
                 .orElseThrow(() -> new RuntimeException("No se encontró información del restaurante: " + request.getNroRestaurante()));
 
-        // 3. Obtener contenido fuente del SOAP
         String contenidoFuente = contenidoSoap.get("contenidoAPublicar") != null 
             ? (String) contenidoSoap.get("contenidoAPublicar") 
             : "";
 
-        // Obtener nroContenido del SOAP (este será el cod_contenido_restaurante en ristorino)
+        // Extraer nroContenido del SOAP para guardarlo como cod_contenido_restaurante (necesario para notificar clicks)
         String codContenidoRestaurante = null;
         Object nroContenidoObj = contenidoSoap.get("nroContenido");
         if (nroContenidoObj == null) {
@@ -141,17 +135,13 @@ public class ContenidoService {
             logger.warn("No se encontró nroContenido en el contenido SOAP. Se generará un código AI_ automático.");
         }
 
-        // Usar el nroSucursal del request (ya es interno de das-ristorino)
-        // Si no se proporcionó en el request, será null (contenido a nivel de restaurante)
         String nroSucursalFinal = request.getNroSucursal();
 
-        // Obtener costo_click desde la tabla costos (todos los nuevos contenidos usan el mismo costo activo)
         java.math.BigDecimal costoClick = contenidoRepository.obtenerCostoClickActivo();
         if (costoClick == null) {
             logger.warn("No se encontró un costo_click activo en la tabla costos. Se guardará el contenido sin costo.");
         }
 
-        // 4. Construir prompt con: contenido SOAP + atributos/configuración + contexto del restaurante
         String prompt = construirPromptCompleto(
                 contenidoFuente,
                 contextoRestaurante,
@@ -162,11 +152,9 @@ public class ContenidoService {
                 promptId
         );
 
-        // 5. Generar contenido con IA (1 sola publicidad)
         String contenidoGenerado = openAIService.generarContenidoPublicitario(prompt, promptId);
 
-        // 6. Guardar SOLO en das_ristorino (NO sincronizar con SOAP)
-        // IMPORTANTE: Guardamos el nro_contenido del SOAP en cod_contenido_restaurante para poder notificar clicks
+        // Guardar en das_ristorino. cod_contenido_restaurante permite notificar clicks al sistema SOAP
         ContenidoGeneradoDto resultado = contenidoRepository.guardarContenidoGenerado(
                 request.getNroRestaurante(),
                 nroSucursalFinal,

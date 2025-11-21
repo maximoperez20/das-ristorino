@@ -19,4 +19,3 @@ public class GetHorariosDisponiblesSoapDto {
         this.jsonResponse = jsonResponse;
     }
 }
-

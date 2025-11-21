@@ -43,9 +43,6 @@ public class RestauranteResource {
         this.busquedaNLPService = busquedaNLPService;
     }
 
-    /**
-     * GET /api/restaurantes - Obtener todos los restaurantes
-     */
     @GetMapping
     public ResponseEntity<List<RestauranteDto>> getAllRestaurantes() {
         List<RestauranteDto> restaurantes = restauranteService.obtenerTodosLosRestaurantes();
@@ -63,19 +60,12 @@ public class RestauranteResource {
                           .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /**
-     * GET /api/restaurantes/{nroRestaurante}/sucursales - Obtener sucursales de un restaurante
-     */
     @GetMapping("/{nroRestaurante}/sucursales")
     public ResponseEntity<List<SucursalDto>> getSucursales(@PathVariable String nroRestaurante) {
         List<SucursalDto> sucursales = restauranteService.obtenerSucursales(nroRestaurante);
         return ResponseEntity.ok(sucursales);
     }
 
-    /**
-     * GET /api/restaurantes/buscar - Buscar restaurantes por nombre
-     * @param nombre Nombre o parte del nombre del restaurante
-     */
     @GetMapping("/buscar")
     public ResponseEntity<List<RestauranteDto>> buscarRestaurantes(@RequestParam String nombre) {
         List<RestauranteDto> restaurantes = restauranteService.buscarRestaurantesPorNombre(nombre);

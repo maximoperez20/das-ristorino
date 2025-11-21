@@ -28,38 +28,22 @@ public class RestauranteService {
         this.restauranteClientFactory = restauranteClientFactory;
     }
     
-    /**
-     * Obtener todos los restaurantes
-     */
     public List<RestauranteDto> obtenerTodosLosRestaurantes() {
         return restauranteRepository.findAll();
     }
     
-    /**
-     * Obtener restaurante por UUID (nroRestaurante)
-     */
     public Optional<RestauranteDto> obtenerRestaurantePorId(String nroRestaurante) {
         return restauranteRepository.findById(nroRestaurante);
     }
     
-    /**
-     * Obtener detalle completo de un restaurante (Requerimiento 11)
-     * Incluye: datos básicos, tipo de cocina, descripción, sucursales y promociones vigentes
-     */
     public Optional<RestauranteDetalleDto> obtenerDetalleRestaurantePorId(String nroRestaurante) {
         return restauranteRepository.findDetalleById(nroRestaurante);
     }
     
-    /**
-     * Obtener sucursales de un restaurante
-     */
     public List<SucursalDto> obtenerSucursales(String nroRestaurante) {
         return restauranteRepository.obtenerSucursales(nroRestaurante);
     }
     
-    /**
-     * Buscar restaurantes por nombre (búsqueda parcial)
-     */
     public List<RestauranteDto> buscarRestaurantesPorNombre(String nombre) {
         return restauranteRepository.findByNombreContaining(nombre);
     }
@@ -84,29 +68,22 @@ public class RestauranteService {
             String codZona,
             LocalDate fecha,
             Integer cantidad) {
-        // Validar que el restaurante existe
         if (!restauranteRepository.existeRestaurante(nroRestaurante)) {
             throw new RuntimeException("Restaurante no encontrado: " + nroRestaurante);
         }
         
-        // Validar que la sucursal existe y pertenece al restaurante (en das-ristorino)
         if (!restauranteRepository.existeSucursal(nroRestaurante, nroSucursal)) {
             throw new RuntimeException("Sucursal no encontrada: " + nroSucursal + 
                                      " para el restaurante: " + nroRestaurante);
         }
         
-        // Obtener el cod_sucursal_restaurante (ID de la sucursal en das-restaurante-soap)
         String codSucursalRestaurante = restauranteRepository.obtenerCodSucursalRestaurante(nroRestaurante, nroSucursal);
         
-        // Validar que la sucursal está sincronizada con el sistema del restaurante
         if (codSucursalRestaurante == null || codSucursalRestaurante.trim().isEmpty()) {
             throw new RuntimeException("La sucursal " + nroSucursal + 
                                      " no está sincronizada con el sistema del restaurante. " +
                                      "cod_sucursal_restaurante no está configurado.");
         }
-        
-        // Llamar al servicio del restaurante usando cod_sucursal_restaurante
-        // (que es el nro_sucursal en das-restaurante-soap)
         RestauranteClient client = restauranteClientFactory.getClient(nroRestaurante);
         List<HorarioDisponibleDto> horarios = client.getHorariosDisponibles(nroRestaurante, codSucursalRestaurante, codZona, fecha, cantidad);
         
