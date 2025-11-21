@@ -36,11 +36,14 @@ public class ContenidoService {
     /**
      * Genera contenido publicitario con IA para un restaurante/sucursal.
      * 
-     * NUEVO FLUJO:
-     * 1. Obtener contenidos de la tabla 'contenidos' del sistema das_restaurantes_soap (vía SOAP)
+     * FLUJO:
+     * 1. Obtener el último contenido PUBLICADO (publicado = 1) de la tabla 'contenidos' 
+     *    del sistema das_restaurantes_soap (vía SOAP)
      * 2. Obtener atributos y configuracion_restaurantes de das_ristorino
-     * 3. Enviar todo al motor IA para generar contenidos tipo promoción
+     * 3. Enviar todo al motor IA para generar contenido tipo promoción
      * 4. Guardar SOLO en la tabla 'contenidos_restaurantes' de das_ristorino (NO sincronizar con SOAP)
+     * 
+     * NOTA: Solo se consideran contenidos con publicado = 1. No es necesario notificar publicación.
      *
      * @param request Datos de la solicitud (restaurante, sucursal, idioma)
      * @return DTO con el contenido generado y guardado
@@ -55,8 +58,7 @@ public class ContenidoService {
         String nomIdioma = contenidoRepository.obtenerNomIdioma(request.getNroIdioma());
         String codIdioma = contenidoRepository.obtenerCodIdioma(request.getNroIdioma());
 
-        // 1. Obtener el último contenido NO publicado desde el sistema das_restaurantes_soap (vía SOAP)
-        // Si todos están publicados, retorna el más nuevo
+        // 1. Obtener el último contenido PUBLICADO (publicado = 1) desde el sistema das_restaurantes_soap (vía SOAP)
         RestauranteClient client = restauranteClientFactory.getClient(request.getNroRestaurante());
         java.util.Map<String, Object> contenidoSoap = client.obtenerContenidos(
                 request.getNroRestaurante(), 
@@ -81,6 +83,30 @@ public class ContenidoService {
         String contenidoFuente = contenidoSoap.get("contenidoAPublicar") != null 
             ? (String) contenidoSoap.get("contenidoAPublicar") 
             : "";
+
+        // Obtener nroContenido del SOAP (este será el cod_contenido_restaurante en ristorino)
+        String codContenidoRestaurante = null;
+        Object nroContenidoObj = contenidoSoap.get("nroContenido");
+        if (nroContenidoObj == null) {
+            nroContenidoObj = contenidoSoap.get("nro_contenido");
+        }
+        if (nroContenidoObj != null) {
+            if (nroContenidoObj instanceof String) {
+                codContenidoRestaurante = ((String) nroContenidoObj).trim();
+                if (codContenidoRestaurante.isEmpty()) {
+                    codContenidoRestaurante = null;
+                }
+            } else {
+                codContenidoRestaurante = nroContenidoObj.toString().trim();
+                if (codContenidoRestaurante.isEmpty()) {
+                    codContenidoRestaurante = null;
+                }
+            }
+        }
+
+        if (codContenidoRestaurante == null) {
+            logger.warn("No se encontró nroContenido en el contenido SOAP. Se generará un código AI_ automático.");
+        }
 
         // Obtener codSucursalRestaurante desde el contenido SOAP (código externo)
         String codSucursalRestaurante = null;
@@ -142,12 +168,14 @@ public class ContenidoService {
         String contenidoGenerado = openAIService.generarContenidoPublicitario(prompt, promptId);
 
         // 6. Guardar SOLO en das_ristorino (NO sincronizar con SOAP)
+        // IMPORTANTE: Guardamos el nro_contenido del SOAP en cod_contenido_restaurante para poder notificar clicks
         ContenidoGeneradoDto resultado = contenidoRepository.guardarContenidoGenerado(
                 request.getNroRestaurante(),
                 nroSucursalFinal,
                 request.getNroIdioma(),
                 contenidoGenerado,
-                costoClick
+                costoClick,
+                codContenidoRestaurante
         ).orElseThrow(() -> new RuntimeException("Error al guardar el contenido generado en la base de datos"));
 
         logger.info("Contenido generado y guardado exitosamente. nroContenido: {}", resultado.getNroContenido());

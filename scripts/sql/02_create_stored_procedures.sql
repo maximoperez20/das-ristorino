@@ -960,7 +960,8 @@ CREATE OR ALTER PROCEDURE sp_GuardarContenidoGenerado
     @nro_sucursal VARCHAR(36) = NULL,
     @nro_idioma INT,
     @contenido_generado NVARCHAR(MAX),
-    @costo_click DECIMAL(12,2) = NULL
+    @costo_click DECIMAL(12,2) = NULL,
+    @cod_contenido_restaurante VARCHAR(40) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -969,6 +970,7 @@ BEGIN
     DECLARE @fecha_ini DATE = CAST(GETDATE() AS DATE);
     DECLARE @fecha_fin DATE = DATEADD(MONTH, 1, @fecha_ini);
     DECLARE @nro_sucursal_validado VARCHAR(36) = NULL;
+    DECLARE @cod_contenido_final VARCHAR(40);
     
     -- Validar y normalizar nro_sucursal
     -- Si es NULL, cadena vacía o no existe en la base de datos, establecer a NULL
@@ -989,6 +991,17 @@ BEGIN
             -- Si la sucursal no existe, establecer a NULL para evitar error de foreign key
             SET @nro_sucursal_validado = NULL;
         END
+    END
+    
+    -- Determinar el cod_contenido_restaurante
+    -- Si se proporciona, usarlo; si no, generar uno con prefijo AI_
+    IF @cod_contenido_restaurante IS NOT NULL AND LTRIM(RTRIM(@cod_contenido_restaurante)) != ''
+    BEGIN
+        SET @cod_contenido_final = @cod_contenido_restaurante;
+    END
+    ELSE
+    BEGIN
+        SET @cod_contenido_final = 'AI_' + CONVERT(VARCHAR(36), NEWID());
     END
     
     -- Insertar el contenido generado
@@ -1016,7 +1029,7 @@ BEGIN
         @fecha_ini,
         @fecha_fin,
         @costo_click,
-        'AI_' + CONVERT(VARCHAR(36), NEWID()) -- Código único generado
+        @cod_contenido_final
     );
     
     -- Retornar el contenido guardado

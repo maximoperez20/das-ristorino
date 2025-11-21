@@ -210,6 +210,8 @@ public class ContenidoRepository {
      * @param nroSucursal UUID de la sucursal (puede ser null)
      * @param nroIdioma ID del idioma (INT)
      * @param contenidoGenerado Texto generado por IA
+     * @param costoClick Costo del click (puede ser null)
+     * @param codContenidoRestaurante ID del contenido en el sistema SOAP (nro_contenido del SOAP)
      * @return DTO con los datos del contenido guardado
      */
     public Optional<ContenidoGeneradoDto> guardarContenidoGenerado(
@@ -217,9 +219,10 @@ public class ContenidoRepository {
             String nroSucursal,
             Integer nroIdioma,
             String contenidoGenerado,
-            java.math.BigDecimal costoClick) {
+            java.math.BigDecimal costoClick,
+            String codContenidoRestaurante) {
 
-        String sql = "EXEC sp_GuardarContenidoGenerado ?, ?, ?, ?, ?";
+        String sql = "EXEC sp_GuardarContenidoGenerado ?, ?, ?, ?, ?, ?";
         
         try {
             List<ContenidoGeneradoDto> result = jdbcTemplate.query(
@@ -253,7 +256,8 @@ public class ContenidoRepository {
                 nroSucursal,
                 nroIdioma,
                 contenidoGenerado,
-                costoClick
+                costoClick,
+                codContenidoRestaurante
             );
             
             return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
