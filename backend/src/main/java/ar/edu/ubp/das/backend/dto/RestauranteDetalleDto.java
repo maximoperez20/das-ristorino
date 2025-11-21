@@ -1,5 +1,6 @@
 package ar.edu.ubp.das.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -9,6 +10,7 @@ import java.util.List;
  */
 public class RestauranteDetalleDto {
     
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long id;
     private String nombre;
     private String direccion;

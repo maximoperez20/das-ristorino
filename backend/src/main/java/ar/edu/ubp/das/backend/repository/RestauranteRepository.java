@@ -30,7 +30,16 @@ public class RestauranteRepository {
         @Override
         public RestauranteDto mapRow(ResultSet rs, int rowNum) throws SQLException {
             RestauranteDto restaurante = new RestauranteDto();
-            restaurante.setId(rs.getLong("id"));
+            // El id ya no se devuelve desde los stored procedures, solo nro_restaurante
+            // Verificamos si existe la columna id antes de intentar leerla
+            try {
+                rs.findColumn("id");
+                restaurante.setId(rs.getLong("id"));
+            } catch (SQLException e) {
+                // Campo id no existe en el ResultSet, dejarlo null
+                restaurante.setId(null);
+            }
+            restaurante.setNroRestaurante(rs.getString("nro_restaurante"));
             restaurante.setNombre(rs.getString("nombre"));
             restaurante.setDireccion(rs.getString("direccion"));
             restaurante.setTelefono(rs.getString("telefono"));
@@ -202,12 +211,14 @@ public class RestauranteRepository {
      * @param ambiente Ambiente (puede ser null)
      * @param rangoPrecio Rango de precio (puede ser null)
      * @param palabrasClave Lista de palabras clave para búsqueda en nombre/descripción (puede ser null)
+     * @param nroCliente UUID del cliente autenticado (opcional, puede ser null)
      * @return Lista de restaurantes que coinciden con los criterios
      */
     public List<RestauranteDto> buscarPorNLP(List<String> tiposComida, String barrio, 
-                                             String localidad, String ambiente, 
-                                             String rangoPrecio, List<String> palabrasClave) {
-        String sql = "EXEC sp_BuscarRestaurantesPorNLP ?, ?, ?, ?, ?, ?";
+                                            String localidad, String ambiente, 
+                                            String rangoPrecio, List<String> palabrasClave,
+                                            String nroCliente) {
+        String sql = "EXEC sp_BuscarRestaurantesPorNLP ?, ?, ?, ?, ?, ?, ?";
         
         // Convertir listas a strings separados por comas
         String tiposComidaStr = tiposComida != null && !tiposComida.isEmpty() 
@@ -220,6 +231,106 @@ public class RestauranteRepository {
             ? String.join(",", palabrasClave) : null;
         
         return jdbcTemplate.query(sql, restauranteRowMapper, 
-            tiposComidaStr, barrioStr, localidadStr, ambienteStr, rangoPrecioStr, palabrasClaveStr);
+            tiposComidaStr, barrioStr, localidadStr, ambienteStr, rangoPrecioStr, palabrasClaveStr, nroCliente);
+    }
+    
+    /**
+     * Verificar si un restaurante existe por su nroRestaurante
+     * @param nroRestaurante UUID del restaurante
+     * @return true si existe, false en caso contrario
+     */
+    public boolean existeRestaurante(String nroRestaurante) {
+        String sql = "SELECT COUNT(*) FROM restaurantes WHERE nro_restaurante = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, nroRestaurante);
+        return count != null && count > 0;
+    }
+    
+    /**
+     * Verificar si una sucursal existe y pertenece al restaurante especificado
+     * @param nroRestaurante UUID del restaurante
+     * @param nroSucursal UUID de la sucursal (ID interno de das-ristorino)
+     * @return true si existe y pertenece al restaurante, false en caso contrario
+     */
+    public boolean existeSucursal(String nroRestaurante, String nroSucursal) {
+        String sql = "SELECT COUNT(*) FROM sucursales_restaurantes " +
+                     "WHERE nro_restaurante = ? AND nro_sucursal = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, nroRestaurante, nroSucursal);
+        return count != null && count > 0;
+    }
+    
+    /**
+     * Obtener el cod_sucursal_restaurante (ID de la sucursal en das-restaurante-soap)
+     * a partir del nro_sucursal (ID interno de das-ristorino)
+     * @param nroRestaurante UUID del restaurante
+     * @param nroSucursal UUID de la sucursal (ID interno de das-ristorino)
+     * @return cod_sucursal_restaurante (ID en das-restaurante-soap) o null si no existe
+     */
+    public String obtenerCodSucursalRestaurante(String nroRestaurante, String nroSucursal) {
+        String sql = "SELECT cod_sucursal_restaurante FROM sucursales_restaurantes " +
+                     "WHERE nro_restaurante = ? AND nro_sucursal = ?";
+        try {
+            List<String> result = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getString("cod_sucursal_restaurante"),
+                nroRestaurante,
+                nroSucursal
+            );
+            return result.isEmpty() ? null : result.get(0);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    /**
+     * Obtener el cod_zona_restaurante (código externo del SOAP) basado en el cod_zona interno de Ristorino
+     * Útil cuando necesitamos comunicarnos con el SOAP y requerimos el código externo
+     */
+    public String obtenerCodZonaRestaurante(String nroRestaurante, String nroSucursal, String codZona) {
+        String sql = "SELECT cod_zona_restaurante FROM zonas_sucursales_restaurantes " +
+                     "WHERE nro_restaurante = ? AND nro_sucursal = ? AND cod_zona = ? AND habilitada = 1";
+        try {
+            List<String> result = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getString("cod_zona_restaurante"),
+                nroRestaurante,
+                nroSucursal,
+                codZona
+            );
+            if (result.isEmpty()) {
+                throw new RuntimeException("Zona no encontrada para cod_zona: " + codZona);
+            }
+            String codZonaRestaurante = result.get(0);
+            if (codZonaRestaurante == null || codZonaRestaurante.trim().isEmpty()) {
+                throw new RuntimeException("La zona no tiene cod_zona_restaurante configurado para cod_zona: " + codZona);
+            }
+            return codZonaRestaurante;
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener cod_zona_restaurante: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Obtener el cod_zona interno de Ristorino basado en el cod_zona_restaurante (código externo del SOAP)
+     * Útil cuando recibimos el código externo del SOAP y necesitamos el código interno de Ristorino
+     * @param nroRestaurante UUID del restaurante
+     * @param nroSucursal UUID de la sucursal (ID interno de das-ristorino)
+     * @param codZonaRestaurante Código de zona en el sistema del restaurante (SOAP)
+     * @return cod_zona interno de Ristorino o null si no se encuentra
+     */
+    public String obtenerCodZonaInterno(String nroRestaurante, String nroSucursal, String codZonaRestaurante) {
+        String sql = "SELECT cod_zona FROM zonas_sucursales_restaurantes " +
+                     "WHERE nro_restaurante = ? AND nro_sucursal = ? AND cod_zona_restaurante = ? AND habilitada = 1";
+        try {
+            List<String> result = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getString("cod_zona"),
+                nroRestaurante,
+                nroSucursal,
+                codZonaRestaurante
+            );
+            return result.isEmpty() ? null : result.get(0);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

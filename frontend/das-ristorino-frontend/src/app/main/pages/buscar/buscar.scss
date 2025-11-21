@@ -1,0 +1,33 @@
+.buscar-container {
+  min-height: 60vh;
+  padding: 2rem 0;
+
+  .restaurante-card {
+    border: none;
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .restaurante-image {
+      height: 200px;
+      object-fit: cover;
+      width: 100%;
+    }
+
+    .card-body {
+      padding: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      color: #212529;
+      min-height: 3rem;
+    }
+  }
+}
+

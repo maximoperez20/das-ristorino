@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { IRestaurante } from '../../api/models/i-restaurante';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-restaurantes',
@@ -13,6 +14,7 @@ export class RestaurantesPage implements OnInit {
   restaurantesLista: IRestaurante[] = [];
 
   private _route = inject(ActivatedRoute);
+  private _router = inject(Router);
 
   ngOnInit(): void {
     // Leer restaurantes resueltos por el RestaurantesListResolver
@@ -24,6 +26,41 @@ export class RestaurantesPage implements OnInit {
         this.restaurantesLista = [];
       }
     });
+  }
+
+  formatearHorario(horario: string | null): string {
+    if (!horario) return 'No disponible';
+    // Formato esperado: "HH:mm:ss" -> convertir a "HH:mm"
+    const partes = horario.split(':');
+    if (partes.length >= 2) {
+      return `${partes[0]}:${partes[1]}`;
+    }
+    return horario;
+  }
+
+  obtenerEstrellas(calificacion: number): string {
+    const estrellasLlenas = Math.floor(calificacion);
+    const tieneMedia = calificacion % 1 >= 0.5;
+    let resultado = '★'.repeat(estrellasLlenas);
+    if (tieneMedia) {
+      resultado += '½';
+    }
+    return resultado;
+  }
+
+  obtenerImagen(restaurante: IRestaurante): string | null {
+    // Priorizar imagenes array, luego imagenUrl
+    if (restaurante.imagenes && restaurante.imagenes.length > 0) {
+      return restaurante.imagenes[0];
+    }
+    if (restaurante.imagenUrl) {
+      return restaurante.imagenUrl;
+    }
+    return null;
+  }
+
+  redirigirADetalleRestaurante(restaurante: IRestaurante){
+    this._router.navigate(['/restaurantes', restaurante.nroRestaurante])
   }
   
 }

@@ -1,0 +1,95 @@
+<div class="horarios-disponibles-container">
+  <div class="header-section mb-4">
+    <h3 class="mb-2">Horarios Disponibles</h3>
+    <div class="info-badge">
+      <i class="bi bi-building"></i>
+      <span>{{ nombreSucursal }}</span>
+    </div>
+  </div>
+
+  <div class="calendar-controls mb-4">
+    <button 
+      class="btn btn-outline-secondary"
+      [disabled]="!puedeRetrocederFecha()"
+      (click)="cambiarFecha(-1)">
+      <i class="bi bi-chevron-left"></i>
+    </button>
+    
+    <div class="fecha-display">
+      <i class="bi bi-calendar3"></i>
+      <span>{{ formatearFechaLegible(fechaActual) }}</span>
+    </div>
+    
+    <button 
+      class="btn btn-outline-secondary"
+      [disabled]="!puedeAvanzarFecha()"
+      (click)="cambiarFecha(1)">
+      <i class="bi bi-chevron-right"></i>
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  } @else if (error) {
+    <div class="alert alert-danger" role="alert">
+      <i class="bi bi-exclamation-triangle"></i> {{ error }}
+    </div>
+  } @else if (horariosData && horariosData.zonas.length > 0) {
+    <div class="zonas-container">
+      @for (zona of horariosData.zonas; track zona.codZona) {
+        <div class="zona-card mb-4">
+          <div class="zona-header">
+            <h5 class="mb-1">{{ zona.nomZona }}</h5>
+            <div class="zona-info">
+              <span class="badge bg-info me-2">
+                <i class="bi bi-people"></i> Capacidad: {{ zona.capacidadZona }}
+              </span>
+              @if (zona.permiteMenores) {
+                <span class="badge bg-success">
+                  <i class="bi bi-check-circle"></i> Permite menores
+                </span>
+              }
+            </div>
+          </div>
+
+          <div class="horarios-grid">
+            @for (horario of zona.horarios; track horario.horaDesde) {
+              <div 
+                class="horario-card" 
+                [class.disponible]="horario.disponibilidad > 0"
+                [class.no-disponible]="horario.disponibilidad <= 0"
+                (click)="onHorarioClick(zona, horario, $event)"
+                [style.cursor]="horario.disponibilidad > 0 ? 'pointer' : 'not-allowed'"
+                [attr.data-disponibilidad]="horario.disponibilidad"
+                [attr.data-hora]="horario.horaDesde">
+                <div class="horario-time">
+                  <i class="bi bi-clock"></i>
+                  {{ horario.horaDesde }} - {{ horario.horaHasta }}
+                </div>
+                <div class="horario-info">
+                  <span class="disponibilidad">
+                    <i class="bi bi-check-circle"></i>
+                    {{ horario.disponibilidad }} disponibles
+                  </span>
+                  @if (horario.yaReservados > 0) {
+                    <span class="reservados">
+                      ({{ horario.yaReservados }} reservados)
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="alert alert-info text-center" role="alert">
+      <i class="bi bi-info-circle"></i> No hay horarios disponibles para esta fecha.
+    </div>
+  }
+</div>

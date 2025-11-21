@@ -1,0 +1,227 @@
+.horarios-disponibles-container {
+  .header-section {
+    h3 {
+      color: #2c3e50;
+      font-weight: 600;
+    }
+
+    .info-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: #e9ecef;
+      border-radius: 20px;
+      color: #495057;
+      font-size: 0.9rem;
+
+      i {
+        color: #667eea;
+      }
+    }
+  }
+
+  .calendar-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    .fecha-display {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 500;
+      color: #2c3e50;
+      text-transform: capitalize;
+
+      i {
+        color: #667eea;
+      }
+    }
+
+    .btn {
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .zonas-container {
+    .zona-card {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+      .zona-header {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e9ecef;
+
+        h5 {
+          color: #2c3e50;
+          font-weight: 600;
+        }
+
+        .zona-info {
+          margin-top: 0.5rem;
+        }
+      }
+
+      .horarios-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+
+        .horario-card {
+          background: #f8f9fa;
+          border: 2px solid #dee2e6;
+          border-radius: 8px;
+          padding: 1rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          position: relative;
+          z-index: 1;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          }
+
+          &.disponible {
+            border-color: #28a745;
+            background: #f0fff4;
+
+            .horario-time {
+              color: #28a745;
+              font-weight: 600;
+            }
+
+            .disponibilidad {
+              color: #28a745;
+            }
+          }
+
+          &.seleccionado {
+            border-color: #0d6efd;
+            background: #e7f1ff;
+            box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+            position: relative;
+
+            .horario-time {
+              color: #0d6efd;
+              font-weight: 700;
+            }
+
+            .disponibilidad {
+              color: #0d6efd;
+            }
+
+            .selected-badge {
+              position: absolute;
+              top: 0.5rem;
+              right: 0.5rem;
+              background: #0d6efd;
+              color: white;
+              padding: 0.25rem 0.5rem;
+              border-radius: 4px;
+              font-size: 0.75rem;
+              font-weight: 600;
+              display: flex;
+              align-items: center;
+              gap: 0.25rem;
+
+              i {
+                font-size: 0.875rem;
+              }
+            }
+          }
+
+          &.no-disponible {
+            opacity: 0.6;
+            cursor: not-allowed;
+            border-color: #dc3545;
+            background: #fff5f5;
+
+            .horario-time {
+              color: #dc3545;
+            }
+
+            .disponibilidad {
+              color: #dc3545;
+            }
+          }
+
+          .horario-time {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #495057;
+            pointer-events: none;
+            user-select: none;
+
+            i {
+              font-size: 1rem;
+            }
+          }
+
+          .horario-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            font-size: 0.85rem;
+            pointer-events: none;
+            user-select: none;
+
+            .disponibilidad {
+              color: #28a745;
+              font-weight: 500;
+
+              i {
+                margin-right: 0.25rem;
+              }
+            }
+
+            .reservados {
+              color: #6c757d;
+              font-size: 0.8rem;
+            }
+          }
+
+          .selected-badge {
+            pointer-events: none;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .horarios-disponibles-container {
+    .horarios-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .calendar-controls {
+      .fecha-display {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}

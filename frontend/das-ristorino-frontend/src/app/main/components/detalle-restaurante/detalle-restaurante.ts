@@ -1,27 +1,120 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, inject, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { IRestaurante } from '../../api/models/i-restaurante';
+import { ISucursal } from '../../api/models/i-sucursal';
 import { NgClass } from '@angular/common';
+import { HorariosDisponiblesComponent, HorarioSeleccionado } from '../horarios-disponibles/horarios-disponibles';
+import { PromocionComponent } from "../promocion/promocion";
+import { FormularioReservaComponent } from '../formulario-reserva/formulario-reserva';
+import { AuthService } from '../../../core/services/auth-service';
 
 @Component({
   selector: 'app-detalle-restaurante',
   standalone: true,
-  imports: [NgClass],
+  imports: [NgClass, HorariosDisponiblesComponent, PromocionComponent, FormularioReservaComponent],
   templateUrl: './detalle-restaurante.html',
   styleUrls: ['./detalle-restaurante.scss'],
 })
 export class DetalleRestauranteComponent implements OnInit {
 
+  @ViewChild('horariosComponent') horariosComponent?: HorariosDisponiblesComponent;
+
   restaurante?: IRestaurante | undefined;
+  sucursalSeleccionada?: ISucursal;
+  fechaSeleccionada: Date = new Date();
+  nroRestaurante: string = '';
+  horarioSeleccionado?: HorarioSeleccionado;
+  mostrarFormularioReserva: boolean = false;
+
   private _route = inject(ActivatedRoute);
+  private _router = inject(Router);
+  private _auth = inject(AuthService);
 
   ngOnInit(): void {
-    // Leer el restaurante resuelto por el RestauranteResolver (route.data.restaurante)
+    this.nroRestaurante = this._route.snapshot.paramMap.get('nroRestaurante') || '';
+    
     this._route.data.subscribe(data => {
       this.restaurante = data?.['restaurante'];
-      console.log('Restaurante resuelto en componente:', this.restaurante);
+      if (this.restaurante && !this.restaurante.nroRestaurante) {
+        this.restaurante.nroRestaurante = this.nroRestaurante;
+      }
+      this.seleccionarPrimeraSucursal();
+      console.log('Restaurante cargado:', this.restaurante);
     });
   }
 
-}
+  seleccionarPrimeraSucursal(): void {
+    if (this.restaurante?.sucursales && this.restaurante.sucursales.length > 0) {
+      this.sucursalSeleccionada = this.restaurante.sucursales[0];
+      console.log('Sucursal seleccionada:', this.sucursalSeleccionada);
+      console.log('nroRestaurante:', this.nroRestaurante);
+    }
+  }
 
+  seleccionarSucursal(sucursal: ISucursal): void {
+    this.sucursalSeleccionada = sucursal;
+  }
+
+  formatearHorario(horario: string | null): string {
+    if (!horario) return 'No disponible';
+    const partes = horario.split(':');
+    if (partes.length >= 2) {
+      return `${partes[0]}:${partes[1]}`;
+    }
+    return horario;
+  }
+
+  obtenerImagenPrincipal(): string {
+    if (!this.restaurante) return 'https://picsum.photos/seed/food/800/400';
+    
+    if (this.restaurante.imagenes && this.restaurante.imagenes.length > 0) {
+      return this.restaurante.imagenes[0];
+    }
+    if (this.restaurante.imagenUrl) {
+      return this.restaurante.imagenUrl;
+    }
+    return 'https://picsum.photos/seed/food/800/400';
+  }
+
+  esSucursalSeleccionada(sucursal: ISucursal): boolean {
+    return this.sucursalSeleccionada?.nroSucursal === sucursal.nroSucursal;
+  }
+
+  onHorarioSeleccionado(horario: HorarioSeleccionado): void {
+    console.log('=== onHorarioSeleccionado ===');
+    console.log('Horario seleccionado recibido:', horario);
+    console.log('sucursalSeleccionada:', this.sucursalSeleccionada);
+    console.log('nroRestaurante:', this.nroRestaurante);
+    
+    // Verificar autenticación antes de abrir el modal
+    if (!this._auth.isAuthenticated()) {
+      console.log('Usuario no autenticado, redirigiendo a login');
+      this._router.navigate(['/login'], { 
+        queryParams: { returnUrl: this._router.url } 
+      });
+      return;
+    }
+    
+    this.horarioSeleccionado = horario;
+    this.mostrarFormularioReserva = true;
+    console.log('mostrarFormularioReserva establecido a:', this.mostrarFormularioReserva);
+    console.log('horarioSeleccionado establecido:', this.horarioSeleccionado);
+  }
+
+  onReservaConfirmada(): void {
+    this.mostrarFormularioReserva = false;
+    this.horarioSeleccionado = undefined;
+  }
+
+  onModalVisibleChange(visible: boolean): void {
+    this.mostrarFormularioReserva = visible;
+    if (!visible) {
+      // Limpiar la selección cuando se cierra el modal
+      this.horarioSeleccionado = undefined;
+      if (this.horariosComponent) {
+        this.horariosComponent.limpiarSeleccion();
+      }
+    }
+  }
+
+}

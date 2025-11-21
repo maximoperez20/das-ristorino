@@ -2,13 +2,18 @@ package ar.edu.ubp.das.backend.resources;
 
 import ar.edu.ubp.das.backend.dto.*;
 import ar.edu.ubp.das.backend.service.ReservaService;
+import ar.edu.ubp.das.backend.service.RestauranteService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,18 +26,19 @@ public class ReservaResource {
     
     private final ReservaService reservaService;
     
+    @Autowired
+    private RestauranteService restauranteService;
+    
     public ReservaResource(ReservaService reservaService) {
         this.reservaService = reservaService;
     }
 
-    // GET /api/reservas - Obtener todas las reservas
     @GetMapping
     public ResponseEntity<List<ReservaResponseDto>> getAllReservas() {
         List<ReservaResponseDto> reservas = reservaService.obtenerTodasLasReservas();
         return ResponseEntity.ok(reservas);
     }
 
-    // GET /api/reservas/{id} - Obtener una reserva por ID
     @GetMapping("/{id}")
     public ResponseEntity<ReservaResponseDto> getReservaById(@PathVariable String id) {
         return reservaService.obtenerReservaPorId(id)
@@ -40,7 +46,6 @@ public class ReservaResource {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // POST /api/reservas - Crear una nueva reserva
     @PostMapping
     public ResponseEntity<?> createReserva(@Valid @RequestBody CrearReservaDto crearReservaDto) {
         try {
@@ -63,7 +68,6 @@ public class ReservaResource {
         }
     }
 
-    // PUT /api/reservas/{id} - Actualizar una reserva existente
     @PutMapping("/{id}")
     public ResponseEntity<?> updateReserva(@PathVariable String id, @Valid @RequestBody ActualizarReservaDto actualizarReservaDto) {
         if (!reservaService.existeReserva(id)) {
@@ -96,7 +100,6 @@ public class ReservaResource {
         }
     }
 
-    // DELETE /api/reservas/{id} - Eliminar una reserva
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReserva(@PathVariable String id) {
         if (!reservaService.existeReserva(id)) {
@@ -111,7 +114,6 @@ public class ReservaResource {
         }
     }
 
-    // PUT /api/reservas/{id}/estado - Cambiar estado de una reserva
     @PutMapping("/{id}/estado")
     public ResponseEntity<?> updateEstadoReserva(@PathVariable String id, @Valid @RequestBody CambiarEstadoDto cambiarEstadoDto) {
         if (!reservaService.existeReserva(id)) {
@@ -141,6 +143,90 @@ public class ReservaResource {
             logger.error("Error inesperado al cambiar estado de reserva: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al cambiar el estado: " + e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/mis-reservas")
+    public ResponseEntity<?> getMisReservas(Authentication authentication) {
+        try {
+            if (authentication == null || !(authentication.getPrincipal() instanceof Jwt)) {
+                logger.warn("Intento de acceso sin autenticación válida");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "No autenticado"));
+            }
+            
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            String nroCliente = jwt.getClaimAsString("nroCliente");
+            
+            if (nroCliente == null || nroCliente.isEmpty()) {
+                logger.warn("Token JWT no contiene nroCliente");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Token inválido: falta nroCliente"));
+            }
+            
+            logger.info("Obteniendo reservas para cliente: {}", nroCliente);
+            List<ReservaResponseDto> reservas = reservaService.obtenerReservasPorNroCliente(nroCliente);
+            return ResponseEntity.ok(reservas);
+            
+        } catch (Exception e) {
+            logger.error("Error inesperado al obtener reservas del usuario", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al obtener reservas: " + e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/confirmar")
+    public ResponseEntity<?> confirmarReserva(
+            @Valid @RequestBody ConfirmarReservaDto request,
+            Authentication authentication) {
+        try {
+            if (authentication == null || !(authentication.getPrincipal() instanceof Jwt)) {
+                logger.warn("Intento de confirmar reserva sin autenticación válida");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Debe estar autenticado para confirmar una reserva"));
+            }
+            
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            String nroCliente = jwt.getClaimAsString("nroCliente");
+            
+            if (nroCliente == null || nroCliente.isEmpty()) {
+                logger.warn("Token JWT no contiene nroCliente");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Token inválido: falta nroCliente"));
+            }
+            
+            ConfirmarReservaResponseDto response = reservaService.confirmarReserva(request, nroCliente);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            
+        } catch (RuntimeException e) {
+            logger.warn("Error al confirmar reserva: {}", e.getMessage());
+            
+            if (e.getMessage().contains("disponibilidad") || e.getMessage().contains("No hay")) {
+                try {
+                    List<HorarioDisponibleDto> horarios = restauranteService.obtenerHorariosDisponibles(
+                            request.getNroRestaurante(),
+                            request.getNroSucursal(),
+                            request.getCodZona(),
+                            request.getFechaReserva(),
+                            null
+                    );
+                    
+                    Map<String, Object> errorResponse = new HashMap<>();
+                    errorResponse.put("error", e.getMessage());
+                    errorResponse.put("horarios", horarios);
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+                } catch (Exception ex) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(Map.of("error", e.getMessage()));
+                }
+            }
+            
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error inesperado al confirmar reserva", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al confirmar reserva: " + e.getMessage()));
         }
     }
 }

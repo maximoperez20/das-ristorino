@@ -1,7 +1,9 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import type { IPromocion } from '../../api/models/i-promocion';
+import { IClick } from '../../api/models/i-click';
 import { CommonModule, DatePipe } from '@angular/common';
+import { PromocionResource } from '../../api/resources/promocion-resource';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-promocion',
@@ -14,10 +16,29 @@ export class PromocionComponent {
   @Input() promocion?: IPromocion;
   @Output() verPromocion = new EventEmitter<IPromocion>();
 
-  onVerPromocion() {
-    if (this.promocion) {
-      this.verPromocion.emit(this.promocion);
+  private _promocionResource = inject(PromocionResource);
+  private _router = inject(Router);  // ✅ así se obtiene la instancia
+
+
+  registrarClickPromocion() {
+
+    const clickData: IClick = {
+      nroRestaurante: this.promocion?.nroRestaurante.toString() ?? '',
+      nroIdioma: this.promocion?.nroIdioma.toString() ?? '',
+      nroContenido: this.promocion?.nroContenido.toString() ?? ''
+      //Agregar nroCliente si es necesario
+    };
+
+    this._promocionResource.registrarClick(clickData)
+      .subscribe({
+        next: () =>{
+          console.log('Click registrado correctamente')
+          this._router.navigate(['/restaurantes', this.promocion?.nroRestaurante]);
+        },
+        error: (err) => {console.error('Error registrando click', err)
+        },
+       
+      }); 
     }
-  }
 
 }

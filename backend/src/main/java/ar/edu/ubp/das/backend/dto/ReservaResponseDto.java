@@ -35,6 +35,15 @@ public class ReservaResponseDto {
     @JsonProperty("fecha_actualizacion")
     private LocalDateTime fechaActualizacion;
     
+    @JsonProperty("nombre_restaurante")
+    private String nombreRestaurante;
+    
+    @JsonProperty("nombre_sucursal")
+    private String nombreSucursal;
+    
+    @JsonProperty("nombre_zona")
+    private String nombreZona;
+    
     // Constructores
     public ReservaResponseDto() {}
     
@@ -132,6 +141,30 @@ public class ReservaResponseDto {
     
     public void setFechaActualizacion(LocalDateTime fechaActualizacion) {
         this.fechaActualizacion = fechaActualizacion;
+    }
+    
+    public String getNombreRestaurante() {
+        return nombreRestaurante;
+    }
+    
+    public void setNombreRestaurante(String nombreRestaurante) {
+        this.nombreRestaurante = nombreRestaurante;
+    }
+    
+    public String getNombreSucursal() {
+        return nombreSucursal;
+    }
+    
+    public void setNombreSucursal(String nombreSucursal) {
+        this.nombreSucursal = nombreSucursal;
+    }
+    
+    public String getNombreZona() {
+        return nombreZona;
+    }
+    
+    public void setNombreZona(String nombreZona) {
+        this.nombreZona = nombreZona;
     }
     
     @Override

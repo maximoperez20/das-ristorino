@@ -13,15 +13,48 @@
                 <li class="nav-item">
                     <a class="nav-link" routerLink="/restaurantes">Restaurantes</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled" aria-disabled="true">Disabled</a>
-                </li>
             </ul>
-            <form class="d-flex" role="search">
-                <input class="form-control me-2" type="search" placeholder="Ingresa lo que deseas buscar"
-                    aria-label="Search" />
-                <button class="btn btn-outline-success" type="submit">Buscar</button>
-            </form>
+            <div class="d-flex align-items-center me-3 flex-grow-1 justify-content-center buscador-container">
+                <div class="buscador-header-wrapper">
+                    <app-buscador-nlp></app-buscador-nlp>
+                </div>
+            </div>
+            <ul class="navbar-nav">
+                @if (isAuthenticated) {
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i>
+                            @if (usuario) {
+                                {{ usuario.nombre }} {{ usuario.apellido }}
+                            }
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" routerLink="/mi-perfil">
+                                    <i class="bi bi-person-circle"></i> Mi Perfil
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" routerLink="/mis-reservas">
+                                    <i class="bi bi-calendar-check"></i> Mis Reservas
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" (click)="logout()" style="cursor: pointer;">
+                                    <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                } @else {
+                    <li class="nav-item">
+                        <a class="nav-link" routerLink="/login">
+                            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                        </a>
+                    </li>
+                }
+            </ul>
         </div>
     </div>
 </nav>

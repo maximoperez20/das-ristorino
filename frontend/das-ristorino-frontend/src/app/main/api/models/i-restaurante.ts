@@ -1,24 +1,14 @@
-export const restaurantesLista: IRestaurante[] = [
-  {
-        "id": "16DEE5C3-9355-4F64-9355-FC79BD28DA63",
-        "nombre": "Los Aroza SRL",
-        "direccion": "Av. Colón 950, Centro",
-        "telefono": "351-555-1234",
-        "email": null,
-        "capacidad": 140,
-        "horarioApertura": "16:00:00",
-        "horarioCierre": "22:00:00",
-        "descripcion": null,
-        "categoria": null,
-        "calificacion": 4.0,
-        "activo": true,
-        "imagenUrl": null,
-        "diasAtencion": null
-    }
-]
+import { ISucursal } from './i-sucursal';
 
+/**
+ * Interfaz para representar un restaurante.
+ * Los campos opcionales pueden no venir dependiendo del endpoint:
+ * - Lista de restaurantes: no incluye sucursales, promociones, tipoCocina
+ * - Detalle de restaurante: incluye todos los campos
+ */
 export interface IRestaurante {
-  id: string;
+  // Campos básicos (siempre presentes)
+  nroRestaurante: string;
   nombre: string;
   direccion: string;
   telefono: string | null;
@@ -26,10 +16,16 @@ export interface IRestaurante {
   capacidad: number;
   horarioApertura: string;
   horarioCierre: string;
-  descripcion: string | null;
-  categoria: string | null;
   calificacion: number;
   activo: boolean;
-  imagenUrl: string | null;
   diasAtencion: string | null;
+
+  // Campos que pueden venir o no
+  descripcion?: string | null;
+  categoria?: string | null;
+  tipoCocina?: string[]; // Solo en detalle
+  imagenes?: string[]; // Array de imágenes (nuevo formato)
+  imagenUrl?: string | null; // Mantener para compatibilidad con endpoints antiguos
+  sucursales?: ISucursal[]; // Solo en detalle
+  promociones?: any[]; // Solo en detalle
 }

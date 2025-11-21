@@ -1,13 +1,14 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule} from '@angular/common';
-import { IPromocion, promocionesLista } from '../../api/models/i-promocion';
+import { IPromocion } from '../../api/models/i-promocion';
 import { PromocionComponent } from '../../components/promocion/promocion';
 import { PromocionResource } from '../../api/resources/promocion-resource';
-import { Router, ActivatedRoute } from '@angular/router';  // ✅ import normal
+import { ActivatedRoute } from '@angular/router';  // ✅ import normal
+import { BannerHomeComponent } from '../../components/banner-home/banner-home'; 
 
 @Component({
   selector: 'app-promociones',
-  imports: [CommonModule, PromocionComponent],
+  imports: [CommonModule, PromocionComponent, BannerHomeComponent],
   templateUrl: './promociones.html',
   styleUrls: ['./promociones.scss'],
 })
@@ -18,7 +19,6 @@ export class PromocionesPage implements OnInit {
 
   // Inyectar el servicio de promociones (sintaxis moderna)
   private _promocionResource = inject(PromocionResource);
-  private _router = inject(Router);  // ✅ así se obtiene la instancia
   private _route = inject(ActivatedRoute);
 
     ngOnInit(): void {
@@ -43,25 +43,6 @@ export class PromocionesPage implements OnInit {
           }
         },
       });
-    }
+  }
   
-    registrarClickPromocion(promocion: IPromocion) {
-    this._promocionResource.registrarClick({
-        nroRestaurante: promocion.nroRestaurante.toString(),
-        nroIdioma: promocion.nroIdioma.toString(),
-        nroContenido: promocion.nroContenido.toString()
-      })
-      .subscribe({
-        next: () =>{
-          console.log('Click registrado correctamente')
-          this._router.navigate(['/restaurantes', promocion.nroRestaurante]);
-
-        },
-        error: (err) => {console.error('Error registrando click', err)
-        },
-       
-      }); 
-    }
-
-
 }

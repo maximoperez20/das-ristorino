@@ -11,6 +11,15 @@ SET QUOTED_IDENTIFIER ON;
 GO
 
 /* ==========================================================
+   CONFIGURACIÓN DE TIMEZONE
+   Timezone: UTC-3 (Buenos Aires, Argentina)
+   Nota: SQL Server maneja timezone a nivel de aplicación.
+   Para consultas con timezone específico usar: AT TIME ZONE 'Argentina Standard Time'
+   ========================================================== */
+SET DATEFIRST 1; -- Lunes como primer día de la semana
+GO
+
+/* ==========================================================
    LIMPIEZA PREVIA
    Elimina todas las tablas del esquema RISTORINO en orden inverso
    de dependencias (de las m�s dependientes a las m�s base)
@@ -322,6 +331,24 @@ CREATE TABLE dbo.clicks_contenidos_restaurantes (
 GO
 
 /* ===========================
+   Costos para contenidos
+   =========================== */
+create table costos
+(
+    tipo_costo         varchar(50)    not null,
+    fecha_ini_vigencia date           not null,
+    fecha_fin_vigencia date,
+    monto              decimal(12, 2) not null
+        constraint CK_costos_monto
+            check ([monto] >= 0),
+    constraint PK_costos
+        primary key (tipo_costo, fecha_ini_vigencia),
+    constraint CK_costos_fechas
+        check ([fecha_fin_vigencia] IS NULL OR [fecha_fin_vigencia] >= [fecha_ini_vigencia])
+)
+go
+
+/* ===========================
    Zonas y turnos por sucursal
    =========================== */
 CREATE TABLE dbo.turnos_sucursales_restaurantes (
@@ -342,6 +369,7 @@ CREATE TABLE dbo.zonas_sucursales_restaurantes (
   nro_restaurante VARCHAR(36)   NOT NULL,
   nro_sucursal    VARCHAR(36)   NOT NULL,
   cod_zona        VARCHAR(36)   NOT NULL DEFAULT NEWID(),
+  cod_zona_restaurante VARCHAR(36) NULL,  -- Código de zona en la base del restaurante (SOAP)
   desc_zona       NVARCHAR(200) NULL,
   cant_comensales INT           NOT NULL,
   permite_menores BIT           NOT NULL DEFAULT 1,
@@ -432,6 +460,7 @@ CREATE TABLE dbo.reservas_restaurantes (
   cod_estado         VARCHAR(36)  NULL,      -- opcional seg�n flujo
   costo_reserva      DECIMAL(12,2) NULL,
   notas              NVARCHAR(400) NULL,
+  cod_reserva_sucursal VARCHAR(36) NULL,     -- Código de reserva en la base del restaurante
   CONSTRAINT PK_reservas_restaurantes PRIMARY KEY (nro_reserva),
   CONSTRAINT FK_res_rest_suc
     FOREIGN KEY (nro_restaurante, nro_sucursal)
@@ -474,4 +503,18 @@ CREATE INDEX IX_zonas_suc_busq
 CREATE INDEX IX_reservas_busq
   ON dbo.reservas_restaurantes (nro_restaurante, nro_sucursal, cod_zona, fecha_reserva, hora_desde)
   INCLUDE (cant_adultos, cant_menores, cancelada);
+GO
+
+/* ===========================
+   Costos / Fees
+   =========================== */
+CREATE TABLE dbo.costos (
+  tipo_costo        VARCHAR(50)  NOT NULL,
+  fecha_ini_vigencia DATE        NOT NULL,
+  fecha_fin_vigencia DATE        NULL,
+  monto             DECIMAL(12,2) NOT NULL,
+  CONSTRAINT PK_costos PRIMARY KEY (tipo_costo, fecha_ini_vigencia),
+  CONSTRAINT CK_costos_fechas CHECK (fecha_fin_vigencia IS NULL OR fecha_fin_vigencia >= fecha_ini_vigencia),
+  CONSTRAINT CK_costos_monto CHECK (monto >= 0)
+);
 GO

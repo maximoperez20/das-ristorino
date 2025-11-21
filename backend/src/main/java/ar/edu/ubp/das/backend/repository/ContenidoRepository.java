@@ -63,6 +63,20 @@ public class ContenidoRepository {
         // Obtener horarios
         obtenerHorarios(nroRestaurante, nroSucursal, contexto);
 
+        // Obtener identidad gastronómica y comunicacional usando el método unificado
+        java.util.Map<String, String> atributosYConfig = obtenerTodosLosAtributosYConfiguracion(nroRestaurante);
+        
+        // Mapear los atributos específicos al contexto
+        if (atributosYConfig.containsKey("Tipo de cocina")) {
+            contexto.setTipoCocina(atributosYConfig.get("Tipo de cocina"));
+        }
+        if (atributosYConfig.containsKey("Estilo de atención")) {
+            contexto.setEstiloAtencion(atributosYConfig.get("Estilo de atención"));
+        }
+        if (atributosYConfig.containsKey("Platos emblemáticos")) {
+            contexto.setPlatosEmblematicos(atributosYConfig.get("Platos emblemáticos"));
+        }
+
         return Optional.of(contexto);
     }
 
@@ -157,21 +171,58 @@ public class ContenidoRepository {
     }
 
     /**
+     * Obtiene TODOS los atributos y configuracion_restaurantes para un restaurante.
+     * Retorna un mapa donde la clave es el nombre del atributo y el valor es su valor.
+     * 
+     * @param nroRestaurante UUID del restaurante
+     * @return Mapa con todos los atributos y sus valores
+     */
+    public java.util.Map<String, String> obtenerTodosLosAtributosYConfiguracion(String nroRestaurante) {
+        String sql = 
+            "SELECT " +
+            "    a.nom_atributo, " +
+            "    cr.valor " +
+            "FROM configuracion_restaurantes cr " +
+            "JOIN atributos a ON cr.cod_atributo = a.cod_atributo " +
+            "WHERE cr.nro_restaurante = ? " +
+            "    AND cr.valor IS NOT NULL " +
+            "    AND cr.valor != '' " +
+            "ORDER BY a.nom_atributo";
+
+        java.util.Map<String, String> atributos = new java.util.HashMap<>();
+        
+        jdbcTemplate.query(sql, rs -> {
+            String nomAtributo = rs.getString("nom_atributo");
+            String valor = rs.getString("valor");
+            
+            if (nomAtributo != null && valor != null && !valor.trim().isEmpty()) {
+                atributos.put(nomAtributo, valor.trim());
+            }
+        }, nroRestaurante);
+        
+        return atributos;
+    }
+
+    /**
      * Guarda el contenido generado por IA en la tabla contenidos_restaurantes.
      *
      * @param nroRestaurante UUID del restaurante
      * @param nroSucursal UUID de la sucursal (puede ser null)
      * @param nroIdioma ID del idioma (INT)
      * @param contenidoGenerado Texto generado por IA
+     * @param costoClick Costo del click (puede ser null)
+     * @param codContenidoRestaurante ID del contenido en el sistema SOAP (nro_contenido del SOAP)
      * @return DTO con los datos del contenido guardado
      */
     public Optional<ContenidoGeneradoDto> guardarContenidoGenerado(
-            String nroRestaurante, 
-            String nroSucursal, 
-            Integer nroIdioma, 
-            String contenidoGenerado) {
-        
-        String sql = "EXEC sp_GuardarContenidoGenerado ?, ?, ?, ?";
+            String nroRestaurante,
+            String nroSucursal,
+            Integer nroIdioma,
+            String contenidoGenerado,
+            java.math.BigDecimal costoClick,
+            String codContenidoRestaurante) {
+
+        String sql = "EXEC sp_GuardarContenidoGenerado ?, ?, ?, ?, ?, ?";
         
         try {
             List<ContenidoGeneradoDto> result = jdbcTemplate.query(
@@ -183,23 +234,30 @@ public class ContenidoRepository {
                     dto.setNroIdioma(rs.getInt("nro_idioma"));
                     dto.setNroContenido(rs.getString("nro_contenido"));
                     dto.setContenidoGenerado(rs.getString("contenido_a_publicar"));
-                    
+
                     java.sql.Date fechaIni = rs.getDate("fecha_ini_vigencia");
                     if (fechaIni != null) {
                         dto.setFechaIniVigencia(fechaIni.toLocalDate());
                     }
-                    
+
                     java.sql.Date fechaFin = rs.getDate("fecha_fin_vigencia");
                     if (fechaFin != null) {
                         dto.setFechaFinVigencia(fechaFin.toLocalDate());
                     }
-                    
+
+                    java.math.BigDecimal costo = rs.getBigDecimal("costo_click");
+                    if (!rs.wasNull()) {
+                        dto.setCostoClick(costo);
+                    }
+
                     return dto;
                 },
                 nroRestaurante,
                 nroSucursal,
                 nroIdioma,
-                contenidoGenerado
+                contenidoGenerado,
+                costoClick,
+                codContenidoRestaurante
             );
             
             return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
@@ -325,6 +383,65 @@ public class ContenidoRepository {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("Error al obtener nom_idioma: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Obtiene el costo_click activo desde la tabla costos.
+     * Busca registros con tipo_costo = 'CLICK' que estén vigentes (fecha actual entre fecha_ini_vigencia y fecha_fin_vigencia).
+     * Retorna el monto del registro más reciente (por fecha_ini_vigencia DESC).
+     * 
+     * @return BigDecimal con el costo_click activo, o null si no hay ningún costo activo
+     */
+    public java.math.BigDecimal obtenerCostoClickActivo() {
+        String sql = 
+            "SELECT TOP 1 monto " +
+            "FROM costos " +
+            "WHERE tipo_costo = 'CLICK' " +
+            "  AND fecha_ini_vigencia <= CAST(GETDATE() AS DATE) " +
+            "  AND (fecha_fin_vigencia IS NULL OR fecha_fin_vigencia >= CAST(GETDATE() AS DATE)) " +
+            "ORDER BY fecha_ini_vigencia DESC";
+
+        try {
+            List<java.math.BigDecimal> result = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getBigDecimal("monto")
+            );
+
+            return result.isEmpty() ? null : result.get(0);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener costo_click activo: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Obtiene el nro_sucursal interno de Ristorino a partir del cod_sucursal_restaurante (código externo del SOAP).
+     * 
+     * @param nroRestaurante UUID del restaurante
+     * @param codSucursalRestaurante Código de sucursal del sistema SOAP (cod_sucursal_restaurante)
+     * @return nro_sucursal interno de Ristorino, o null si no se encuentra
+     */
+    public String obtenerNroSucursalPorCodSucursalRestaurante(String nroRestaurante, String codSucursalRestaurante) {
+        if (codSucursalRestaurante == null || codSucursalRestaurante.trim().isEmpty()) {
+            return null;
+        }
+
+        String sql = 
+            "SELECT nro_sucursal " +
+            "FROM sucursales_restaurantes " +
+            "WHERE nro_restaurante = ? AND cod_sucursal_restaurante = ?";
+
+        try {
+            List<String> result = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getString("nro_sucursal"),
+                nroRestaurante,
+                codSucursalRestaurante
+            );
+
+            return result.isEmpty() ? null : result.get(0);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener nro_sucursal por cod_sucursal_restaurante: " + e.getMessage(), e);
         }
     }
 }

@@ -4,10 +4,8 @@ import ar.edu.ubp.das.backend.client.RestauranteClient;
 import ar.edu.ubp.das.backend.client.RestauranteClientFactory;
 import ar.edu.ubp.das.backend.dto.ContenidoGeneradoDto;
 import ar.edu.ubp.das.backend.dto.GenerarContenidoRequestDto;
-import ar.edu.ubp.das.backend.dto.RestauranteContextoDto;
-import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
-import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
 import ar.edu.ubp.das.backend.repository.ContenidoRepository;
+import ar.edu.ubp.das.backend.repository.RestauranteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +25,9 @@ public class ContenidoService {
     private ContenidoRepository contenidoRepository;
 
     @Autowired
+    private RestauranteRepository restauranteRepository;
+
+    @Autowired
     private OpenAIService openAIService;
 
     @Autowired
@@ -37,152 +38,363 @@ public class ContenidoService {
 
     /**
      * Genera contenido publicitario con IA para un restaurante/sucursal.
+     * 
+     * FLUJO:
+     * 1. Obtener el último contenido PUBLICADO (publicado = 1) de la tabla 'contenidos' 
+     *    del sistema das_restaurantes_soap (vía SOAP)
+     * 2. Obtener atributos y configuracion_restaurantes de das_ristorino
+     * 3. Enviar todo al motor IA para generar contenido tipo promoción
+     * 4. Guardar SOLO en la tabla 'contenidos_restaurantes' de das_ristorino (NO sincronizar con SOAP)
+     * 
+     * NOTA: Solo se consideran contenidos con publicado = 1. No es necesario notificar publicación.
      *
      * @param request Datos de la solicitud (restaurante, sucursal, idioma)
      * @return DTO con el contenido generado y guardado
      * @throws RuntimeException si no se encuentra el restaurante o hay error en la generación
      */
     public ContenidoGeneradoDto generarContenido(GenerarContenidoRequestDto request) {
-        logger.info("Iniciando generación de contenido para restaurante: {}, sucursal: {}, idioma: {}", 
-                    request.getNroRestaurante(), 
-                    request.getNroSucursal(), 
-                    request.getNroIdioma());
+        String promptId = (request.getPromptId() != null && !request.getPromptId().isEmpty())
+                ? request.getPromptId()
+                : defaultPromptId;
 
-        // Obtener contexto del restaurante desde la BD
-        RestauranteContextoDto contexto = contenidoRepository.obtenerContextoRestaurante(
-            request.getNroRestaurante(), 
-            request.getNroSucursal()
-        ).orElseThrow(() -> new RuntimeException("Restaurante no encontrado con ID: " + request.getNroRestaurante()));
-        logger.info("Contexto del restaurante obtenido: {}", contexto);
-
-        // Determinar qué prompt ID usar
-        String promptId = (request.getPromptId() != null && !request.getPromptId().isEmpty()) 
-                          ? request.getPromptId() 
-                          : defaultPromptId;
-        
-        logger.info("🎯 Usando Prompt ID: {}", promptId);
+        // Validar que el restaurante existe en das-ristorino
+        if (!restauranteRepository.existeRestaurante(request.getNroRestaurante())) {
+            throw new RuntimeException("Restaurante no encontrado: " + request.getNroRestaurante());
+        }
 
         // Obtener información del idioma
-        String codIdioma = contenidoRepository.obtenerCodIdioma(request.getNroIdioma());
         String nomIdioma = contenidoRepository.obtenerNomIdioma(request.getNroIdioma());
-        logger.info("🌐 Idioma seleccionado: {} ({})", nomIdioma, codIdioma);
+        String codIdioma = contenidoRepository.obtenerCodIdioma(request.getNroIdioma());
 
-        // Construir prompt con el contexto e idioma
-        String prompt = openAIService.construirPrompt(
-            contexto.getRazonSocial(),
-            contexto.getNombreSucursal(),
-            contexto.getDireccion(),
-            contexto.getLocalidad(),
-            contexto.getTiposComida(),
-            contexto.getAmbientes(),
-            contexto.getRangosPrecios(),
-            contexto.getObservacionesAdicionales(),
-            request.getContextoAdicional(),
-            promptId,
-            codIdioma,
-            nomIdioma
+        // Mapear nroSucursal interno a cod_sucursal_restaurante (ID en SOAP) si se proporcionó sucursal
+        String codSucursalRestauranteParaSOAP = null;
+        if (request.getNroSucursal() != null && !request.getNroSucursal().trim().isEmpty()) {
+            // Validar que la sucursal existe y pertenece al restaurante (en das-ristorino)
+            if (!restauranteRepository.existeSucursal(request.getNroRestaurante(), request.getNroSucursal())) {
+                throw new RuntimeException("Sucursal no encontrada: " + request.getNroSucursal() + 
+                                         " para el restaurante: " + request.getNroRestaurante());
+            }
+            
+            // Obtener el cod_sucursal_restaurante (ID de la sucursal en das-restaurante-soap)
+            codSucursalRestauranteParaSOAP = restauranteRepository.obtenerCodSucursalRestaurante(
+                    request.getNroRestaurante(), 
+                    request.getNroSucursal()
+            );
+            
+            // Validar que la sucursal está sincronizada con el sistema del restaurante
+            if (codSucursalRestauranteParaSOAP == null || codSucursalRestauranteParaSOAP.trim().isEmpty()) {
+                throw new RuntimeException("La sucursal " + request.getNroSucursal() + 
+                                         " no está sincronizada con el sistema del restaurante. " +
+                                         "cod_sucursal_restaurante no está configurado.");
+            }
+        }
+
+        RestauranteClient client = restauranteClientFactory.getClient(request.getNroRestaurante());
+        java.util.Map<String, Object> contenidoSoap = client.obtenerContenidos(
+                request.getNroRestaurante(), 
+                codSucursalRestauranteParaSOAP
         );
 
-        logger.info("Prompt construido. Longitud: {} caracteres", prompt.length());
-
-        // Generar contenido con OpenAI
-        String contenidoGenerado;
-        try {
-            contenidoGenerado = openAIService.generarContenidoPublicitario(prompt, promptId);
-            logger.info("Contenido generado exitosamente. Longitud: {} caracteres", contenidoGenerado.length());
-        } catch (Exception e) {
-            logger.error("Error al generar contenido con OpenAI: {}", e.getMessage(), e);
-            throw new RuntimeException("Error al generar contenido con IA: " + e.getMessage(), e);
+        if (contenidoSoap == null || contenidoSoap.isEmpty()) {
+            throw new RuntimeException("No se encontraron contenidos en el sistema SOAP para el restaurante: " + request.getNroRestaurante());
         }
 
-        // Guardar en la base de datos
-        ContenidoGeneradoDto resultado = contenidoRepository.guardarContenidoGenerado(
-            request.getNroRestaurante(),
-            request.getNroSucursal(),
-            request.getNroIdioma(),
-            contenidoGenerado
-        ).orElseThrow(() -> new RuntimeException("Error al guardar el contenido generado en la base de datos"));
-        resultado.setNombreRestaurante(contexto.getRazonSocial());
-        resultado.setNombreSucursal(contexto.getNombreSucursal());
+        java.util.Map<String, String> atributosYConfiguracion = contenidoRepository.obtenerTodosLosAtributosYConfiguracion(
+                request.getNroRestaurante()
+        );
 
-        logger.info("Contenido guardado exitosamente con nro_contenido: {}", resultado.getNroContenido());
+        ar.edu.ubp.das.backend.dto.RestauranteContextoDto contextoRestaurante = contenidoRepository
+                .obtenerContextoRestaurante(request.getNroRestaurante(), request.getNroSucursal())
+                .orElseThrow(() -> new RuntimeException("No se encontró información del restaurante: " + request.getNroRestaurante()));
 
-        try {
-            logger.info("Registrando contenido en el sistema del restaurante...");
+        String contenidoFuente = contenidoSoap.get("contenidoAPublicar") != null 
+            ? (String) contenidoSoap.get("contenidoAPublicar") 
+            : "";
 
-            String codSucursalRestaurante = null;
-            if (request.getNroSucursal() != null && !request.getNroSucursal().trim().isEmpty()) {
-                codSucursalRestaurante = contenidoRepository.obtenerCodSucursalRestaurante(
-                    request.getNroRestaurante(),
-                    request.getNroSucursal()
-                );
-                if (codSucursalRestaurante == null) {
-                    logger.warn("Sucursal encontrada pero cod_sucursal_restaurante es NULL. La sucursal puede no estar sincronizada con el sistema del restaurante.");
-                } else {
-                    logger.info("Cod sucursal restaurante obtenido: {}", codSucursalRestaurante);
-                }
-            }
-
-            RestauranteClient client = restauranteClientFactory.getClient(request.getNroRestaurante());
-            
-            RegistrarContenidoRequest registroRequest = new RegistrarContenidoRequest(
-                request.getNroRestaurante(),
-                codSucursalRestaurante,
-                contenidoGenerado,
-                null,
-                null
-            );
-
-            RegistrarContenidoResponse response = client.registrarContenido(registroRequest);
-
-            if (response.isExitoso() && response.getNroContenido() != null && !response.getNroContenido().trim().isEmpty()) {
-                logger.info("Contenido registrado exitosamente en SOAP. ID del restaurante (nroContenido SOAP): {}", 
-                    response.getNroContenido());
-                
-                try {
-                    boolean actualizado = contenidoRepository.actualizarCodContenidoRestaurante(
-                        request.getNroRestaurante(),
-                        request.getNroIdioma(),
-                        resultado.getNroContenido(),
-                        response.getNroContenido()
-                    );
-                    
-                    if (actualizado) {
-                        logger.info("cod_contenido_restaurante actualizado exitosamente. " +
-                                "nroContenido (ristorino): {}, codContenidoRestaurante (SOAP): {}", 
-                                resultado.getNroContenido(), response.getNroContenido());
-                    } else {
-                        logger.error("ERROR CRÍTICO: No se pudo actualizar cod_contenido_restaurante. " +
-                                "Los clicks no podrán ser notificados. " +
-                                "nroRestaurante: {}, nroIdioma: {}, nroContenido: {}, codContenidoRestaurante: {}",
-                                request.getNroRestaurante(), request.getNroIdioma(), 
-                                resultado.getNroContenido(), response.getNroContenido());
-                    }
-                } catch (Exception e) {
-                    logger.error("ERROR CRÍTICO al actualizar cod_contenido_restaurante. " +
-                            "Los clicks de este contenido NO podrán ser notificados. " +
-                            "nroRestaurante: {}, nroIdioma: {}, nroContenido: {}, codContenidoRestaurante: {}. " +
-                            "Error: {}", 
-                            request.getNroRestaurante(), request.getNroIdioma(), 
-                            resultado.getNroContenido(), response.getNroContenido(), e.getMessage(), e);
-                    // No lanzar excepción para no interrumpir el flujo, pero registrar el error crítico
+        // Extraer nroContenido del SOAP para guardarlo como cod_contenido_restaurante (necesario para notificar clicks)
+        String codContenidoRestaurante = null;
+        Object nroContenidoObj = contenidoSoap.get("nroContenido");
+        if (nroContenidoObj == null) {
+            nroContenidoObj = contenidoSoap.get("nro_contenido");
+        }
+        if (nroContenidoObj != null) {
+            if (nroContenidoObj instanceof String) {
+                codContenidoRestaurante = ((String) nroContenidoObj).trim();
+                if (codContenidoRestaurante.isEmpty()) {
+                    codContenidoRestaurante = null;
                 }
             } else {
-                logger.warn("No se pudo registrar el contenido en SOAP o no se devolvió nroContenido. " +
-                        "exitoso: {}, nroContenido: {}, mensaje: {}", 
-                        response.isExitoso(), response.getNroContenido(), response.getMensaje());
-                logger.warn("IMPORTANTE: El cod_contenido_restaurante NO se actualizará. " +
-                        "Los clicks de este contenido NO podrán ser notificados hasta que se registre correctamente en SOAP.");
+                codContenidoRestaurante = nroContenidoObj.toString().trim();
+                if (codContenidoRestaurante.isEmpty()) {
+                    codContenidoRestaurante = null;
+                }
             }
-            
-        } catch (Exception e) {
-            logger.error("Error al registrar contenido en el sistema del restaurante (continuando de todas formas): {}", 
-                e.getMessage(), e);
-            logger.error("IMPORTANTE: El cod_contenido_restaurante NO se actualizará debido al error. " +
-                    "Los clicks de este contenido NO podrán ser notificados hasta que se registre correctamente en SOAP.");
         }
+
+        if (codContenidoRestaurante == null) {
+            logger.warn("No se encontró nroContenido en el contenido SOAP. Se generará un código AI_ automático.");
+        }
+
+        String nroSucursalFinal = request.getNroSucursal();
+
+        java.math.BigDecimal costoClick = contenidoRepository.obtenerCostoClickActivo();
+        if (costoClick == null) {
+            logger.warn("No se encontró un costo_click activo en la tabla costos. Se guardará el contenido sin costo.");
+        }
+
+        String prompt = construirPromptCompleto(
+                contenidoFuente,
+                contextoRestaurante,
+                atributosYConfiguracion,
+                nomIdioma,
+                codIdioma,
+                request.getContextoAdicional(),
+                promptId
+        );
+
+        String contenidoGenerado = openAIService.generarContenidoPublicitario(prompt, promptId);
+
+        // Guardar en das_ristorino. cod_contenido_restaurante permite notificar clicks al sistema SOAP
+        ContenidoGeneradoDto resultado = contenidoRepository.guardarContenidoGenerado(
+                request.getNroRestaurante(),
+                nroSucursalFinal,
+                request.getNroIdioma(),
+                contenidoGenerado,
+                costoClick,
+                codContenidoRestaurante
+        ).orElseThrow(() -> new RuntimeException("Error al guardar el contenido generado en la base de datos"));
+
+        logger.info("Contenido generado y guardado exitosamente. nroContenido: {}", resultado.getNroContenido());
 
         return resultado;
     }
-}
 
+    /**
+     * Construye el prompt completo combinando:
+     * - Contenido fuente del SOAP
+     * - Contexto del restaurante (datos básicos, preferencias, horarios)
+     * - Atributos y configuración del restaurante
+     * 
+     * @param contenidoFuente Contenido base del sistema SOAP
+     * @param contexto Contexto del restaurante (datos básicos, preferencias, horarios)
+     * @param atributosYConfiguracion Todos los atributos y configuración del restaurante
+     * @param nomIdioma Nombre del idioma (ej: "Español de Argentina")
+     * @param codIdioma Código del idioma (ej: "es-AR")
+     * @param contextoAdicional Contexto adicional opcional del request
+     * @param promptId ID del prompt guardado en OpenAI (opcional)
+     * @return Prompt completo para enviar a OpenAI
+     */
+    private String construirPromptCompleto(
+            String contenidoFuente,
+            ar.edu.ubp.das.backend.dto.RestauranteContextoDto contexto,
+            java.util.Map<String, String> atributosYConfiguracion,
+            String nomIdioma,
+            String codIdioma,
+            String contextoAdicional,
+            String promptId) {
+
+        // Si hay promptId, construir JSON para prompt guardado
+        if (promptId != null && !promptId.isEmpty()) {
+            return construirJSONParaPromptGuardado(
+                    contenidoFuente,
+                    contexto,
+                    atributosYConfiguracion,
+                    nomIdioma,
+                    codIdioma,
+                    contextoAdicional
+            );
+        }
+
+        // Prompt por defecto (texto estructurado)
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("Genera un texto promocional breve en ").append(nomIdioma).append(" basado en el siguiente contenido:\n\n");
+        prompt.append("=== CONTENIDO BASE ===\n");
+        prompt.append(contenidoFuente).append("\n\n");
+
+        prompt.append("=== INFORMACIÓN DEL RESTAURANTE ===\n");
+        prompt.append("📍 Restaurante: ").append(contexto.getRazonSocial()).append("\n");
+        if (contexto.getNombreSucursal() != null && !contexto.getNombreSucursal().isEmpty()) {
+            prompt.append("📍 Sucursal: ").append(contexto.getNombreSucursal()).append("\n");
+        }
+        if (contexto.getDireccion() != null && !contexto.getDireccion().isEmpty()) {
+            prompt.append("📍 Ubicación: ").append(contexto.getDireccion());
+            if (contexto.getLocalidad() != null && !contexto.getLocalidad().isEmpty()) {
+                prompt.append(", ").append(contexto.getLocalidad());
+            }
+            prompt.append("\n");
+        }
+
+        if (!contexto.getTiposComida().isEmpty()) {
+            prompt.append("🍽️ Tipo de comida: ").append(String.join(", ", contexto.getTiposComida())).append("\n");
+        }
+
+        if (!contexto.getAmbientes().isEmpty()) {
+            prompt.append("🎭 Ambiente: ").append(String.join(", ", contexto.getAmbientes())).append("\n");
+        }
+
+        if (!contexto.getRangosPrecios().isEmpty()) {
+            prompt.append("💰 Rango de precio: ").append(String.join(", ", contexto.getRangosPrecios())).append("\n");
+        }
+
+        // Atributos y configuración
+        if (!atributosYConfiguracion.isEmpty()) {
+            prompt.append("\n=== ATRIBUTOS Y CONFIGURACIÓN ===\n");
+            for (java.util.Map.Entry<String, String> entry : atributosYConfiguracion.entrySet()) {
+                prompt.append("• ").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+            }
+        }
+
+        // Identidad gastronómica (si está en el contexto)
+        if (contexto.getTipoCocina() != null && !contexto.getTipoCocina().isEmpty()) {
+            prompt.append("🍳 Tipo de cocina: ").append(contexto.getTipoCocina()).append("\n");
+        }
+        if (contexto.getEstiloAtencion() != null && !contexto.getEstiloAtencion().isEmpty()) {
+            prompt.append("👔 Estilo de atención: ").append(contexto.getEstiloAtencion()).append("\n");
+        }
+        if (contexto.getPlatosEmblematicos() != null && !contexto.getPlatosEmblematicos().isEmpty()) {
+            prompt.append("⭐ Platos emblemáticos: ").append(contexto.getPlatosEmblematicos()).append("\n");
+        }
+
+        if (contexto.getObservacionesAdicionales() != null && !contexto.getObservacionesAdicionales().isEmpty()) {
+            prompt.append("ℹ️ Detalles: ").append(contexto.getObservacionesAdicionales()).append("\n");
+        }
+
+        if (contextoAdicional != null && !contextoAdicional.isEmpty()) {
+            prompt.append("💡 Información adicional: ").append(contextoAdicional).append("\n");
+        }
+
+        prompt.append("\n=== REQUISITOS ===\n");
+        prompt.append("- Máximo 300 palabras\n");
+        prompt.append("- Destaca las características únicas del restaurante\n");
+        prompt.append("- Invita a los clientes a visitarlo\n");
+        prompt.append("- Menciona la ubicación de forma natural\n");
+        prompt.append("- Usa un tono ").append(determinarTono(contexto.getAmbientes())).append("\n");
+        prompt.append("- NO uses emojis en el texto generado\n");
+        prompt.append("- Escribe en ").append(nomIdioma).append("\n");
+
+        return prompt.toString();
+    }
+
+    /**
+     * Construye un JSON para usar con prompt guardado en OpenAI Platform.
+     */
+    private String construirJSONParaPromptGuardado(
+            String contenidoFuente,
+            ar.edu.ubp.das.backend.dto.RestauranteContextoDto contexto,
+            java.util.Map<String, String> atributosYConfiguracion,
+            String nomIdioma,
+            String codIdioma,
+            String contextoAdicional) {
+
+        StringBuilder json = new StringBuilder();
+        json.append("{\n");
+        json.append("  \"contenidoFuente\": \"").append(escaparJson(contenidoFuente)).append("\",\n");
+        json.append("  \"restaurante\": \"").append(escaparJson(contexto.getRazonSocial() != null ? contexto.getRazonSocial() : "")).append("\"");
+        
+        if (contexto.getNombreSucursal() != null && !contexto.getNombreSucursal().isEmpty()) {
+            json.append(",\n  \"sucursal\": \"").append(escaparJson(contexto.getNombreSucursal())).append("\"");
+        }
+        
+        if (contexto.getDireccion() != null && !contexto.getDireccion().isEmpty()) {
+            json.append(",\n  \"direccion\": \"").append(escaparJson(contexto.getDireccion())).append("\"");
+        }
+        
+        if (contexto.getLocalidad() != null && !contexto.getLocalidad().isEmpty()) {
+            json.append(",\n  \"localidad\": \"").append(escaparJson(contexto.getLocalidad())).append("\"");
+        }
+        
+        if (!contexto.getTiposComida().isEmpty()) {
+            json.append(",\n  \"tipo_comida\": \"").append(escaparJson(String.join(", ", contexto.getTiposComida()))).append("\"");
+        }
+        
+        if (!contexto.getAmbientes().isEmpty()) {
+            json.append(",\n  \"ambiente\": \"").append(escaparJson(String.join(", ", contexto.getAmbientes()))).append("\"");
+        }
+        
+        if (!contexto.getRangosPrecios().isEmpty()) {
+            json.append(",\n  \"rango_precio\": \"").append(escaparJson(String.join(", ", contexto.getRangosPrecios()))).append("\"");
+        }
+
+        // Agregar todos los atributos y configuración
+        if (!atributosYConfiguracion.isEmpty()) {
+            for (java.util.Map.Entry<String, String> entry : atributosYConfiguracion.entrySet()) {
+                String key = entry.getKey().toLowerCase().replace(" ", "_");
+                json.append(",\n  \"").append(key).append("\": \"").append(escaparJson(entry.getValue())).append("\"");
+            }
+        }
+
+        if (contexto.getTipoCocina() != null && !contexto.getTipoCocina().trim().isEmpty()) {
+            json.append(",\n  \"tipo_cocina\": \"").append(escaparJson(contexto.getTipoCocina())).append("\"");
+        }
+        
+        if (contexto.getEstiloAtencion() != null && !contexto.getEstiloAtencion().trim().isEmpty()) {
+            json.append(",\n  \"estilo_atencion\": \"").append(escaparJson(contexto.getEstiloAtencion())).append("\"");
+        }
+        
+        if (contexto.getPlatosEmblematicos() != null && !contexto.getPlatosEmblematicos().trim().isEmpty()) {
+            json.append(",\n  \"platos_emblematicos\": \"").append(escaparJson(contexto.getPlatosEmblematicos())).append("\"");
+        }
+        
+        if (contexto.getObservacionesAdicionales() != null && !contexto.getObservacionesAdicionales().isEmpty()) {
+            json.append(",\n  \"observaciones\": \"").append(escaparJson(contexto.getObservacionesAdicionales())).append("\"");
+        }
+        
+        if (contextoAdicional != null && !contextoAdicional.isEmpty()) {
+            json.append(",\n  \"contexto_adicional\": \"").append(escaparJson(contextoAdicional)).append("\"");
+        }
+        
+        if (codIdioma != null && !codIdioma.isEmpty()) {
+            json.append(",\n  \"cod_idioma\": \"").append(escaparJson(codIdioma)).append("\"");
+        }
+        
+        if (nomIdioma != null && !nomIdioma.isEmpty()) {
+            json.append(",\n  \"nom_idioma\": \"").append(escaparJson(nomIdioma)).append("\"");
+        }
+        
+        json.append("\n}");
+        
+        String instruccionIdioma = "";
+        if (nomIdioma != null && !nomIdioma.isEmpty()) {
+            instruccionIdioma = " Escribe el texto en " + nomIdioma + ".";
+        } else if (codIdioma != null) {
+            instruccionIdioma = " Escribe el texto en el idioma correspondiente al código " + codIdioma + ".";
+        }
+        
+        return json.toString() + "\n\nGenera ÚNICAMENTE el texto publicitario listo para publicar." + instruccionIdioma + " NO incluyas explicaciones, títulos ni comentarios adicionales.";
+    }
+
+    /**
+     * Determina el tono del texto según el ambiente del restaurante.
+     */
+    private String determinarTono(java.util.List<String> ambientes) {
+        if (ambientes == null || ambientes.isEmpty()) {
+            return "cálido y acogedor";
+        }
+        
+        String primerAmbiente = ambientes.get(0).toLowerCase();
+        if (primerAmbiente.contains("gourmet") || primerAmbiente.contains("premium")) {
+            return "elegante y sofisticado";
+        } else if (primerAmbiente.contains("romántico")) {
+            return "romántico y cautivador";
+        } else if (primerAmbiente.contains("familiar")) {
+            return "cálido y familiar";
+        } else if (primerAmbiente.contains("casual")) {
+            return "casual y amigable";
+        }
+        
+        return "cálido y acogedor";
+    }
+
+    /**
+     * Escapa caracteres especiales para JSON.
+     */
+    private String escaparJson(String texto) {
+        if (texto == null) return "";
+        return texto
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t");
+    }
+}

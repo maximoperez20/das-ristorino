@@ -48,6 +48,10 @@ public class PromocionDto {
     
     private Boolean requiereCodigo = false;
     
+    // Nuevo: costo por click y sucursal asociada (si aplica)
+    private java.math.BigDecimal costoClick;
+    private String nroSucursal;
+    
     // Constructores
     public PromocionDto() {}
     
@@ -171,6 +175,22 @@ public class PromocionDto {
     public void setRequiereCodigo(Boolean requiereCodigo) {
         this.requiereCodigo = requiereCodigo;
     }
+
+    public java.math.BigDecimal getCostoClick() {
+        return costoClick;
+    }
+
+    public void setCostoClick(java.math.BigDecimal costoClick) {
+        this.costoClick = costoClick;
+    }
+
+    public String getNroSucursal() {
+        return nroSucursal;
+    }
+
+    public void setNroSucursal(String nroSucursal) {
+        this.nroSucursal = nroSucursal;
+    }
     
     @Override
     public String toString() {
@@ -190,6 +210,8 @@ public class PromocionDto {
                 ", maxPersonas=" + maxPersonas +
                 ", codigoPromocion='" + codigoPromocion + '\'' +
                 ", requiereCodigo=" + requiereCodigo +
+                ", costoClick=" + costoClick +
+                ", nroSucursal='" + nroSucursal + '\'' +
                 '}';
     }
 }

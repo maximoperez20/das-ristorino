@@ -1,0 +1,49 @@
+.promociones-container {
+  min-height: 60vh;
+  padding: 2rem 0;
+  background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+
+  .carousel {
+    padding: 2rem 0;
+
+    .carousel-inner {
+      padding: 1rem 0;
+    }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+      width: 5%;
+      opacity: 0.8;
+
+      &:hover {
+        opacity: 1;
+      }
+
+      .carousel-control-prev-icon,
+      .carousel-control-next-icon {
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+      }
+    }
+
+    .carousel-indicators {
+      margin-bottom: -2rem;
+
+      button {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: #6c757d;
+        border: 2px solid transparent;
+
+        &.active {
+          background-color: #0d6efd;
+          border-color: #0d6efd;
+        }
+      }
+    }
+  }
+}
+

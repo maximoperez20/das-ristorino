@@ -1,0 +1,144 @@
+<div class="mis-reservas-container">
+  <div class="container-fluid py-4">
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+          <h1 class="mb-0">Mis Reservas</h1>
+          <a routerLink="/mi-perfil" class="btn btn-outline-primary">
+            <i class="bi bi-person-circle me-1"></i>
+            Mi Perfil
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <h4>Filtrar por estado</h4>
+    <div class="d-flex flex-row gap-2 mb-4 flex-wrap">
+      <button 
+        class="btn"
+        [ngClass]="filtroActivo === undefined ? 'btn-primary' : 'btn-outline-primary'"
+        (click)="filtrarPorEstado(undefined)">
+        <i class="bi bi-list-ul me-1"></i>
+        Todas
+      </button>
+      <button 
+        class="btn"
+        [ngClass]="filtroActivo === 'Confirmada' ? 'btn-success' : 'btn-outline-success'"
+        (click)="filtrarPorEstado('Confirmada')">
+        <i class="bi bi-check-circle me-1"></i>
+        Confirmada
+      </button>
+      <button 
+        class="btn"
+        [ngClass]="filtroActivo === 'Cancelada' ? 'btn-danger' : 'btn-outline-danger'"
+        (click)="filtrarPorEstado('Cancelada')">
+        <i class="bi bi-x-circle me-1"></i>
+        Cancelada
+      </button>
+      <button 
+        class="btn"
+        [ngClass]="filtroActivo === 'Pendiente' ? 'btn-warning' : 'btn-outline-warning'"
+        (click)="filtrarPorEstado('Pendiente')">
+        <i class="bi bi-clock-history me-1"></i>
+        Pendiente
+      </button>
+      <button 
+        class="btn"
+        [ngClass]="filtroActivo === 'Finalizada' ? 'btn-secondary' : 'btn-outline-secondary'"
+        (click)="filtrarPorEstado('Finalizada')">
+        <i class="bi bi-check2-all me-1"></i>
+        Finalizada
+      </button>
+    </div>
+    
+    @if (reservasPorDia.length === 0) {
+      <div class="row">
+        <div class="col-12">
+          <div class="alert alert-info text-center" role="alert">
+            <i class="bi bi-info-circle"></i> 
+            @if (filtroActivo) {
+              No tienes reservas con estado "{{ filtroActivo }}".
+            } @else {
+              No tienes reservas registradas.
+            }
+          </div>
+        </div>
+      </div>
+    } @else {
+
+      @for (grupo of reservasPorDia; track grupo.fechaKey) {
+        <div class="reservas-grupo mb-5">
+          <h3 class="grupo-titulo mb-4">
+            <i class="bi bi-calendar3"></i> {{ grupo.titulo }}
+          </h3>
+          <div class="row g-4">
+            @for (reserva of grupo.reservas; track reserva.id) {
+              <div class="col-12 col-md-6 col-lg-4">
+                <div class="card reserva-card h-100 shadow-sm" [class.reserva-pasada]="esReservaPasada(reserva.fecha_hora)">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                      <h5 class="card-title mb-0">
+                        @if (reserva.nombre_restaurante) {
+                          {{ reserva.nombre_restaurante }}
+                        } @else {
+                          Reserva #{{ reserva.id.substring(0, 8) }}
+                        }
+                      </h5>
+                      <span class="badge" [ngClass]="obtenerBadgeEstado(reserva.estado)">
+                        {{ reserva.estado }}
+                      </span>
+                    </div>
+
+                    @if (reserva.nombre_sucursal) {
+                      <p class="text-muted small mb-2">
+                        <i class="bi bi-building"></i> {{ reserva.nombre_sucursal }}
+                      </p>
+                    }
+
+                    @if (reserva.nombre_zona) {
+                      <p class="text-muted small mb-2">
+                        <i class="bi bi-geo-alt"></i> Zona: {{ reserva.nombre_zona }}
+                      </p>
+                    }
+
+                    <div class="reserva-info mb-3">
+                      <div class="info-item mb-2">
+                        <i class="bi bi-clock text-primary"></i>
+                        <span class="ms-2">{{ formatearHora(reserva.fecha_hora) }}</span>
+                      </div>
+
+                      <div class="info-item mb-2">
+                        <i class="bi bi-people-fill text-primary"></i>
+                        <span class="ms-2">{{ reserva.cantidad_personas }} persona{{ reserva.cantidad_personas !== 1 ? 's' : '' }}</span>
+                      </div>
+
+                      @if (reserva.telefono) {
+                        <div class="info-item mb-2">
+                          <i class="bi bi-telephone-fill text-primary"></i>
+                          <span class="ms-2">{{ reserva.telefono }}</span>
+                        </div>
+                      }
+
+                      @if (reserva.observaciones) {
+                        <div class="info-item">
+                          <i class="bi bi-chat-left-text text-primary"></i>
+                          <span class="ms-2 small">{{ reserva.observaciones }}</span>
+                        </div>
+                      }
+                    </div>
+
+                    @if (esReservaPasada(reserva.fecha_hora)) {
+                      <div class="alert alert-secondary small mb-0" role="alert">
+                        <i class="bi bi-clock-history"></i> Esta reserva ya pasó
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

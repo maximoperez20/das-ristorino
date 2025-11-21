@@ -39,6 +39,21 @@ BEGIN
 END;
 GO
 
+-- 2. Obtener localidad del cliente por nroCliente
+CREATE OR ALTER PROCEDURE sp_ObtenerLocalidadPorNroCliente
+    @nroCliente VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        l.nom_localidad AS localidad
+    FROM clientes c
+    INNER JOIN localidades l ON c.nro_localidad = l.nro_localidad
+    WHERE c.nro_cliente = @nroCliente;
+END;
+GO
+
 -- =====================================================
 -- STORED PROCEDURES PARA RESERVAS
 -- =====================================================
@@ -280,6 +295,45 @@ BEGIN
 END;
 GO
 
+-- 8.1. Obtener reservas por nro_cliente
+CREATE OR ALTER PROCEDURE sp_ObtenerReservasPorNroCliente
+    @nro_cliente VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT
+        rr.nro_reserva as id,
+        c.nombre + ' ' + c.apellido as nombre_cliente,
+        c.correo as email,
+        c.telefonos as telefono,
+        CAST(CAST(rr.fecha_reserva AS VARCHAR(10)) + ' ' + CAST(rr.hora_desde AS VARCHAR(8)) AS DATETIME2) as fecha_hora,
+        (rr.cant_adultos + rr.cant_menores) as cantidad_personas,
+        CASE 
+            WHEN rr.cancelada = 1 THEN 'CANCELADA'
+            WHEN er.nom_estado IS NOT NULL THEN er.nom_estado
+            ELSE 'PENDIENTE'
+        END as estado,
+        rr.notas as observaciones,
+        rr.fecha_hora_registro as fecha_creacion,
+        rr.fecha_hora_cancelacion as fecha_actualizacion,
+        r.razon_social as nombre_restaurante,
+        s.nom_sucursal as nombre_sucursal,
+        (SELECT TOP 1 iz.zona 
+         FROM idiomas_zonas_suc_restaurantes iz
+         WHERE iz.nro_restaurante = rr.nro_restaurante 
+           AND iz.nro_sucursal = rr.nro_sucursal 
+           AND iz.cod_zona = rr.cod_zona
+         ORDER BY iz.nro_idioma) as nombre_zona
+    FROM reservas_restaurantes rr
+    LEFT JOIN clientes c ON c.nro_cliente = rr.nro_cliente
+    LEFT JOIN estados_reservas er ON er.cod_estado = rr.cod_estado
+    LEFT JOIN restaurantes r ON r.nro_restaurante = rr.nro_restaurante
+    LEFT JOIN sucursales_restaurantes s ON s.nro_restaurante = rr.nro_restaurante AND s.nro_sucursal = rr.nro_sucursal
+    WHERE rr.nro_cliente = @nro_cliente
+    ORDER BY rr.fecha_reserva DESC, rr.hora_desde DESC;
+END;
+GO
+
 -- 9. Contar total de reservas
 CREATE OR ALTER PROCEDURE sp_ContarReservas
 AS
@@ -371,6 +425,7 @@ BEGIN
     )
     SELECT 
         CAST(ROW_NUMBER() OVER (ORDER BY razon_social) AS BIGINT) AS id,
+        nro_restaurante,
         razon_social AS nombre,
         LTRIM(RTRIM(
             ISNULL(calle,'') +
@@ -422,6 +477,7 @@ BEGIN
     )
     SELECT 
         e.id,
+        e.nro_restaurante,
         e.razon_social AS nombre,
         LTRIM(RTRIM(
             ISNULL(e.calle,'') +
@@ -561,7 +617,8 @@ CREATE OR ALTER PROCEDURE sp_BuscarRestaurantesPorNLP
     @localidades NVARCHAR(MAX) = NULL,        -- JSON array o lista separada por comas
     @ambientes NVARCHAR(MAX) = NULL,           -- JSON array o lista separada por comas
     @rangosPrecio NVARCHAR(MAX) = NULL,       -- JSON array o lista separada por comas
-    @palabrasClave NVARCHAR(MAX) = NULL       -- Palabras clave para búsqueda en nombre/descripción
+    @palabrasClave NVARCHAR(MAX) = NULL,      -- Palabras clave para búsqueda en nombre/descripción
+    @nroCliente VARCHAR(36) = NULL            -- UUID del cliente autenticado (opcional, solo si está autenticado)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -569,7 +626,59 @@ BEGIN
     ;WITH restaurantes_filtrados AS (
         SELECT DISTINCT
             r.nro_restaurante,
-            r.razon_social
+            r.razon_social,
+            -- Calcular score de relevancia para ordenar
+            -- Prioridad: configuracion_restaurantes (15) > preferencias_restaurantes (10) > match con preferencias_clientes (5) > palabras clave (5)
+            CASE 
+                -- Match en configuracion_restaurantes (mayor peso: 15) - match parcial
+                WHEN EXISTS (
+                    SELECT 1 FROM configuracion_restaurantes cr
+                    JOIN atributos a ON cr.cod_atributo = a.cod_atributo
+                    WHERE cr.nro_restaurante = r.nro_restaurante
+                        AND a.nom_atributo = 'Tipo de cocina'
+                        AND @tiposComida IS NOT NULL AND @tiposComida <> ''
+                        AND EXISTS (
+                            SELECT 1 FROM STRING_SPLIT(@tiposComida, ',') AS tipo
+                            WHERE LTRIM(RTRIM(tipo.value)) <> ''
+                            AND (
+                                cr.valor LIKE '%' + LTRIM(RTRIM(tipo.value)) + '%'
+                                OR LTRIM(RTRIM(tipo.value)) LIKE '%' + cr.valor + '%'
+                            )
+                        )
+                ) THEN 15
+                -- Match en preferencias_restaurantes (peso: 10) - match exacto
+                WHEN EXISTS (
+                    SELECT 1 FROM dominio_categorias_preferencias dcp2
+                    JOIN categorias_preferencias cp2 ON dcp2.cod_categoria = cp2.cod_categoria
+                    JOIN preferencias_restaurantes pr2 ON pr2.nro_restaurante = r.nro_restaurante 
+                        AND pr2.nro_sucursal IS NULL
+                        AND pr2.cod_categoria = dcp2.cod_categoria
+                        AND pr2.nro_valor_dominio = dcp2.nro_valor_dominio
+                    WHERE cp2.nom_categoria = 'Tipo de comida'
+                        AND @tiposComida IS NOT NULL AND @tiposComida <> ''
+                        AND dcp2.nom_valor_dominio IN (
+                            SELECT value FROM STRING_SPLIT(@tiposComida, ',')
+                        )
+                ) THEN 10
+                -- Match con preferencias del cliente autenticado (bonus: 5) - solo si está autenticado
+                WHEN @nroCliente IS NOT NULL AND EXISTS (
+                    SELECT 1 FROM preferencias_clientes pc
+                    JOIN categorias_preferencias cp5 ON pc.cod_categoria = cp5.cod_categoria
+                    JOIN preferencias_restaurantes pr5 ON pr5.nro_restaurante = r.nro_restaurante
+                        AND pr5.nro_sucursal IS NULL
+                        AND pr5.cod_categoria = pc.cod_categoria
+                        AND pr5.nro_valor_dominio = pc.nro_valor_dominio
+                    WHERE pc.nro_cliente = @nroCliente
+                        AND cp5.nom_categoria IN ('Tipo de comida', 'Ambiente', 'Rango de precio')
+                ) THEN 5
+                -- Match por palabras clave (peso: 5)
+                WHEN @palabrasClave IS NOT NULL AND @palabrasClave <> '' AND EXISTS (
+                    SELECT 1 FROM STRING_SPLIT(@palabrasClave, ',') AS keyword
+                    WHERE LTRIM(RTRIM(keyword.value)) <> ''
+                    AND r.razon_social LIKE '%' + LTRIM(RTRIM(keyword.value)) + '%'
+                ) THEN 5
+                ELSE 0
+            END AS relevancia
         FROM restaurantes r
         LEFT JOIN sucursales_restaurantes s ON s.nro_restaurante = r.nro_restaurante
         LEFT JOIN localidades l ON s.nro_localidad = l.nro_localidad
@@ -577,51 +686,99 @@ BEGIN
         LEFT JOIN categorias_preferencias cp ON pr.cod_categoria = cp.cod_categoria
         LEFT JOIN dominio_categorias_preferencias dcp ON pr.cod_categoria = dcp.cod_categoria 
             AND pr.nro_valor_dominio = dcp.nro_valor_dominio
+        LEFT JOIN configuracion_restaurantes cr_config ON cr_config.nro_restaurante = r.nro_restaurante
+        LEFT JOIN atributos a_config ON cr_config.cod_atributo = a_config.cod_atributo
         WHERE 
-            -- Filtro por tipos de comida
-            (@tiposComida IS NULL OR @tiposComida = '' OR EXISTS (
-                SELECT 1 FROM dominio_categorias_preferencias dcp2
-                JOIN categorias_preferencias cp2 ON dcp2.cod_categoria = cp2.cod_categoria
-                WHERE cp2.nom_categoria = 'Tipo de comida'
-                    AND dcp2.nom_valor_dominio IN (
-                        SELECT value FROM STRING_SPLIT(@tiposComida, ',')
-                    )
-                    AND pr.cod_categoria = dcp2.cod_categoria
-                    AND pr.nro_valor_dominio = dcp2.nro_valor_dominio
-            ))
-            -- Filtro por barrios
-            AND (@barrios IS NULL OR @barrios = '' OR s.barrio IN (
-                SELECT value FROM STRING_SPLIT(@barrios, ',')
-            ))
-            -- Filtro por localidades
-            AND (@localidades IS NULL OR @localidades = '' OR l.nom_localidad IN (
-                SELECT value FROM STRING_SPLIT(@localidades, ',')
-            ))
-            -- Filtro por ambientes
-            AND (@ambientes IS NULL OR @ambientes = '' OR EXISTS (
-                SELECT 1 FROM dominio_categorias_preferencias dcp3
-                JOIN categorias_preferencias cp3 ON dcp3.cod_categoria = cp3.cod_categoria
-                WHERE cp3.nom_categoria = 'Ambiente'
-                    AND dcp3.nom_valor_dominio IN (
-                        SELECT value FROM STRING_SPLIT(@ambientes, ',')
-                    )
-                    AND pr.cod_categoria = dcp3.cod_categoria
-                    AND pr.nro_valor_dominio = dcp3.nro_valor_dominio
-            ))
-            -- Filtro por rangos de precio
-            AND (@rangosPrecio IS NULL OR @rangosPrecio = '' OR EXISTS (
-                SELECT 1 FROM dominio_categorias_preferencias dcp4
-                JOIN categorias_preferencias cp4 ON dcp4.cod_categoria = cp4.cod_categoria
-                WHERE cp4.nom_categoria = 'Rango de precio'
-                    AND dcp4.nom_valor_dominio IN (
-                        SELECT value FROM STRING_SPLIT(@rangosPrecio, ',')
-                    )
-                    AND pr.cod_categoria = dcp4.cod_categoria
-                    AND pr.nro_valor_dominio = dcp4.nro_valor_dominio
-            ))
-            -- Filtro por palabras clave en nombre o descripción (búsqueda por cualquier palabra)
-            AND (@palabrasClave IS NULL OR @palabrasClave = '' OR 
-                EXISTS (
+            -- Requiere que haya AL MENOS un filtro activo (excepto si todos son NULL)
+            (
+                -- Filtro por tipos de comida (configuracion_restaurantes - match parcial, mayor prioridad)
+                (@tiposComida IS NOT NULL AND @tiposComida <> '' AND EXISTS (
+                    SELECT 1 FROM configuracion_restaurantes cr
+                    JOIN atributos a ON cr.cod_atributo = a.cod_atributo
+                    WHERE cr.nro_restaurante = r.nro_restaurante
+                        AND a.nom_atributo = 'Tipo de cocina'
+                        AND EXISTS (
+                            SELECT 1 FROM STRING_SPLIT(@tiposComida, ',') AS tipo
+                            WHERE LTRIM(RTRIM(tipo.value)) <> ''
+                            AND (
+                                cr.valor LIKE '%' + LTRIM(RTRIM(tipo.value)) + '%'
+                                OR LTRIM(RTRIM(tipo.value)) LIKE '%' + cr.valor + '%'
+                            )
+                        )
+                ))
+                -- Filtro por tipos de comida (preferencias_restaurantes - match exacto, fallback)
+                OR (@tiposComida IS NOT NULL AND @tiposComida <> '' AND EXISTS (
+                    SELECT 1 FROM dominio_categorias_preferencias dcp2
+                    JOIN categorias_preferencias cp2 ON dcp2.cod_categoria = cp2.cod_categoria
+                    WHERE cp2.nom_categoria = 'Tipo de comida'
+                        AND dcp2.nom_valor_dominio IN (
+                            SELECT value FROM STRING_SPLIT(@tiposComida, ',')
+                        )
+                        AND pr.cod_categoria = dcp2.cod_categoria
+                        AND pr.nro_valor_dominio = dcp2.nro_valor_dominio
+                ))
+                -- Filtro por barrios
+                OR (@barrios IS NOT NULL AND @barrios <> '' AND s.barrio IN (
+                    SELECT value FROM STRING_SPLIT(@barrios, ',')
+                ))
+                -- Filtro por localidades
+                OR (@localidades IS NOT NULL AND @localidades <> '' AND l.nom_localidad IN (
+                    SELECT value FROM STRING_SPLIT(@localidades, ',')
+                ))
+                -- Filtro por ambientes (configuracion_restaurantes - match parcial, mayor prioridad)
+                OR (@ambientes IS NOT NULL AND @ambientes <> '' AND EXISTS (
+                    SELECT 1 FROM configuracion_restaurantes cr
+                    JOIN atributos a ON cr.cod_atributo = a.cod_atributo
+                    WHERE cr.nro_restaurante = r.nro_restaurante
+                        AND a.nom_atributo = 'Estilo'
+                        AND EXISTS (
+                            SELECT 1 FROM STRING_SPLIT(@ambientes, ',') AS ambiente
+                            WHERE LTRIM(RTRIM(ambiente.value)) <> ''
+                            AND (
+                                cr.valor LIKE '%' + LTRIM(RTRIM(ambiente.value)) + '%'
+                                OR LTRIM(RTRIM(ambiente.value)) LIKE '%' + cr.valor + '%'
+                            )
+                        )
+                ))
+                -- Filtro por ambientes (preferencias_restaurantes - match exacto, fallback)
+                OR (@ambientes IS NOT NULL AND @ambientes <> '' AND EXISTS (
+                    SELECT 1 FROM dominio_categorias_preferencias dcp3
+                    JOIN categorias_preferencias cp3 ON dcp3.cod_categoria = cp3.cod_categoria
+                    WHERE cp3.nom_categoria = 'Ambiente'
+                        AND dcp3.nom_valor_dominio IN (
+                            SELECT value FROM STRING_SPLIT(@ambientes, ',')
+                        )
+                        AND pr.cod_categoria = dcp3.cod_categoria
+                        AND pr.nro_valor_dominio = dcp3.nro_valor_dominio
+                ))
+                -- Filtro por rangos de precio (configuracion_restaurantes - match parcial, mayor prioridad)
+                OR (@rangosPrecio IS NOT NULL AND @rangosPrecio <> '' AND EXISTS (
+                    SELECT 1 FROM configuracion_restaurantes cr
+                    JOIN atributos a ON cr.cod_atributo = a.cod_atributo
+                    WHERE cr.nro_restaurante = r.nro_restaurante
+                        AND a.nom_atributo = 'Nivel de precio'
+                        AND EXISTS (
+                            SELECT 1 FROM STRING_SPLIT(@rangosPrecio, ',') AS precio
+                            WHERE LTRIM(RTRIM(precio.value)) <> ''
+                            AND (
+                                cr.valor LIKE '%' + LTRIM(RTRIM(precio.value)) + '%'
+                                OR LTRIM(RTRIM(precio.value)) LIKE '%' + cr.valor + '%'
+                            )
+                        )
+                ))
+                -- Filtro por rangos de precio (preferencias_restaurantes - match exacto, fallback)
+                OR (@rangosPrecio IS NOT NULL AND @rangosPrecio <> '' AND EXISTS (
+                    SELECT 1 FROM dominio_categorias_preferencias dcp4
+                    JOIN categorias_preferencias cp4 ON dcp4.cod_categoria = cp4.cod_categoria
+                    WHERE cp4.nom_categoria = 'Rango de precio'
+                        AND dcp4.nom_valor_dominio IN (
+                            SELECT value FROM STRING_SPLIT(@rangosPrecio, ',')
+                        )
+                        AND pr.cod_categoria = dcp4.cod_categoria
+                        AND pr.nro_valor_dominio = dcp4.nro_valor_dominio
+                ))
+                -- Filtro por palabras clave en nombre o descripción (obligatorio si está presente)
+                OR (@palabrasClave IS NOT NULL AND @palabrasClave <> '' AND EXISTS (
                     SELECT 1 FROM STRING_SPLIT(@palabrasClave, ',') AS keyword
                     WHERE LTRIM(RTRIM(keyword.value)) <> ''
                     AND (
@@ -635,11 +792,32 @@ BEGIN
                                 )
                         )
                     )
+                ))
+                -- Match con preferencias del cliente autenticado (solo si está autenticado)
+                OR (@nroCliente IS NOT NULL AND EXISTS (
+                    SELECT 1 FROM preferencias_clientes pc
+                    JOIN categorias_preferencias cp6 ON pc.cod_categoria = cp6.cod_categoria
+                    JOIN preferencias_restaurantes pr6 ON pr6.nro_restaurante = r.nro_restaurante
+                        AND pr6.nro_sucursal IS NULL
+                        AND pr6.cod_categoria = pc.cod_categoria
+                        AND pr6.nro_valor_dominio = pc.nro_valor_dominio
+                    WHERE pc.nro_cliente = @nroCliente
+                ))
+                -- Si TODOS los filtros son NULL, devolver todos (fallback)
+                OR (
+                    (@tiposComida IS NULL OR @tiposComida = '')
+                    AND (@barrios IS NULL OR @barrios = '')
+                    AND (@localidades IS NULL OR @localidades = '')
+                    AND (@ambientes IS NULL OR @ambientes = '')
+                    AND (@rangosPrecio IS NULL OR @rangosPrecio = '')
+                    AND (@palabrasClave IS NULL OR @palabrasClave = '')
+                    AND (@nroCliente IS NULL)
                 )
             )
     )
     SELECT 
-        CAST(ROW_NUMBER() OVER (ORDER BY razon_social) AS BIGINT) AS id,
+        CAST(ROW_NUMBER() OVER (ORDER BY MAX(rf.relevancia) DESC, rf.razon_social) AS BIGINT) AS id,
+        rf.nro_restaurante AS nro_restaurante,
         rf.razon_social AS nombre,
         LTRIM(RTRIM(
             ISNULL(MIN(s.calle), '') +
@@ -675,7 +853,7 @@ BEGIN
     LEFT JOIN sucursales_restaurantes s ON s.nro_restaurante = rf.nro_restaurante
     LEFT JOIN turnos_sucursales_restaurantes t ON t.nro_restaurante = rf.nro_restaurante
     GROUP BY rf.nro_restaurante, rf.razon_social
-    ORDER BY rf.razon_social;
+    ORDER BY MAX(rf.relevancia) DESC, rf.razon_social;
 END;
 GO
 
@@ -706,7 +884,9 @@ BEGIN
         CAST(NULL AS INT) AS max_personas,
         cr.cod_contenido_restaurante AS codigo_promocion,
         CAST(0 AS BIT) AS requiere_codigo
-    FROM contenidos_restaurantes cr;
+    FROM contenidos_restaurantes cr
+    WHERE cr.fecha_fin_vigencia IS NOT NULL
+      AND CAST(GETDATE() AS DATE) <= cr.fecha_fin_vigencia;
 END;
 GO
 
@@ -779,7 +959,9 @@ CREATE OR ALTER PROCEDURE sp_GuardarContenidoGenerado
     @nro_restaurante VARCHAR(36),
     @nro_sucursal VARCHAR(36) = NULL,
     @nro_idioma INT,
-    @contenido_generado NVARCHAR(MAX)
+    @contenido_generado NVARCHAR(MAX),
+    @costo_click DECIMAL(12,2) = NULL,
+    @cod_contenido_restaurante VARCHAR(40) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -787,8 +969,8 @@ BEGIN
     DECLARE @nro_contenido VARCHAR(36) = NEWID();
     DECLARE @fecha_ini DATE = CAST(GETDATE() AS DATE);
     DECLARE @fecha_fin DATE = DATEADD(MONTH, 1, @fecha_ini);
-    DECLARE @costo_click DECIMAL(12,2) = 0.00; -- Costo por defecto
     DECLARE @nro_sucursal_validado VARCHAR(36) = NULL;
+    DECLARE @cod_contenido_final VARCHAR(40);
     
     -- Validar y normalizar nro_sucursal
     -- Si es NULL, cadena vacía o no existe en la base de datos, establecer a NULL
@@ -809,6 +991,17 @@ BEGIN
             -- Si la sucursal no existe, establecer a NULL para evitar error de foreign key
             SET @nro_sucursal_validado = NULL;
         END
+    END
+    
+    -- Determinar el cod_contenido_restaurante
+    -- Si se proporciona, usarlo; si no, generar uno con prefijo AI_
+    IF @cod_contenido_restaurante IS NOT NULL AND LTRIM(RTRIM(@cod_contenido_restaurante)) != ''
+    BEGIN
+        SET @cod_contenido_final = @cod_contenido_restaurante;
+    END
+    ELSE
+    BEGIN
+        SET @cod_contenido_final = 'AI_' + CONVERT(VARCHAR(36), NEWID());
     END
     
     -- Insertar el contenido generado
@@ -836,7 +1029,7 @@ BEGIN
         @fecha_ini,
         @fecha_fin,
         @costo_click,
-        'AI_' + CONVERT(VARCHAR(36), NEWID()) -- Código único generado
+        @cod_contenido_final
     );
     
     -- Retornar el contenido guardado
@@ -896,10 +1089,6 @@ BEGIN
 END;
 GO
 
--- =====================================================
--- STORED PROCEDURE: sp_ObtenerClicksNoNotificados
--- Obtiene clicks no notificados con cod_contenido_restaurante
--- =====================================================
 CREATE OR ALTER PROCEDURE sp_ObtenerClicksNoNotificados
 AS
 BEGIN
@@ -926,10 +1115,6 @@ BEGIN
 END;
 GO
 
--- =====================================================
--- STORED PROCEDURE: sp_MarcarClickComoNotificado
--- Marca un click como notificado
--- =====================================================
 CREATE OR ALTER PROCEDURE sp_MarcarClickComoNotificado
     @nro_restaurante VARCHAR(36),
     @nro_idioma INT,
@@ -946,7 +1131,289 @@ BEGIN
         AND nro_contenido = @nro_contenido
         AND nro_click = @nro_click;
     
-    SELECT @@ROWCOUNT AS filas_actualizadas;
+    IF @@ROWCOUNT = 0
+    BEGIN
+        RAISERROR('No se encontró el click para marcar como notificado. Verificar parámetros: nro_restaurante=%s, nro_idioma=%d, nro_contenido=%s, nro_click=%s', 
+                  16, 1, @nro_restaurante, @nro_idioma, @nro_contenido, @nro_click);
+    END
+    ELSE
+    BEGIN
+        SELECT @@ROWCOUNT AS filas_actualizadas;
+    END
+END;
+GO
+
+-- =====================================================
+-- STORED PROCEDURES PARA LOCALIDADES
+-- =====================================================
+
+-- Obtener todas las localidades con su provincia
+CREATE OR ALTER PROCEDURE sp_ObtenerTodasLasLocalidades
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        l.nro_localidad AS nroLocalidad,
+        l.nom_localidad AS nombre,
+        p.nom_provincia AS provincia
+    FROM localidades l
+    INNER JOIN provincias p ON l.cod_provincia = p.cod_provincia
+    ORDER BY p.nom_provincia, l.nom_localidad;
+END;
+GO
+
+-- =====================================================
+-- STORED PROCEDURES PARA PREFERENCIAS GASTRONÓMICAS
+-- =====================================================
+
+-- Obtener todas las categorías de preferencias
+CREATE OR ALTER PROCEDURE sp_ObtenerCategoriasPreferencias
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        cod_categoria AS codCategoria,
+        nom_categoria AS nombre
+    FROM categorias_preferencias
+    ORDER BY nom_categoria;
+END;
+GO
+
+-- Obtener todos los dominios de una categoría específica
+CREATE OR ALTER PROCEDURE sp_ObtenerDominiosPorCategoria
+    @cod_categoria VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        cod_categoria AS codCategoria,
+        nro_valor_dominio AS nroValorDominio,
+        nom_valor_dominio AS nombre
+    FROM dominio_categorias_preferencias
+    WHERE cod_categoria = @cod_categoria
+    ORDER BY nro_valor_dominio;
+END;
+GO
+
+-- Obtener todas las categorías con sus dominios (más eficiente para el frontend)
+CREATE OR ALTER PROCEDURE sp_ObtenerTodasLasCategoriasConDominios
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Primero obtener las categorías
+    SELECT 
+        cod_categoria AS codCategoria,
+        nom_categoria AS nombre
+    FROM categorias_preferencias
+    ORDER BY nom_categoria;
+    
+    -- Luego obtener todos los dominios agrupados por categoría
+    SELECT 
+        dcp.cod_categoria AS codCategoria,
+        dcp.nro_valor_dominio AS nroValorDominio,
+        dcp.nom_valor_dominio AS nombre
+    FROM dominio_categorias_preferencias dcp
+    ORDER BY dcp.cod_categoria, dcp.nro_valor_dominio;
+END;
+GO
+
+-- Guardar preferencias de un cliente (reemplaza las existentes)
+CREATE OR ALTER PROCEDURE sp_GuardarPreferenciasCliente
+    @nro_cliente VARCHAR(36),
+    @preferencias NVARCHAR(MAX)  -- JSON con array de {codCategoria, nroValorDominio, observaciones}
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRANSACTION;
+    
+    BEGIN TRY
+        -- Eliminar preferencias existentes del cliente
+        DELETE FROM preferencias_clientes
+        WHERE nro_cliente = @nro_cliente;
+        
+        -- Parsear JSON y insertar nuevas preferencias
+        -- El JSON debe tener formato: [{"codCategoria":"...","nroValorDominio":1,"observaciones":"..."}, ...]
+        -- Usamos OPENJSON para parsear (SQL Server 2016+)
+        INSERT INTO preferencias_clientes (nro_cliente, cod_categoria, nro_valor_dominio, observaciones)
+        SELECT 
+            @nro_cliente,
+            codCategoria,
+            nroValorDominio,
+            observaciones
+        FROM OPENJSON(@preferencias)
+        WITH (
+            codCategoria VARCHAR(36) '$.codCategoria',
+            nroValorDominio INT '$.nroValorDominio',
+            observaciones NVARCHAR(400) '$.observaciones'
+        );
+        
+        COMMIT TRANSACTION;
+        
+        SELECT @@ROWCOUNT AS preferencias_guardadas;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+GO
+
+-- Obtener preferencias de un cliente
+CREATE OR ALTER PROCEDURE sp_ObtenerPreferenciasCliente
+    @nro_cliente VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        pc.cod_categoria AS codCategoria,
+        cp.nom_categoria AS nombreCategoria,
+        pc.nro_valor_dominio AS nroValorDominio,
+        dcp.nom_valor_dominio AS nombreDominio,
+        pc.observaciones
+    FROM preferencias_clientes pc
+    INNER JOIN categorias_preferencias cp ON pc.cod_categoria = cp.cod_categoria
+    INNER JOIN dominio_categorias_preferencias dcp 
+        ON pc.cod_categoria = dcp.cod_categoria 
+        AND pc.nro_valor_dominio = dcp.nro_valor_dominio
+    WHERE pc.nro_cliente = @nro_cliente
+    ORDER BY cp.nom_categoria, dcp.nom_valor_dominio;
+END;
+GO
+
+-- =====================================================
+-- STORED PROCEDURES PARA RESERVAS - NUEVOS
+-- =====================================================
+
+CREATE OR ALTER PROCEDURE sp_ObtenerCostoReserva
+    @fecha_reserva DATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT TOP 1 monto
+    FROM costos
+    WHERE tipo_costo = 'RESERVA'
+        AND fecha_ini_vigencia <= @fecha_reserva
+        AND (fecha_fin_vigencia IS NULL OR fecha_fin_vigencia >= @fecha_reserva)
+    ORDER BY fecha_ini_vigencia DESC;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_GenerarCodigoReserva
+    @codigo_reserva VARCHAR(20) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @anio VARCHAR(4) = CAST(YEAR(GETDATE()) AS VARCHAR(4));
+    DECLARE @secuencial INT;
+    DECLARE @prefijo VARCHAR(3) = 'RES';
+    
+    SELECT @secuencial = ISNULL(MAX(CAST(SUBSTRING(nro_reserva, 9, 6) AS INT)), 0) + 1
+    FROM reservas_restaurantes
+    WHERE nro_reserva LIKE @prefijo + '-' + @anio + '-%'
+        AND LEN(nro_reserva) >= 15;
+    
+    DECLARE @secuencialStr VARCHAR(6) = RIGHT('000000' + CAST(@secuencial AS VARCHAR(6)), 6);
+    DECLARE @randomStr VARCHAR(6) = UPPER(SUBSTRING(REPLACE(NEWID(), '-', ''), 1, 6));
+    
+    SET @codigo_reserva = @prefijo + '-' + @anio + '-' + @secuencialStr + '-' + @randomStr;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_RegistrarReservaRistorino
+    @nro_reserva VARCHAR(36) OUTPUT,
+    @nro_restaurante VARCHAR(36),
+    @nro_sucursal VARCHAR(36),
+    @cod_zona VARCHAR(36),
+    @fecha_reserva DATE,
+    @hora_desde TIME(0),
+    @nro_cliente VARCHAR(36),
+    @cant_adultos SMALLINT,
+    @cant_menores SMALLINT,
+    @cod_estado VARCHAR(36),
+    @costo_reserva DECIMAL(12,2),
+    @notas NVARCHAR(400) = NULL,
+    @cod_reserva_sucursal VARCHAR(36) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @codigo_legible VARCHAR(20);
+    EXEC sp_GenerarCodigoReserva @codigo_legible OUTPUT;
+    
+    SET @nro_reserva = @codigo_legible;
+    
+    INSERT INTO reservas_restaurantes (
+        nro_reserva,
+        nro_restaurante,
+        nro_sucursal,
+        cod_zona,
+        fecha_reserva,
+        hora_desde,
+        nro_cliente,
+        cant_adultos,
+        cant_menores,
+        cancelada,
+        fecha_hora_registro,
+        cod_estado,
+        costo_reserva,
+        notas,
+        cod_reserva_sucursal
+    )
+    VALUES (
+        @nro_reserva,
+        @nro_restaurante,
+        @nro_sucursal,
+        @cod_zona,
+        @fecha_reserva,
+        @hora_desde,
+        @nro_cliente,
+        @cant_adultos,
+        @cant_menores,
+        0,
+        SYSDATETIME(),
+        @cod_estado,
+        @costo_reserva,
+        @notas,
+        @cod_reserva_sucursal
+    );
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_ActualizarCodReservaSucursal
+    @nro_reserva VARCHAR(36),
+    @cod_reserva_sucursal VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    UPDATE reservas_restaurantes
+    SET cod_reserva_sucursal = @cod_reserva_sucursal
+    WHERE nro_reserva = @nro_reserva;
+    
+    IF @@ROWCOUNT = 0
+    BEGIN
+        RAISERROR('Reserva no encontrada: %s', 16, 1, @nro_reserva);
+    END
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_ObtenerCodigoEstado
+    @nom_estado NVARCHAR(80)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT cod_estado AS codEstado
+    FROM estados_reservas
+    WHERE nom_estado = @nom_estado;
 END;
 GO
 

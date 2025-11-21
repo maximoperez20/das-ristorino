@@ -38,7 +38,6 @@ public class AuthService {
     public AuthResponseDto login(LoginRequestDto loginRequest) {
         logger.info("Intentando login para correo: {}", loginRequest.getCorreo());
         
-        // Buscar el cliente por correo
         UsuarioDto cliente = clienteRepository.findByCorreo(loginRequest.getCorreo());
         
         if (cliente == null) {
@@ -46,19 +45,16 @@ public class AuthService {
             throw new RuntimeException("Credenciales inválidas");
         }
         
-        // Verificar la contraseña
         if (!passwordEncoder.matches(loginRequest.getPassword(), cliente.getClave())) {
             logger.warn("Contraseña incorrecta para: {}", loginRequest.getCorreo());
             throw new RuntimeException("Credenciales inválidas");
         }
         
-        // Verificar que el cliente esté habilitado
         if (!cliente.getHabilitado()) {
             logger.warn("Cliente deshabilitado: {}", loginRequest.getCorreo());
             throw new RuntimeException("Usuario deshabilitado");
         }
         
-        // Generar token JWT
         String token = jwtService.generateToken(
             cliente.getNroCliente(),
             cliente.getCorreo(),
@@ -68,7 +64,6 @@ public class AuthService {
         
         logger.info("Login exitoso para: {}", loginRequest.getCorreo());
         
-        // Crear respuesta
         return new AuthResponseDto(
             token,
             cliente.getNroCliente(),
@@ -79,15 +74,14 @@ public class AuthService {
     }
     
     /**
-     * Registro de nuevo cliente (con login automático)
+     * Registro de nuevo cliente con login automático.
+     * Genera token JWT después de crear el cliente.
      */
     public AuthResponseDto register(CrearClienteDto crearClienteDto) {
         logger.info("Registrando nuevo cliente: {}", crearClienteDto.getCorreo());
         
-        // Crear el cliente
         ClienteResponseDto clienteCreado = clienteService.crearCliente(crearClienteDto);
         
-        // Generar token JWT automáticamente
         String token = jwtService.generateToken(
             clienteCreado.getNroCliente(),
             clienteCreado.getCorreo(),
@@ -97,7 +91,6 @@ public class AuthService {
         
         logger.info("Registro y login automático exitoso para: {}", crearClienteDto.getCorreo());
         
-        // Crear respuesta con token
         return new AuthResponseDto(
             token,
             clienteCreado.getNroCliente(),

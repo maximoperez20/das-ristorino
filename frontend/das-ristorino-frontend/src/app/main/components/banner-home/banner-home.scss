@@ -1,0 +1,96 @@
+.home-hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 4rem 0;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+    opacity: 0.3;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .min-vh-75 {
+    min-height: 60vh;
+  }
+
+  h1 {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .hero-image-placeholder {
+    width: 100%;
+    max-width: 500px;
+    height: 400px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+
+    i {
+      font-size: 8rem;
+      color: white;
+      opacity: 0.7;
+    }
+  }
+
+  .btn-light,
+  .btn-outline-light {
+    font-weight: 600;
+    padding: 0.75rem 2rem;
+    border-radius: 2rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  .btn-outline-light {
+    border-width: 2px;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      border-color: white;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 992px) {
+  .home-hero {
+    padding: 3rem 0;
+
+    .min-vh-75 {
+      min-height: auto;
+    }
+
+    h1 {
+      font-size: 2.5rem !important;
+    }
+
+    .hero-image-placeholder {
+      height: 300px;
+      margin-top: 2rem;
+
+      i {
+        font-size: 5rem;
+      }
+    }
+  }
+}

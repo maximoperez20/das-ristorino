@@ -4,7 +4,8 @@ import ar.edu.ubp.das.backend.client.RestauranteClient;
 import ar.edu.ubp.das.backend.client.RestauranteClientFactory;
 import ar.edu.ubp.das.backend.dto.ClickNoNotificadoDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickRequest;
-import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickResponse;
+import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchRequest;
+import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchResponse;
 import ar.edu.ubp.das.backend.repository.ClickRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,15 +13,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class BatchClickService {
 
     private static final Logger logger = LoggerFactory.getLogger(BatchClickService.class);
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
     private ClickRepository clickRepository;
@@ -29,76 +31,96 @@ public class BatchClickService {
     private RestauranteClientFactory restauranteClientFactory;
 
     public void procesarClicksNoNotificados() {
-        logger.info("========================================");
-        logger.info("Iniciando batch de notificación de clicks - {}", LocalDateTime.now().format(DATE_FORMATTER));
-        logger.info("========================================");
-
         try {
             List<ClickNoNotificadoDto> clicksNoNotificados = clickRepository.obtenerClicksNoNotificados();
             
             if (clicksNoNotificados.isEmpty()) {
-                logger.info("No hay clicks pendientes de notificar");
                 return;
             }
 
-            logger.info("Clicks pendientes de notificar: {}", clicksNoNotificados.size());
+            logger.info("Iniciando procesamiento en bloque de {} clicks", clicksNoNotificados.size());
 
-            int exitosos = 0;
-            int fallidos = 0;
-            int procesados = 0;
+            Map<String, List<ClickNoNotificadoDto>> clicksPorRestaurante = new HashMap<>();
+            int clicksSinCodRestaurante = 0;
 
             for (ClickNoNotificadoDto click : clicksNoNotificados) {
+                if (click.getCodContenidoRestaurante() == null || click.getCodContenidoRestaurante().trim().isEmpty()) {
+                    clicksSinCodRestaurante++;
+                    continue;
+                }
+                clicksPorRestaurante.computeIfAbsent(click.getNroRestaurante(), k -> new ArrayList<>()).add(click);
+            }
+
+            if (clicksPorRestaurante.isEmpty()) {
+                logger.warn("No hay clicks válidos para procesar");
+                return;
+            }
+
+            int totalExitosos = 0;
+            int totalFallidos = clicksSinCodRestaurante;
+
+            for (Map.Entry<String, List<ClickNoNotificadoDto>> entry : clicksPorRestaurante.entrySet()) {
+                String nroRestaurante = entry.getKey();
+                List<ClickNoNotificadoDto> clicksRestaurante = entry.getValue();
+
                 try {
-                    procesados++;
-                    logger.debug("Procesando click {}/{} - nroClick: {}, restaurante: {}, contenido: {}", 
-                            procesados, clicksNoNotificados.size(), 
-                            click.getNroClick(), click.getNroRestaurante(), click.getCodContenidoRestaurante());
+                    Map<String, ClickNoNotificadoDto> clicksMap = clicksRestaurante.stream()
+                            .collect(Collectors.toMap(ClickNoNotificadoDto::getNroClick, c -> c));
 
-                    if (click.getCodContenidoRestaurante() == null || click.getCodContenidoRestaurante().trim().isEmpty()) {
-                        logger.warn("Click {} no tiene cod_contenido_restaurante, saltando...", click.getNroClick());
-                        fallidos++;
-                        continue;
-                    }
+                    List<NotificarClickRequest> clicksRequest = clicksRestaurante.stream()
+                            .map(click -> new NotificarClickRequest(
+                                    click.getNroRestaurante(),
+                                    click.getCodContenidoRestaurante(),
+                                    click.getNroClick(),
+                                    click.getFechaHoraRegistro(),
+                                    click.getNroCliente(),
+                                    click.getCostoClick()
+                            ))
+                            .collect(Collectors.toList());
 
-                    RestauranteClient client = restauranteClientFactory.getClient(click.getNroRestaurante());
-                    
-                    NotificarClickRequest notificarRequest = new NotificarClickRequest(
-                            click.getNroRestaurante(),
-                            click.getCodContenidoRestaurante(),
-                            click.getNroClick(),
-                            click.getFechaHoraRegistro(),
-                            click.getNroCliente(),
-                            click.getCostoClick()
-                    );
+                    RestauranteClient client = restauranteClientFactory.getClient(nroRestaurante);
+                    NotificarClicksBatchRequest batchRequest = new NotificarClicksBatchRequest(nroRestaurante, clicksRequest);
+                    NotificarClicksBatchResponse batchResponse = client.notificarClicksBatch(batchRequest);
 
-                    NotificarClickResponse response = client.notificarClick(notificarRequest);
-
-                    if (response.isExitoso()) {
-                        clickRepository.marcarClickComoNotificado(
-                                click.getNroRestaurante(),
-                                click.getNroIdioma(),
-                                click.getNroContenido(),
-                                click.getNroClick()
-                        );
-                        exitosos++;
-                        logger.info("Click {} notificado exitosamente", click.getNroClick());
+                    if (batchResponse != null && batchResponse.getResultados() != null) {
+                        for (NotificarClicksBatchResponse.ClickProcesadoDto resultado : batchResponse.getResultados()) {
+                            if (resultado.isExitoso()) {
+                                ClickNoNotificadoDto clickOriginal = clicksMap.get(resultado.getNroClick());
+                                if (clickOriginal != null) {
+                                    try {
+                                        clickRepository.marcarClickComoNotificado(
+                                                clickOriginal.getNroRestaurante(),
+                                                clickOriginal.getNroIdioma(),
+                                                clickOriginal.getNroContenido(),
+                                                clickOriginal.getNroClick()
+                                        );
+                                        totalExitosos++;
+                                    } catch (Exception e) {
+                                        logger.error("Error al marcar click {} como notificado: {}", 
+                                                resultado.getNroClick(), e.getMessage());
+                                        totalFallidos++;
+                                    }
+                                } else {
+                                    totalFallidos++;
+                                }
+                            } else {
+                                totalFallidos++;
+                            }
+                        }
                     } else {
-                        fallidos++;
-                        logger.warn("Click {} no pudo ser notificado: {}", click.getNroClick(), response.getMensaje());
+                        logger.error("Respuesta de batch inválida para restaurante {}", nroRestaurante);
+                        totalFallidos += clicksRestaurante.size();
                     }
 
                 } catch (Exception e) {
-                    fallidos++;
-                    logger.error("Error al procesar click {}: {}", click.getNroClick(), e.getMessage(), e);
+                    logger.error("Error al procesar batch de clicks para restaurante {}: {}", 
+                            nroRestaurante, e.getMessage(), e);
+                    totalFallidos += clicksRestaurante.size();
                 }
             }
 
-            logger.info("========================================");
-            logger.info("Batch de notificación completado");
-            logger.info("Total procesados: {}", procesados);
-            logger.info("Exitosos: {}", exitosos);
-            logger.info("Fallidos: {}", fallidos);
-            logger.info("========================================");
+            logger.info("Batch completado - Restaurantes: {}, Total: {}, Exitosos: {}, Fallidos: {}", 
+                    clicksPorRestaurante.size(), clicksNoNotificados.size(), totalExitosos, totalFallidos);
 
         } catch (Exception e) {
             logger.error("Error crítico en batch de notificación de clicks: {}", e.getMessage(), e);

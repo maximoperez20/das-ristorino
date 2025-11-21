@@ -1,12 +1,15 @@
 package ar.edu.ubp.das.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.*;
 import java.time.LocalTime;
 import java.util.List;
 
 public class RestauranteDto {
     
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long id;
+    private String nroRestaurante; // UUID del restaurante (identificador real)
     
     @NotBlank(message = "El nombre del restaurante es obligatorio")
     @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
@@ -76,6 +79,14 @@ public class RestauranteDto {
     
     public void setId(Long id) {
         this.id = id;
+    }
+    
+    public String getNroRestaurante() {
+        return nroRestaurante;
+    }
+    
+    public void setNroRestaurante(String nroRestaurante) {
+        this.nroRestaurante = nroRestaurante;
     }
     
     public String getNombre() {
@@ -186,6 +197,7 @@ public class RestauranteDto {
     public String toString() {
         return "RestauranteDto{" +
                 "id=" + id +
+                ", nroRestaurante='" + nroRestaurante + '\'' +
                 ", nombre='" + nombre + '\'' +
                 ", direccion='" + direccion + '\'' +
                 ", telefono='" + telefono + '\'' +
