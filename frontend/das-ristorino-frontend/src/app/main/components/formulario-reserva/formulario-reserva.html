@@ -1,0 +1,111 @@
+<div class="modal-wrapper" [hidden]="!visible">
+  <div class="modal-backdrop" (click)="cerrar()"></div>
+  <div class="modal-container">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4 class="modal-title">
+          <i class="bi bi-calendar-check"></i> Confirmar Reserva
+        </h4>
+        <button type="button" class="btn-close" (click)="cerrar()" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        @if (horarioSeleccionado) {
+          <div class="resumen-reserva mb-4">
+            <h5 class="mb-3">Resumen de la reserva</h5>
+            <div class="resumen-item">
+              <i class="bi bi-building"></i>
+              <span><strong>Zona:</strong> {{ horarioSeleccionado.nomZona }}</span>
+            </div>
+            <div class="resumen-item">
+              <i class="bi bi-calendar3"></i>
+              <span><strong>Fecha:</strong> {{ formatearFechaLegible(horarioSeleccionado.fecha) }}</span>
+            </div>
+            <div class="resumen-item">
+              <i class="bi bi-clock"></i>
+              <span><strong>Horario:</strong> {{ horarioSeleccionado.horaDesde }} - {{ horarioSeleccionado.horaHasta }}</span>
+            </div>
+            <div class="resumen-item">
+              <i class="bi bi-people"></i>
+              <span><strong>Disponibilidad:</strong> {{ horarioSeleccionado.disponibilidad }} lugares</span>
+            </div>
+            @if (!horarioSeleccionado.permiteMenores) {
+              <div class="alert alert-warning mt-3 mb-0">
+                <i class="bi bi-exclamation-triangle"></i> Esta zona no permite menores
+              </div>
+            }
+          </div>
+
+          <form (ngSubmit)="confirmarReserva()">
+            <div class="mb-3">
+              <label for="cantAdultos" class="form-label">
+                <i class="bi bi-person"></i> Cantidad de adultos <span class="text-danger">*</span>
+              </label>
+              <input 
+                type="number" 
+                class="form-control" 
+                id="cantAdultos"
+                [(ngModel)]="cantAdultos"
+                name="cantAdultos"
+                min="1"
+                max="{{ maxPersonas }}"
+                required>
+              <small class="form-text text-muted">Mínimo 1 adulto</small>
+            </div>
+
+            <div class="mb-3">
+              <label for="cantMenores" class="form-label">
+                <i class="bi bi-person-heart"></i> Cantidad de menores
+              </label>
+              <input 
+                type="number" 
+                class="form-control" 
+                id="cantMenores"
+                [(ngModel)]="cantMenores"
+                name="cantMenores"
+                min="0"
+                [max]="horarioSeleccionado.permiteMenores ? maxPersonas - cantAdultos : 0"
+                [disabled]="!horarioSeleccionado.permiteMenores">
+              @if (!horarioSeleccionado.permiteMenores) {
+                <small class="form-text text-muted">Esta zona no permite menores</small>
+              } @else {
+                <small class="form-text text-muted">Máximo {{ maxPersonas - cantAdultos }} menores</small>
+              }
+            </div>
+
+            <div class="mb-3">
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i>
+                <strong>Total de personas:</strong> {{ totalPersonas }} / {{ maxPersonas }} disponibles
+              </div>
+            </div>
+
+            @if (error) {
+              <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> {{ error }}
+              </div>
+            }
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="cerrar()" [disabled]="loading">
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                class="btn btn-primary" 
+                [disabled]="loading || totalPersonas > maxPersonas || cantAdultos < 1">
+                @if (loading) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Confirmando...
+                } @else {
+                  <i class="bi bi-check-circle"></i> Confirmar Reserva
+                }
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+

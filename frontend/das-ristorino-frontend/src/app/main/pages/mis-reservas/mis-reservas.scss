@@ -2,6 +2,22 @@
   min-height: 60vh;
   padding: 2rem 0;
 
+  .reservas-grupo {
+    .grupo-titulo {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2c3e50;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid #e9ecef;
+      text-transform: capitalize;
+
+      i {
+        color: #667eea;
+        margin-right: 0.5rem;
+      }
+    }
+  }
+
   .reserva-card {
     transition: transform 0.2s, box-shadow 0.2s;
     border: 1px solid #dee2e6;

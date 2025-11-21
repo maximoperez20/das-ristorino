@@ -53,4 +53,8 @@ public class SimpleJdbcCallFactory {
                 .withProcedureName(procedureName)
                 .withSchemaName(schemaName);
     }
+    
+    public JdbcTemplate getJdbcTemplate() {
+        return jdbcTemplate;
+    }
 }

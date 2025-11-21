@@ -102,4 +102,11 @@ public class ClienteRepository {
             return null;
         }
     }
+    
+    public UsuarioDto findByNroCliente(String nroCliente) {
+        String sql = "SELECT nro_cliente, apellido, nombre, clave, correo, telefonos, nro_localidad, habilitado " +
+                     "FROM clientes WHERE nro_cliente = ?";
+        List<UsuarioDto> clientes = jdbcTemplate.query(sql, clienteRowMapper, nroCliente);
+        return clientes.isEmpty() ? null : clientes.get(0);
+    }
 }

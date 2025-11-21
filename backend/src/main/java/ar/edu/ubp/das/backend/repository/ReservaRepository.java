@@ -1,6 +1,7 @@
 package ar.edu.ubp.das.backend.repository;
 
 import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
+import ar.edu.ubp.das.backend.dto.CostoReservaDto;
 import ar.edu.ubp.das.backend.components.SimpleJdbcCallFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -17,6 +18,10 @@ public class ReservaRepository {
     
     @Autowired
     private SimpleJdbcCallFactory jdbcCallFactory;
+    
+    public SimpleJdbcCallFactory getJdbcCallFactory() {
+        return jdbcCallFactory;
+    }
     
     // Obtener todas las reservas
     public List<ReservaResponseDto> findAll() {
@@ -106,5 +111,53 @@ public class ReservaRepository {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("nro_cliente", nroCliente);
         return jdbcCallFactory.executeQuery("sp_ObtenerReservasPorNroCliente", "dbo", params, "reservas", ReservaResponseDto.class);
+    }
+    
+    public java.math.BigDecimal obtenerCostoReserva(java.time.LocalDate fechaReserva) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("fecha_reserva", java.sql.Date.valueOf(fechaReserva));
+        List<CostoReservaDto> results = jdbcCallFactory.executeQuery("sp_ObtenerCostoReserva", "dbo", params, "resultado", CostoReservaDto.class);
+        if (results != null && !results.isEmpty() && results.get(0).getMonto() != null) {
+            return results.get(0).getMonto();
+        }
+        return java.math.BigDecimal.ZERO;
+    }
+    
+    public String registrarReservaRistorino(
+            String nroRestaurante,
+            String nroSucursal,
+            String codZona,
+            java.time.LocalDate fechaReserva,
+            java.time.LocalTime horaDesde,
+            String nroCliente,
+            Integer cantAdultos,
+            Integer cantMenores,
+            String codEstado,
+            java.math.BigDecimal costoReserva,
+            String notas,
+            String codReservaSucursal) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("nro_reserva", null, Types.VARCHAR)
+                .addValue("nro_restaurante", nroRestaurante)
+                .addValue("nro_sucursal", nroSucursal)
+                .addValue("cod_zona", codZona)
+                .addValue("fecha_reserva", java.sql.Date.valueOf(fechaReserva))
+                .addValue("hora_desde", java.sql.Time.valueOf(horaDesde))
+                .addValue("nro_cliente", nroCliente)
+                .addValue("cant_adultos", cantAdultos)
+                .addValue("cant_menores", cantMenores)
+                .addValue("cod_estado", codEstado)
+                .addValue("costo_reserva", costoReserva)
+                .addValue("notas", notas)
+                .addValue("cod_reserva_sucursal", codReservaSucursal);
+        Map<String, Object> result = jdbcCallFactory.executeWithOutputs("sp_RegistrarReservaRistorino", "dbo", params);
+        return result != null && result.containsKey("nro_reserva") ? result.get("nro_reserva").toString() : null;
+    }
+    
+    public void actualizarCodReservaSucursal(String nroReserva, String codReservaSucursal) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("nro_reserva", nroReserva)
+                .addValue("cod_reserva_sucursal", codReservaSucursal);
+        jdbcCallFactory.execute("sp_ActualizarCodReservaSucursal", "dbo", params);
     }
 }

@@ -11,6 +11,8 @@ import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
 import ar.edu.ubp.das.backend.dto.soap.GetHorariosDisponiblesSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.NotificarClickSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.RegistrarContenidoSoapDto;
+import ar.edu.ubp.das.backend.dto.soap.RegistrarReservaSoapDto;
+import ar.edu.ubp.das.backend.dto.soap.ClienteSoapDto;
 import ar.edu.ubp.das.backend.utils.SOAPClient;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
@@ -20,21 +22,17 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
-/**
- * Implementación SOAP de RestauranteClient.
- * 
- * NOTA: Este cliente envía y recibe JSON usando Gson para facilitar
- * modificaciones futuras sin necesidad de IA. Los DTOs genéricos se
- * serializan directamente a JSON, y solo se realizan conversiones
- * especiales cuando es necesario (imagen a base64, fecha a ISO string).
- */
 @Component
 public class RestauranteSoapClientImpl implements RestauranteClient {
 
@@ -330,6 +328,92 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
         } catch (Exception e) {
             logger.error("Error al consultar horarios disponibles vía SOAP: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public String registrarReserva(
+            String nroCliente,
+            String apellido,
+            String nombre,
+            String correo,
+            String telefonos,
+            String nroRestaurante,
+            String nroSucursal,
+            String codZona,
+            LocalDate fechaReserva,
+            LocalTime horaDesde,
+            Integer cantAdultos,
+            Integer cantMenores) {
+        try {
+            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
+                    .wsdlUrl(wsdlUrl)
+                    .namespace(namespace)
+                    .serviceName(serviceName)
+                    .portName(portName)
+                    .operationName("registrarReservaRequest")
+                    .build();
+
+            ClienteSoapDto datosCliente = new ClienteSoapDto(apellido, nombre, correo, telefonos);
+
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("nroClienteRistorino", nroCliente);
+            parameters.put("datosCliente", datosCliente);
+            parameters.put("nroRestaurante", nroRestaurante);
+            parameters.put("nroSucursal", nroSucursal);
+            parameters.put("codZona", codZona);
+            // Convertir LocalDate y LocalTime a XMLGregorianCalendar para el SOAP
+            parameters.put("fechaReserva", fechaReserva != null ? toXMLGregorianCalendar(fechaReserva) : null);
+            parameters.put("horaDesde", horaDesde != null ? toXMLGregorianCalendar(horaDesde) : null);
+            parameters.put("cantAdultos", cantAdultos);
+            parameters.put("cantMenores", cantMenores);
+
+            RegistrarReservaSoapDto response = soapClient.callServiceForObject(
+                    RegistrarReservaSoapDto.class,
+                    "registrarReservaResponse",
+                    parameters
+            );
+
+            if (response != null && response.isConfirmada()) {
+                return response.getCodReserva();
+            } else {
+                String mensaje = response != null ? response.getMensaje() : "Error desconocido";
+                throw new RuntimeException("Error al registrar reserva en restaurante: " + mensaje);
+            }
+
+        } catch (Exception e) {
+            logger.error("Error al registrar reserva vía SOAP: {}", e.getMessage(), e);
+            throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Convierte LocalDate a XMLGregorianCalendar (solo fecha)
+     */
+    private XMLGregorianCalendar toXMLGregorianCalendar(LocalDate localDate) {
+        try {
+            GregorianCalendar gcal = GregorianCalendar.from(localDate.atStartOfDay(ZoneId.systemDefault()));
+            return DatatypeFactory.newInstance().newXMLGregorianCalendar(gcal);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al convertir LocalDate a XMLGregorianCalendar: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Convierte LocalTime a XMLGregorianCalendar (solo hora)
+     */
+    private XMLGregorianCalendar toXMLGregorianCalendar(LocalTime localTime) {
+        try {
+            // Crear un XMLGregorianCalendar solo con la hora
+            return DatatypeFactory.newInstance().newXMLGregorianCalendarTime(
+                    localTime.getHour(),
+                    localTime.getMinute(),
+                    localTime.getSecond(),
+                    localTime.getNano() / 1000000, // Convertir nanosegundos a milisegundos
+                    0 // Sin timezone offset
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Error al convertir LocalTime a XMLGregorianCalendar: " + e.getMessage(), e);
         }
     }
 }

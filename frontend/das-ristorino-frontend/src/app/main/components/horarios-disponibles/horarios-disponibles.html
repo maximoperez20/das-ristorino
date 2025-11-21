@@ -58,7 +58,14 @@
 
           <div class="horarios-grid">
             @for (horario of zona.horarios; track horario.horaDesde) {
-              <div class="horario-card" [class.disponible]="horario.disponibilidad > 0">
+              <div 
+                class="horario-card" 
+                [class.disponible]="horario.disponibilidad > 0"
+                [class.no-disponible]="horario.disponibilidad <= 0"
+                (click)="onHorarioClick(zona, horario, $event)"
+                [style.cursor]="horario.disponibilidad > 0 ? 'pointer' : 'not-allowed'"
+                [attr.data-disponibilidad]="horario.disponibilidad"
+                [attr.data-hora]="horario.horaDesde">
                 <div class="horario-time">
                   <i class="bi bi-clock"></i>
                   {{ horario.horaDesde }} - {{ horario.horaHasta }}

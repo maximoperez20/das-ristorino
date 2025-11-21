@@ -4,6 +4,13 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { IReserva } from '../../api/models/i-reserva';
 import { AuthService } from '../../../core/services/auth-service';
 
+interface ReservaPorDia {
+  fecha: Date;
+  fechaKey: string; // YYYY-MM-DD para agrupar
+  titulo: string; // "Hoy" o fecha formateada
+  reservas: IReserva[];
+}
+
 @Component({
   selector: 'app-mis-reservas',
   standalone: true,
@@ -14,6 +21,7 @@ import { AuthService } from '../../../core/services/auth-service';
 export class MisReservasPage implements OnInit {
 
   reservas: IReserva[] = [];
+  reservasPorDia: ReservaPorDia[] = [];
 
   private _auth = inject(AuthService);
   private _router = inject(Router);
@@ -33,6 +41,78 @@ export class MisReservasPage implements OnInit {
       // Fallback: si no hay datos resueltos, inicializar vacío
       this.reservas = [];
     }
+    
+    // Agrupar y ordenar reservas por día
+    this.reservasPorDia = this.agruparReservasPorDia(this.reservas);
+  }
+
+  agruparReservasPorDia(reservas: IReserva[]): ReservaPorDia[] {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    // Ordenar reservas por fecha (más recientes primero)
+    const reservasOrdenadas = [...reservas].sort((a, b) => {
+      const fechaA = new Date(a.fecha_hora).getTime();
+      const fechaB = new Date(b.fecha_hora).getTime();
+      return fechaB - fechaA; // Orden descendente (más recientes primero)
+    });
+
+    // Agrupar por día
+    const gruposMap = new Map<string, ReservaPorDia>();
+
+    reservasOrdenadas.forEach(reserva => {
+      if (!reserva.fecha_hora) return;
+
+      const fechaReserva = new Date(reserva.fecha_hora);
+      fechaReserva.setHours(0, 0, 0, 0);
+      
+      const fechaKey = fechaReserva.toISOString().split('T')[0]; // YYYY-MM-DD
+      
+      if (!gruposMap.has(fechaKey)) {
+        const esHoy = fechaReserva.getTime() === hoy.getTime();
+        const titulo = esHoy 
+          ? 'Hoy' 
+          : fechaReserva.toLocaleDateString('es-AR', {
+              weekday: 'long',
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            });
+
+        gruposMap.set(fechaKey, {
+          fecha: fechaReserva,
+          fechaKey: fechaKey,
+          titulo: titulo,
+          reservas: []
+        });
+      }
+
+      gruposMap.get(fechaKey)!.reservas.push(reserva);
+    });
+
+    // Ordenar grupos: "Hoy" primero, luego por fecha descendente (más recientes/futuras primero)
+    const grupos = Array.from(gruposMap.values()).sort((a, b) => {
+      const esAHoy = a.titulo === 'Hoy';
+      const esBHoy = b.titulo === 'Hoy';
+      
+      // Si uno es "Hoy" y el otro no, "Hoy" va primero
+      if (esAHoy && !esBHoy) return -1;
+      if (!esAHoy && esBHoy) return 1;
+      
+      // Si ambos son "Hoy" o ninguno es "Hoy", ordenar por fecha descendente
+      return b.fecha.getTime() - a.fecha.getTime();
+    });
+
+    // Ordenar reservas dentro de cada grupo por hora (más recientes primero)
+    grupos.forEach(grupo => {
+      grupo.reservas.sort((a, b) => {
+        const fechaA = new Date(a.fecha_hora).getTime();
+        const fechaB = new Date(b.fecha_hora).getTime();
+        return fechaB - fechaA; // Orden descendente (más recientes primero)
+      });
+    });
+
+    return grupos;
   }
 
   formatearFecha(fecha: string): string {
@@ -44,6 +124,19 @@ export class MisReservasPage implements OnInit {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return fecha;
+    }
+  }
+
+  formatearHora(fecha: string): string {
+    if (!fecha) return 'No disponible';
+    try {
+      const date = new Date(fecha);
+      return date.toLocaleTimeString('es-AR', {
         hour: '2-digit',
         minute: '2-digit'
       });

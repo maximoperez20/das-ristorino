@@ -108,7 +108,24 @@ public class RestauranteService {
         // Llamar al servicio del restaurante usando cod_sucursal_restaurante
         // (que es el nro_sucursal en das-restaurante-soap)
         RestauranteClient client = restauranteClientFactory.getClient(nroRestaurante);
-        return client.getHorariosDisponibles(nroRestaurante, codSucursalRestaurante, codZona, fecha, cantidad);
+        List<HorarioDisponibleDto> horarios = client.getHorariosDisponibles(nroRestaurante, codSucursalRestaurante, codZona, fecha, cantidad);
+        
+        // Mapear cod_zona_restaurante (externo del SOAP) a cod_zona (interno de Ristorino)
+        // El frontend necesita el cod_zona interno para poder confirmar la reserva
+        for (HorarioDisponibleDto horario : horarios) {
+            if (horario.getCodZona() != null && !horario.getCodZona().trim().isEmpty()) {
+                String codZonaInterno = restauranteRepository.obtenerCodZonaInterno(
+                    nroRestaurante, 
+                    nroSucursal, 
+                    horario.getCodZona() // Este es el cod_zona_restaurante que viene del SOAP
+                );
+                if (codZonaInterno != null && !codZonaInterno.trim().isEmpty()) {
+                    horario.setCodZona(codZonaInterno); // Reemplazar con el código interno
+                }
+            }
+        }
+        
+        return horarios;
     }
     
 }

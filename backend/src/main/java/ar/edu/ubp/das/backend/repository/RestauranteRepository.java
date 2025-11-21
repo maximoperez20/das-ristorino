@@ -280,4 +280,57 @@ public class RestauranteRepository {
             return null;
         }
     }
+    
+    /**
+     * Obtener el cod_zona_restaurante (código externo del SOAP) basado en el cod_zona interno de Ristorino
+     * Útil cuando necesitamos comunicarnos con el SOAP y requerimos el código externo
+     */
+    public String obtenerCodZonaRestaurante(String nroRestaurante, String nroSucursal, String codZona) {
+        String sql = "SELECT cod_zona_restaurante FROM zonas_sucursales_restaurantes " +
+                     "WHERE nro_restaurante = ? AND nro_sucursal = ? AND cod_zona = ? AND habilitada = 1";
+        try {
+            List<String> result = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getString("cod_zona_restaurante"),
+                nroRestaurante,
+                nroSucursal,
+                codZona
+            );
+            if (result.isEmpty()) {
+                throw new RuntimeException("Zona no encontrada para cod_zona: " + codZona);
+            }
+            String codZonaRestaurante = result.get(0);
+            if (codZonaRestaurante == null || codZonaRestaurante.trim().isEmpty()) {
+                throw new RuntimeException("La zona no tiene cod_zona_restaurante configurado para cod_zona: " + codZona);
+            }
+            return codZonaRestaurante;
+        } catch (Exception e) {
+            throw new RuntimeException("Error al obtener cod_zona_restaurante: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Obtener el cod_zona interno de Ristorino basado en el cod_zona_restaurante (código externo del SOAP)
+     * Útil cuando recibimos el código externo del SOAP y necesitamos el código interno de Ristorino
+     * @param nroRestaurante UUID del restaurante
+     * @param nroSucursal UUID de la sucursal (ID interno de das-ristorino)
+     * @param codZonaRestaurante Código de zona en el sistema del restaurante (SOAP)
+     * @return cod_zona interno de Ristorino o null si no se encuentra
+     */
+    public String obtenerCodZonaInterno(String nroRestaurante, String nroSucursal, String codZonaRestaurante) {
+        String sql = "SELECT cod_zona FROM zonas_sucursales_restaurantes " +
+                     "WHERE nro_restaurante = ? AND nro_sucursal = ? AND cod_zona_restaurante = ? AND habilitada = 1";
+        try {
+            List<String> result = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getString("cod_zona"),
+                nroRestaurante,
+                nroSucursal,
+                codZonaRestaurante
+            );
+            return result.isEmpty() ? null : result.get(0);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

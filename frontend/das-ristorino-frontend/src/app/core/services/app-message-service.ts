@@ -17,4 +17,20 @@ export class AppMessageService {
     });
   }
 
+  showSuccess(text: string): void {
+    this.showMessage({
+      type: 'success',
+      title: 'Éxito',
+      text: text
+    });
+  }
+
+  showError(text: string): void {
+    this.showMessage({
+      type: 'error',
+      title: 'Error',
+      text: text
+    });
+  }
+
 }

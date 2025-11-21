@@ -337,5 +337,67 @@ public class RestauranteRestClient implements RestauranteClient {
 
         return headers;
     }
+
+    @Override
+    public String registrarReserva(
+            String nroCliente,
+            String apellido,
+            String nombre,
+            String correo,
+            String telefonos,
+            String nroRestaurante,
+            String nroSucursal,
+            String codZona,
+            LocalDate fechaReserva,
+            LocalTime horaDesde,
+            Integer cantAdultos,
+            Integer cantMenores) {
+        try {
+            String url = baseUrl + "/restaurantes/" + nroRestaurante + "/reservas";
+
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("nroClienteRistorino", nroCliente);
+            Map<String, Object> datosCliente = new HashMap<>();
+            datosCliente.put("apellido", apellido);
+            datosCliente.put("nombre", nombre);
+            datosCliente.put("correo", correo);
+            datosCliente.put("telefonos", telefonos != null ? telefonos : "");
+            requestBody.put("datosCliente", datosCliente);
+            requestBody.put("nroRestaurante", nroRestaurante);
+            requestBody.put("nroSucursal", nroSucursal);
+            requestBody.put("codZona", codZona);
+            requestBody.put("fechaReserva", fechaReserva.format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE));
+            requestBody.put("horaDesde", horaDesde.format(java.time.format.DateTimeFormatter.ISO_LOCAL_TIME));
+            requestBody.put("cantAdultos", cantAdultos);
+            requestBody.put("cantMenores", cantMenores);
+
+            String jsonBody = gson.toJson(requestBody);
+
+            HttpHeaders headers = createHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    String.class
+            );
+
+            String responseBody = response.getBody();
+            if (responseBody != null) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> result = gson.fromJson(responseBody, Map.class);
+                if (result != null && result.containsKey("codReserva")) {
+                    return result.get("codReserva").toString();
+                }
+            }
+
+            throw new RuntimeException("Respuesta inválida del servidor REST");
+
+        } catch (Exception e) {
+            logger.error("Error al registrar reserva vía REST: {}", e.getMessage(), e);
+            throw new RuntimeException("Error en comunicación REST: " + e.getMessage(), e);
+        }
+    }
 }
 

@@ -59,5 +59,37 @@ public interface RestauranteClient {
             LocalDate fecha,
             Integer cantidad
     );
+
+    /**
+     * Registra una reserva en el sistema del restaurante.
+     *
+     * @param nroCliente UUID del cliente en ristorino
+     * @param apellido Apellido del cliente
+     * @param nombre Nombre del cliente
+     * @param correo Correo del cliente
+     * @param telefonos Teléfonos del cliente
+     * @param nroRestaurante UUID del restaurante
+     * @param nroSucursal UUID de la sucursal (del sistema del restaurante)
+     * @param codZona UUID de la zona
+     * @param fechaReserva Fecha de la reserva
+     * @param horaDesde Hora de inicio
+     * @param cantAdultos Cantidad de adultos
+     * @param cantMenores Cantidad de menores
+     * @return Código de reserva generado por el restaurante
+     */
+    String registrarReserva(
+            String nroCliente,
+            String apellido,
+            String nombre,
+            String correo,
+            String telefonos,
+            String nroRestaurante,
+            String nroSucursal,
+            String codZona,
+            LocalDate fechaReserva,
+            java.time.LocalTime horaDesde,
+            Integer cantAdultos,
+            Integer cantMenores
+    );
 }
 

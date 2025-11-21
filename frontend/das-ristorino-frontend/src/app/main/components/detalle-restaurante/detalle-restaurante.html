@@ -178,12 +178,26 @@
                 <div class="section-divider"></div>
                 <div class="mb-5">
                     <horarios-disponibles
+                        #horariosComponent
                         [nroRestaurante]="nroRestaurante"
                         [nroSucursal]="sucursalSeleccionada.nroSucursal"
                         [nombreSucursal]="sucursalSeleccionada.nombre"
-                        [fechaSeleccionada]="fechaSeleccionada">
+                        [fechaSeleccionada]="fechaSeleccionada"
+                        (horarioSeleccionado)="onHorarioSeleccionado($event)">
                     </horarios-disponibles>
                 </div>
+            }
+
+            <!-- Formulario de Reserva -->
+            @if (horarioSeleccionado && sucursalSeleccionada) {
+                <app-formulario-reserva
+                    [horarioSeleccionado]="horarioSeleccionado"
+                    [nroRestaurante]="nroRestaurante"
+                    [nroSucursal]="sucursalSeleccionada.nroSucursal"
+                    [visible]="mostrarFormularioReserva"
+                    (visibleChange)="onModalVisibleChange($event)"
+                    (reservaConfirmada)="onReservaConfirmada()">
+                </app-formulario-reserva>
             }
         }
 

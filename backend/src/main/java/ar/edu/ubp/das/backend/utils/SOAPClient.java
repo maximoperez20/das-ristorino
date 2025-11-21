@@ -3,15 +3,17 @@ package ar.edu.ubp.das.backend.utils;
 import com.google.gson.Gson;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.MarshalException;
-import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.UnmarshalException;
 import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.soap.*;
 import jakarta.xml.ws.Dispatch;
 import jakarta.xml.ws.Service;
 import jakarta.xml.ws.soap.SOAPFaultException;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
@@ -47,10 +49,7 @@ public class SOAPClient {
     public <T> T callServiceForObject(Class<T> clazz, String responseElementName, Map<String, Object> parameters) {
         try {
             SOAPMessage soapRequest = createRequest(parameters);
-            soapRequest.writeTo(System.out);
-
             SOAPMessage soapResponse = sendRequest(soapRequest);
-            soapResponse.writeTo(System.out);
 
             return processResponseForObject(soapResponse, clazz, responseElementName);
         }
@@ -79,10 +78,7 @@ public class SOAPClient {
     public <T> List<T> callServiceForList(Class<T> clazz, String responseElementName, Map<String, Object> parameters) {
         try {
             SOAPMessage soapRequest = createRequest(parameters);
-            soapRequest.writeTo(System.out);
-
             SOAPMessage soapResponse = sendRequest(soapRequest);
-            soapResponse.writeTo(System.out);
 
             return processResponseForList(soapResponse, clazz, responseElementName);
         }
@@ -191,14 +187,83 @@ public class SOAPClient {
             childElement.addTextNode(parameter.toString());
         }
         else {
-            JAXBContext jaxbContext = JAXBContext.newInstance(parameter.getClass());
-            Marshaller marshaller = jaxbContext.createMarshaller();
-            marshaller.marshal(parameter, operation);
+            // Para objetos complejos, crear un elemento hijo y serializar manualmente los campos
+            // Esto evita el error de @XmlRootElement serializando los campos individualmente
+            SOAPElement childElement = operation.addChildElement(parameterName, "tns", namespace);
+            serializeComplexObject(childElement, parameter);
         }
     }
 
     private boolean isSimpleType(Class<?> clazz) {
         return clazz.isPrimitive() || SIMPLE_TYPES.contains(clazz);
+    }
+    
+    /**
+     * Serializa un objeto complejo manualmente dentro de un elemento SOAP
+     * Lee las anotaciones @XmlElement para obtener los nombres y namespaces de los campos
+     */
+    private void serializeComplexObject(SOAPElement parentElement, Object obj) throws Exception {
+        Class<?> clazz = obj.getClass();
+        
+        // Intentar serializar usando campos con anotaciones @XmlElement
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field field : fields) {
+            XmlElement xmlElement = field.getAnnotation(XmlElement.class);
+            if (xmlElement != null) {
+                field.setAccessible(true);
+                Object value = field.get(obj);
+                
+                if (value != null) {
+                    String elementName = xmlElement.name().isEmpty() ? field.getName() : xmlElement.name();
+                    String elementNamespace = xmlElement.namespace().isEmpty() ? namespace : xmlElement.namespace();
+                    
+                    SOAPElement fieldElement = parentElement.addChildElement(elementName, "tns", elementNamespace);
+                    
+                    if (isSimpleType(value.getClass())) {
+                        fieldElement.addTextNode(value.toString());
+                    } else {
+                        // Si el valor es otro objeto complejo, serializarlo recursivamente
+                        serializeComplexObject(fieldElement, value);
+                    }
+                } else if (xmlElement.nillable()) {
+                    // Si es nillable y el valor es null, agregar el elemento con xsi:nil="true"
+                    String elementName = xmlElement.name().isEmpty() ? field.getName() : xmlElement.name();
+                    String elementNamespace = xmlElement.namespace().isEmpty() ? namespace : xmlElement.namespace();
+                    SOAPElement fieldElement = parentElement.addChildElement(elementName, "tns", elementNamespace);
+                    fieldElement.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "xsi:nil", "true");
+                }
+            }
+        }
+        
+        // Si no se encontraron campos con @XmlElement, intentar usar getters
+        Iterator<?> childIterator = parentElement.getChildElements();
+        boolean hasChildren = childIterator.hasNext();
+        if (!hasChildren) {
+            Method[] methods = clazz.getMethods();
+            for (Method method : methods) {
+                if (method.getName().startsWith("get") && method.getParameterCount() == 0 && 
+                    !method.getName().equals("getClass")) {
+                    XmlElement xmlElement = method.getAnnotation(XmlElement.class);
+                    if (xmlElement != null) {
+                        Object value = method.invoke(obj);
+                        if (value != null) {
+                            String elementName = xmlElement.name().isEmpty() 
+                                ? method.getName().substring(3).toLowerCase() 
+                                : xmlElement.name();
+                            String elementNamespace = xmlElement.namespace().isEmpty() ? namespace : xmlElement.namespace();
+                            
+                            SOAPElement fieldElement = parentElement.addChildElement(elementName, "tns", elementNamespace);
+                            
+                            if (isSimpleType(value.getClass())) {
+                                fieldElement.addTextNode(value.toString());
+                            } else {
+                                serializeComplexObject(fieldElement, value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void addWSSecurityHeader(SOAPMessage soapMessage) throws SOAPException {

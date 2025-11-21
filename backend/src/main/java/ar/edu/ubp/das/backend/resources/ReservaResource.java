@@ -2,15 +2,18 @@ package ar.edu.ubp.das.backend.resources;
 
 import ar.edu.ubp.das.backend.dto.*;
 import ar.edu.ubp.das.backend.service.ReservaService;
+import ar.edu.ubp.das.backend.service.RestauranteService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +25,9 @@ public class ReservaResource {
     private static final Logger logger = LoggerFactory.getLogger(ReservaResource.class);
     
     private final ReservaService reservaService;
+    
+    @Autowired
+    private RestauranteService restauranteService;
     
     public ReservaResource(ReservaService reservaService) {
         this.reservaService = reservaService;
@@ -173,6 +179,61 @@ public class ReservaResource {
             logger.error("Error inesperado al obtener reservas del usuario", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al obtener reservas: " + e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/confirmar")
+    public ResponseEntity<?> confirmarReserva(
+            @Valid @RequestBody ConfirmarReservaDto request,
+            Authentication authentication) {
+        try {
+            if (authentication == null || !(authentication.getPrincipal() instanceof Jwt)) {
+                logger.warn("Intento de confirmar reserva sin autenticación válida");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Debe estar autenticado para confirmar una reserva"));
+            }
+            
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            String nroCliente = jwt.getClaimAsString("nroCliente");
+            
+            if (nroCliente == null || nroCliente.isEmpty()) {
+                logger.warn("Token JWT no contiene nroCliente");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Token inválido: falta nroCliente"));
+            }
+            
+            ConfirmarReservaResponseDto response = reservaService.confirmarReserva(request, nroCliente);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            
+        } catch (RuntimeException e) {
+            logger.warn("Error al confirmar reserva: {}", e.getMessage());
+            
+            if (e.getMessage().contains("disponibilidad") || e.getMessage().contains("No hay")) {
+                try {
+                    List<HorarioDisponibleDto> horarios = restauranteService.obtenerHorariosDisponibles(
+                            request.getNroRestaurante(),
+                            request.getNroSucursal(),
+                            request.getCodZona(),
+                            request.getFechaReserva(),
+                            null
+                    );
+                    
+                    Map<String, Object> errorResponse = new HashMap<>();
+                    errorResponse.put("error", e.getMessage());
+                    errorResponse.put("horarios", horarios);
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+                } catch (Exception ex) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(Map.of("error", e.getMessage()));
+                }
+            }
+            
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error inesperado al confirmar reserva", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al confirmar reserva: " + e.getMessage()));
         }
     }
 }

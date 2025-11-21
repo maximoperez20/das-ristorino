@@ -1076,10 +1076,6 @@ BEGIN
 END;
 GO
 
--- =====================================================
--- STORED PROCEDURE: sp_ObtenerClicksNoNotificados
--- Obtiene clicks no notificados con cod_contenido_restaurante
--- =====================================================
 CREATE OR ALTER PROCEDURE sp_ObtenerClicksNoNotificados
 AS
 BEGIN
@@ -1106,10 +1102,6 @@ BEGIN
 END;
 GO
 
--- =====================================================
--- STORED PROCEDURE: sp_MarcarClickComoNotificado
--- Marca un click como notificado
--- =====================================================
 CREATE OR ALTER PROCEDURE sp_MarcarClickComoNotificado
     @nro_restaurante VARCHAR(36),
     @nro_idioma INT,
@@ -1278,6 +1270,137 @@ BEGIN
         AND pc.nro_valor_dominio = dcp.nro_valor_dominio
     WHERE pc.nro_cliente = @nro_cliente
     ORDER BY cp.nom_categoria, dcp.nom_valor_dominio;
+END;
+GO
+
+-- =====================================================
+-- STORED PROCEDURES PARA RESERVAS - NUEVOS
+-- =====================================================
+
+CREATE OR ALTER PROCEDURE sp_ObtenerCostoReserva
+    @fecha_reserva DATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT TOP 1 monto
+    FROM costos
+    WHERE tipo_costo = 'RESERVA'
+        AND fecha_ini_vigencia <= @fecha_reserva
+        AND (fecha_fin_vigencia IS NULL OR fecha_fin_vigencia >= @fecha_reserva)
+    ORDER BY fecha_ini_vigencia DESC;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_GenerarCodigoReserva
+    @codigo_reserva VARCHAR(20) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @anio VARCHAR(4) = CAST(YEAR(GETDATE()) AS VARCHAR(4));
+    DECLARE @secuencial INT;
+    DECLARE @prefijo VARCHAR(3) = 'RES';
+    
+    SELECT @secuencial = ISNULL(MAX(CAST(SUBSTRING(nro_reserva, 9, 6) AS INT)), 0) + 1
+    FROM reservas_restaurantes
+    WHERE nro_reserva LIKE @prefijo + '-' + @anio + '-%'
+        AND LEN(nro_reserva) >= 15;
+    
+    DECLARE @secuencialStr VARCHAR(6) = RIGHT('000000' + CAST(@secuencial AS VARCHAR(6)), 6);
+    DECLARE @randomStr VARCHAR(6) = UPPER(SUBSTRING(REPLACE(NEWID(), '-', ''), 1, 6));
+    
+    SET @codigo_reserva = @prefijo + '-' + @anio + '-' + @secuencialStr + '-' + @randomStr;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_RegistrarReservaRistorino
+    @nro_reserva VARCHAR(36) OUTPUT,
+    @nro_restaurante VARCHAR(36),
+    @nro_sucursal VARCHAR(36),
+    @cod_zona VARCHAR(36),
+    @fecha_reserva DATE,
+    @hora_desde TIME(0),
+    @nro_cliente VARCHAR(36),
+    @cant_adultos SMALLINT,
+    @cant_menores SMALLINT,
+    @cod_estado VARCHAR(36),
+    @costo_reserva DECIMAL(12,2),
+    @notas NVARCHAR(400) = NULL,
+    @cod_reserva_sucursal VARCHAR(36) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @codigo_legible VARCHAR(20);
+    EXEC sp_GenerarCodigoReserva @codigo_legible OUTPUT;
+    
+    SET @nro_reserva = @codigo_legible;
+    
+    INSERT INTO reservas_restaurantes (
+        nro_reserva,
+        nro_restaurante,
+        nro_sucursal,
+        cod_zona,
+        fecha_reserva,
+        hora_desde,
+        nro_cliente,
+        cant_adultos,
+        cant_menores,
+        cancelada,
+        fecha_hora_registro,
+        cod_estado,
+        costo_reserva,
+        notas,
+        cod_reserva_sucursal
+    )
+    VALUES (
+        @nro_reserva,
+        @nro_restaurante,
+        @nro_sucursal,
+        @cod_zona,
+        @fecha_reserva,
+        @hora_desde,
+        @nro_cliente,
+        @cant_adultos,
+        @cant_menores,
+        0,
+        SYSDATETIME(),
+        @cod_estado,
+        @costo_reserva,
+        @notas,
+        @cod_reserva_sucursal
+    );
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_ActualizarCodReservaSucursal
+    @nro_reserva VARCHAR(36),
+    @cod_reserva_sucursal VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    UPDATE reservas_restaurantes
+    SET cod_reserva_sucursal = @cod_reserva_sucursal
+    WHERE nro_reserva = @nro_reserva;
+    
+    IF @@ROWCOUNT = 0
+    BEGIN
+        RAISERROR('Reserva no encontrada: %s', 16, 1, @nro_reserva);
+    END
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_ObtenerCodigoEstado
+    @nom_estado NVARCHAR(80)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT cod_estado AS codEstado
+    FROM estados_reservas
+    WHERE nom_estado = @nom_estado;
 END;
 GO
 

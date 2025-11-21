@@ -42,7 +42,7 @@ export const routes: Routes = [
                     m => m.DetalleRestauranteComponent
                 ),
                 resolve: { restaurante: restauranteResolver },
-                providers: [RestauranteResource, PromocionResource]
+                providers: [RestauranteResource, PromocionResource, ReservaResource]
             },
             {
                 path: 'login',
