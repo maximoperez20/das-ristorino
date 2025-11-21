@@ -61,10 +61,9 @@ public interface RestauranteClient {
     );
 
     /**
-     * Obtiene el último contenido NO publicado del restaurante.
-     * Si todos están publicados, retorna el más nuevo.
+     * Obtiene el último contenido PUBLICADO (publicado = 1) del restaurante.
      * Retorna: nroContenido, contenidoAPublicar, imagenAPublicar (URL|null), costoClick, nroSucursal, publicado
-     * Retorna null si no hay contenidos.
+     * Retorna null si no hay contenidos publicados.
      */
     java.util.Map<String, Object> obtenerContenidos(String nroRestaurante, String nroSucursal);
 
