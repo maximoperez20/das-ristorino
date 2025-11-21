@@ -462,6 +462,41 @@ PRINT '- Categorías de preferencias: 3 categorías con 12 dominios';
 PRINT '- Clientes de prueba: 3 clientes creados';
 PRINT '- Traducciones: Zonas traducidas al español';
 PRINT '- Promociones: 2 promociones creadas para el restaurante compartido';
+/* =========================================
+   8) Costos para contenidos
+   ========================================= */
+
+-- Insertar un costo activo por defecto para los contenidos generados con IA
+-- Tipo: CLICK, vigente desde hoy, sin fecha de fin (vigente indefinidamente)
+DECLARE @fecha_hoy DATE = CAST(GETDATE() AS DATE);
+
+IF NOT EXISTS (SELECT 1 FROM costos 
+               WHERE tipo_costo = N'CLICK' 
+               AND fecha_ini_vigencia <= @fecha_hoy 
+               AND (fecha_fin_vigencia IS NULL OR fecha_fin_vigencia >= @fecha_hoy))
+BEGIN
+    INSERT INTO costos (tipo_costo, fecha_ini_vigencia, fecha_fin_vigencia, monto)
+    VALUES (N'CLICK', @fecha_hoy, NULL, 0.50);
+    PRINT '>> Costo CLICK insertado: $0.50 por click (vigente desde ' + CAST(@fecha_hoy AS VARCHAR(10)) + ')';
+END
+ELSE
+BEGIN
+    PRINT '>> Ya existe un costo CLICK activo en la tabla costos';
+END
+
+-- Opcional: Insertar costo para reservas (si no existe)
+IF NOT EXISTS (SELECT 1 FROM costos 
+               WHERE tipo_costo = N'RESERVA' 
+               AND fecha_ini_vigencia <= @fecha_hoy 
+               AND (fecha_fin_vigencia IS NULL OR fecha_fin_vigencia >= @fecha_hoy))
+BEGIN
+    INSERT INTO costos (tipo_costo, fecha_ini_vigencia, fecha_fin_vigencia, monto)
+    VALUES (N'RESERVA', @fecha_hoy, NULL, 100.00);
+    PRINT '>> Costo RESERVA insertado: $100.00 por reserva (vigente desde ' + CAST(@fecha_hoy AS VARCHAR(10)) + ')';
+END
+
+GO
+
 PRINT '========================================';
 PRINT 'IMPORTANTE: Ejecutar también 04_insert_datos_avanzados.sql en das_restaurante_soap';
 PRINT '========================================';

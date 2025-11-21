@@ -93,10 +93,12 @@ public interface RestauranteClient {
     );
 
     /**
-     * Obtiene los contenidos ya existentes en el sistema legacy del restaurante.
-     * Cada mapa contiene: nroContenido, contenidoAPublicar, imagenAPublicar (base64|null), costoClick, nroSucursal
+     * Obtiene el último contenido NO publicado del restaurante.
+     * Si todos están publicados, retorna el más nuevo.
+     * Retorna: nroContenido, contenidoAPublicar, imagenAPublicar (URL|null), costoClick, nroSucursal, publicado
+     * Retorna null si no hay contenidos.
      */
-    java.util.List<java.util.Map<String, Object>> obtenerContenidos(String nroRestaurante, String nroSucursal);
+    java.util.Map<String, Object> obtenerContenidos(String nroRestaurante, String nroSucursal);
 
     /**
      * Marca como publicados (publicado=1) los contenidos legacy indicados.
