@@ -322,6 +322,24 @@ CREATE TABLE dbo.clicks_contenidos_restaurantes (
 GO
 
 /* ===========================
+   Costos para contenidos
+   =========================== */
+create table costos
+(
+    tipo_costo         varchar(50)    not null,
+    fecha_ini_vigencia date           not null,
+    fecha_fin_vigencia date,
+    monto              decimal(12, 2) not null
+        constraint CK_costos_monto
+            check ([monto] >= 0),
+    constraint PK_costos
+        primary key (tipo_costo, fecha_ini_vigencia),
+    constraint CK_costos_fechas
+        check ([fecha_fin_vigencia] IS NULL OR [fecha_fin_vigencia] >= [fecha_ini_vigencia])
+)
+go
+
+/* ===========================
    Zonas y turnos por sucursal
    =========================== */
 CREATE TABLE dbo.turnos_sucursales_restaurantes (

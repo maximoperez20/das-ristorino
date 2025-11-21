@@ -334,7 +334,7 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
     }
 
     @Override
-    public java.util.List<java.util.Map<String, Object>> obtenerContenidos(String nroRestaurante, String nroSucursal) {
+    public java.util.Map<String, Object> obtenerContenidos(String nroRestaurante, String nroSucursal) {
         try {
             java.util.Map<String, Object> jsonData = new java.util.HashMap<>();
             jsonData.put("nroRestaurante", nroRestaurante);
@@ -353,11 +353,17 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
 
             String jsonResponseStr = soapClient.extractJsonResponse("listarContenidosResponse", parameters);
 
-            com.google.gson.reflect.TypeToken<java.util.List<java.util.Map<String, Object>>> typeToken =
-                    new com.google.gson.reflect.TypeToken<java.util.List<java.util.Map<String, Object>>>(){};
+            // Si la respuesta es un objeto vacío {}, retornar null
+            if (jsonResponseStr == null || jsonResponseStr.trim().isEmpty() || jsonResponseStr.trim().equals("{}")) {
+                return null;
+            }
 
-            java.util.List<java.util.Map<String, Object>> lista = gson.fromJson(jsonResponseStr, typeToken.getType());
-            return lista != null ? lista : new java.util.ArrayList<>();
+            // Parsear como Map (no como List)
+            com.google.gson.reflect.TypeToken<java.util.Map<String, Object>> typeToken =
+                    new com.google.gson.reflect.TypeToken<java.util.Map<String, Object>>(){};
+
+            java.util.Map<String, Object> contenido = gson.fromJson(jsonResponseStr, typeToken.getType());
+            return contenido;
         } catch (Exception e) {
             logger.error("Error al obtener contenidos vía SOAP: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);

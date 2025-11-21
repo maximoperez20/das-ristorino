@@ -321,7 +321,7 @@ public class RestauranteRestClient implements RestauranteClient {
     }
 
     @Override
-    public java.util.List<java.util.Map<String, Object>> obtenerContenidos(String nroRestaurante, String nroSucursal) {
+    public java.util.Map<String, Object> obtenerContenidos(String nroRestaurante, String nroSucursal) {
         try {
             String url = baseUrl + "/restaurantes/" + nroRestaurante + "/contenidos";
             if (nroSucursal != null && !nroSucursal.trim().isEmpty()) {
@@ -340,15 +340,17 @@ public class RestauranteRestClient implements RestauranteClient {
 
             String responseBody = response.getBody();
 
-            com.google.gson.reflect.TypeToken<java.util.List<java.util.Map<String, Object>>> typeToken =
-                    new com.google.gson.reflect.TypeToken<java.util.List<java.util.Map<String, Object>>>(){};
+            // Si la respuesta es un objeto vacío {}, retornar null
+            if (responseBody == null || responseBody.trim().isEmpty() || responseBody.trim().equals("{}")) {
+                return null;
+            }
 
-            java.util.List<java.util.Map<String, Object>> lista = gson.fromJson(
-                    responseBody != null ? responseBody : "[]",
-                    typeToken.getType()
-            );
+            // Parsear como Map (no como List)
+            com.google.gson.reflect.TypeToken<java.util.Map<String, Object>> typeToken =
+                    new com.google.gson.reflect.TypeToken<java.util.Map<String, Object>>(){};
 
-            return lista != null ? lista : new java.util.ArrayList<>();
+            java.util.Map<String, Object> contenido = gson.fromJson(responseBody, typeToken.getType());
+            return contenido;
         } catch (Exception e) {
             logger.error("Error al obtener contenidos vía REST: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación REST: " + e.getMessage(), e);
