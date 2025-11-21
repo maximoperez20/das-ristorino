@@ -5,6 +5,7 @@ import { ReservaResource } from '../../api/resources/reserva-resource';
 import { AuthService } from '../../../core/services/auth-service';
 import { Router } from '@angular/router';
 import { AppMessageService } from '../../../core/services/app-message-service';
+import { DateUtilsService } from '../../../core/services/date-utils.service';
 import type { HorarioSeleccionado } from '../horarios-disponibles/horarios-disponibles';
 
 @Component({
@@ -32,6 +33,7 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
   private _router = inject(Router);
   private _messageService = inject(AppMessageService);
   private _cdr = inject(ChangeDetectorRef);
+  private _dateUtils = inject(DateUtilsService);
 
   ngOnInit(): void {
     console.log('=== FormularioReservaComponent ngOnInit ===');
@@ -133,19 +135,11 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
   }
 
   formatearFecha(fecha: Date): string {
-    const year = fecha.getFullYear();
-    const month = String(fecha.getMonth() + 1).padStart(2, '0');
-    const day = String(fecha.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return this._dateUtils.formatearFechaISO(fecha);
   }
 
   formatearFechaLegible(fecha: Date): string {
-    return fecha.toLocaleDateString('es-AR', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
+    return this._dateUtils.formatearFechaLegible(fecha);
   }
 
   get totalPersonas(): number {

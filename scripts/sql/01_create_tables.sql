@@ -11,6 +11,15 @@ SET QUOTED_IDENTIFIER ON;
 GO
 
 /* ==========================================================
+   CONFIGURACIÓN DE TIMEZONE
+   Timezone: UTC-3 (Buenos Aires, Argentina)
+   Nota: SQL Server maneja timezone a nivel de aplicación.
+   Para consultas con timezone específico usar: AT TIME ZONE 'Argentina Standard Time'
+   ========================================================== */
+SET DATEFIRST 1; -- Lunes como primer día de la semana
+GO
+
+/* ==========================================================
    LIMPIEZA PREVIA
    Elimina todas las tablas del esquema RISTORINO en orden inverso
    de dependencias (de las m�s dependientes a las m�s base)

@@ -2,6 +2,7 @@ import { Component, Input, OnInit, OnChanges, SimpleChanges, inject, Output, Eve
 import { CommonModule } from '@angular/common';
 import { RestauranteResource } from '../../api/resources/restaurante-resource';
 import { IHorariosDisponiblesResponse, IZona, IHorario } from '../../api/models/i-horario-disponible';
+import { DateUtilsService } from '../../../core/services/date-utils.service';
 
 export interface HorarioSeleccionado {
   codZona: string;
@@ -34,6 +35,7 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
   horarioSeleccionadoActual: { zona: IZona; horario: IHorario } | null = null;
 
   private _restauranteResource = inject(RestauranteResource);
+  private _dateUtils = inject(DateUtilsService);
 
   ngOnInit(): void {
     if (this.fechaSeleccionada) {
@@ -99,19 +101,11 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
   }
 
   formatearFecha(fecha: Date): string {
-    const year = fecha.getFullYear();
-    const month = String(fecha.getMonth() + 1).padStart(2, '0');
-    const day = String(fecha.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return this._dateUtils.formatearFechaISO(fecha);
   }
 
   formatearFechaLegible(fecha: Date): string {
-    return fecha.toLocaleDateString('es-AR', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
+    return this._dateUtils.formatearFechaLegible(fecha);
   }
 
   cambiarFecha(dias: number): void {

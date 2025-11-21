@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { IReserva } from '../../api/models/i-reserva';
 import { AuthService } from '../../../core/services/auth-service';
+import { DateUtilsService } from '../../../core/services/date-utils.service';
 
 interface ReservaPorDia {
   fecha: Date;
@@ -27,6 +28,7 @@ export class MisReservasPage implements OnInit {
   private _auth = inject(AuthService);
   private _router = inject(Router);
   private _route = inject(ActivatedRoute);
+  private _dateUtils = inject(DateUtilsService);
 
   ngOnInit(): void {
     if (!this._auth.isAuthenticated()) {
@@ -73,12 +75,7 @@ export class MisReservasPage implements OnInit {
         const esHoy = fechaReserva.getTime() === hoy.getTime();
         const titulo = esHoy 
           ? 'Hoy' 
-          : fechaReserva.toLocaleDateString('es-AR', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            });
+          : this._dateUtils.formatearFechaLegible(fechaReserva);
 
         gruposMap.set(fechaKey, {
           fecha: fechaReserva,
@@ -120,14 +117,7 @@ export class MisReservasPage implements OnInit {
     if (!fecha) return 'No disponible';
     try {
       const date = new Date(fecha);
-      return date.toLocaleDateString('es-AR', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      return this._dateUtils.formatearFechaHora(date);
     } catch {
       return fecha;
     }
