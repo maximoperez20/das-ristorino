@@ -22,6 +22,7 @@ export class MisReservasPage implements OnInit {
 
   reservas: IReserva[] = [];
   reservasPorDia: ReservaPorDia[] = [];
+  filtroActivo: string | undefined = undefined;
 
   private _auth = inject(AuthService);
   private _router = inject(Router);
@@ -166,6 +167,17 @@ export class MisReservasPage implements OnInit {
     } catch {
       return false;
     }
+  }
+
+  filtrarPorEstado(estadoFiltrado: string | undefined): void {
+    this.filtroActivo = estadoFiltrado;
+    
+    // Si no hay filtro, mostrar todas las reservas
+    const reservasFiltradas: IReserva[] = estadoFiltrado 
+      ? this.reservas.filter((item) => item.estado === estadoFiltrado)
+      : this.reservas;
+    
+    this.reservasPorDia = this.agruparReservasPorDia(reservasFiltradas);
   }
 
 }

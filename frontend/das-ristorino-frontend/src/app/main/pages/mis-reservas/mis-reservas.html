@@ -12,15 +12,60 @@
       </div>
     </div>
 
-    @if (reservas.length === 0) {
+    <h4>Filtrar por estado</h4>
+    <div class="d-flex flex-row gap-2 mb-4 flex-wrap">
+      <button 
+        class="btn"
+        [ngClass]="filtroActivo === undefined ? 'btn-primary' : 'btn-outline-primary'"
+        (click)="filtrarPorEstado(undefined)">
+        <i class="bi bi-list-ul me-1"></i>
+        Todas
+      </button>
+      <button 
+        class="btn"
+        [ngClass]="filtroActivo === 'Confirmada' ? 'btn-success' : 'btn-outline-success'"
+        (click)="filtrarPorEstado('Confirmada')">
+        <i class="bi bi-check-circle me-1"></i>
+        Confirmada
+      </button>
+      <button 
+        class="btn"
+        [ngClass]="filtroActivo === 'Cancelada' ? 'btn-danger' : 'btn-outline-danger'"
+        (click)="filtrarPorEstado('Cancelada')">
+        <i class="bi bi-x-circle me-1"></i>
+        Cancelada
+      </button>
+      <button 
+        class="btn"
+        [ngClass]="filtroActivo === 'Pendiente' ? 'btn-warning' : 'btn-outline-warning'"
+        (click)="filtrarPorEstado('Pendiente')">
+        <i class="bi bi-clock-history me-1"></i>
+        Pendiente
+      </button>
+      <button 
+        class="btn"
+        [ngClass]="filtroActivo === 'Finalizada' ? 'btn-secondary' : 'btn-outline-secondary'"
+        (click)="filtrarPorEstado('Finalizada')">
+        <i class="bi bi-check2-all me-1"></i>
+        Finalizada
+      </button>
+    </div>
+    
+    @if (reservasPorDia.length === 0) {
       <div class="row">
         <div class="col-12">
           <div class="alert alert-info text-center" role="alert">
-            <i class="bi bi-info-circle"></i> No tienes reservas registradas.
+            <i class="bi bi-info-circle"></i> 
+            @if (filtroActivo) {
+              No tienes reservas con estado "{{ filtroActivo }}".
+            } @else {
+              No tienes reservas registradas.
+            }
           </div>
         </div>
       </div>
     } @else {
+
       @for (grupo of reservasPorDia; track grupo.fechaKey) {
         <div class="reservas-grupo mb-5">
           <h3 class="grupo-titulo mb-4">
