@@ -1,14 +1,15 @@
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import type { IPromocion } from '../../api/models/i-promocion';
 import { IClick } from '../../api/models/i-click';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { PromocionResource } from '../../api/resources/promocion-resource';
 import { Router } from '@angular/router';
+import { DateUtilsService } from '../../../core/services/date-utils.service';
 
 @Component({
   selector: 'app-promocion',
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule],
   templateUrl: './promocion.html',
   styleUrls: ['./promocion.scss'],
 })
@@ -17,7 +18,8 @@ export class PromocionComponent {
   @Output() verPromocion = new EventEmitter<IPromocion>();
 
   private _promocionResource = inject(PromocionResource);
-  private _router = inject(Router);  // ✅ así se obtiene la instancia
+  private _router = inject(Router);
+  private _dateUtils = inject(DateUtilsService);
 
 
   registrarClickPromocion() {
@@ -40,5 +42,10 @@ export class PromocionComponent {
        
       }); 
     }
+
+  formatearFecha(fecha: string | null | undefined): string {
+    if (!fecha) return '';
+    return this._dateUtils.formatearFecha(fecha);
+  }
 
 }
