@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "extract-i18n": "ng extract-i18n --output-path=src/locale && xliffmerge --profile xliffmerge.json",
+    "start": "ng serve --open --configuration=development-es",
+    "start-en": "ng serve --open --port 4201 --configuration=development-en",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -41,6 +43,7 @@
     "@angular/build": "^20.3.5",
     "@angular/cli": "^20.3.5",
     "@angular/compiler-cli": "^20.3.0",
+    "@angular/localize": "^20.3.9",
     "@types/jasmine": "~5.1.0",
     "jasmine-core": "~5.9.0",
     "karma": "~6.4.0",
