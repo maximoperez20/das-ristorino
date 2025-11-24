@@ -124,6 +124,11 @@ export class PreferenciasRegistroPage implements OnInit {
     return total;
   }
 
+  getTextoPreferencias(): string {
+    const total = this.totalSelecciones();
+    return total === 1 ? $localize`preferencia` : $localize`preferencias`;
+  }
+
   guardarPreferencias(): void {
     // Convertir las selecciones a formato IPreferenciaItem[]
     const preferencias: IPreferenciaItem[] = [];
@@ -141,8 +146,8 @@ export class PreferenciasRegistroPage implements OnInit {
     if (preferencias.length === 0) {
       // Si no hay selecciones, simplemente continuar
       this._messageService.showMessage({
-        text: 'No se seleccionaron preferencias. Puedes continuar.',
-        title: 'Sin preferencias'
+        text: $localize`No se seleccionaron preferencias. Puedes continuar.`,
+        title: $localize`Sin preferencias`
       });
       this._router.navigate(['/mi-perfil']);
       return;
@@ -152,8 +157,8 @@ export class PreferenciasRegistroPage implements OnInit {
     this._preferenciaResource.guardarPreferencias({ preferencias }).subscribe({
       next: (response) => {
         this._messageService.showMessage({
-          text: 'Tus preferencias gastronómicas han sido guardadas exitosamente.',
-          title: 'Preferencias guardadas'
+          text: $localize`Tus preferencias gastronómicas han sido guardadas exitosamente.`,
+          title: $localize`Preferencias guardadas`
         });
         this._router.navigate(['/mi-perfil']);
       },
