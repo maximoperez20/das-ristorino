@@ -18,4 +18,8 @@ export class MessageDialog {
 
   constructor(@Inject(MAT_DIALOG_DATA) public message: IMessage, public ref: MatDialogRef<MessageDialog>) {}
 
+  get displayTitle(): string {
+    return this.message.title || $localize`Mensaje de error`;
+  }
+
 }
