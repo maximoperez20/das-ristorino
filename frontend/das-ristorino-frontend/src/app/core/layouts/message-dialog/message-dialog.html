@@ -1,7 +1,7 @@
-<h2 mat-dialog-title>{{ message.title || 'Mensaje de error' }}</h2>
+<h2 mat-dialog-title>{{ displayTitle }}</h2>
 <div mat-dialog-content>
   <p>{{ message.text }}</p>
 </div>
 <div mat-dialog-actions align="end">
-  <button mat-button (click)="ref.close()">Cerrar</button>
+  <button mat-button (click)="ref.close()" i18n>Cerrar</button>
 </div>

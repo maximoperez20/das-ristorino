@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-  <file source-language="en-US" datatype="plaintext" original="ng2.template">
+  <file source-language="es-AR" datatype="plaintext" original="ng2.template" target-language="es-AR">
     <body>
       <trans-unit id="7546403253031591787" datatype="html">
         <source>Error al conectarse al servicio</source>
+        <target>Error al conectarse al servicio</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/core/handlers/app-error-handler.ts</context>
           <context context-type="linenumber">27</context>
@@ -11,6 +12,7 @@
       </trans-unit>
       <trans-unit id="4798961227159743968" datatype="html">
         <source>Cerrar</source>
+        <target>Cerrar</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/core/layouts/message-dialog/message-dialog.html</context>
           <context context-type="linenumber">6,7</context>
@@ -18,6 +20,7 @@
       </trans-unit>
       <trans-unit id="740484157946723524" datatype="html">
         <source>Mensaje de error</source>
+        <target>Mensaje de error</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/core/layouts/message-dialog/message-dialog.ts</context>
           <context context-type="linenumber">22</context>
@@ -25,6 +28,7 @@
       </trans-unit>
       <trans-unit id="5657091963023266979" datatype="html">
         <source>Ristorino</source>
+        <target>Ristorino</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/components/header/header.html</context>
           <context context-type="linenumber">3,4</context>
@@ -32,6 +36,7 @@
       </trans-unit>
       <trans-unit id="2821179408673282599" datatype="html">
         <source>Home</source>
+        <target>Inicio</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/components/header/header.html</context>
           <context context-type="linenumber">12</context>
@@ -39,6 +44,7 @@
       </trans-unit>
       <trans-unit id="3241115855410558696" datatype="html">
         <source>Restaurantes</source>
+        <target>Restaurantes</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/components/header/header.html</context>
           <context context-type="linenumber">14,15</context>
@@ -46,6 +52,7 @@
       </trans-unit>
       <trans-unit id="7148049435359098699" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-person-circle&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Mi Perfil </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-person-circle&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Mi Perfil </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/components/header/header.html</context>
           <context context-type="linenumber">34,35</context>
@@ -53,6 +60,7 @@
       </trans-unit>
       <trans-unit id="7744445674750984119" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calendar-check&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Mis Reservas </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calendar-check&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Mis Reservas </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/components/header/header.html</context>
           <context context-type="linenumber">39,40</context>
@@ -60,6 +68,7 @@
       </trans-unit>
       <trans-unit id="4603769204344706415" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-box-arrow-right&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Cerrar Sesión </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-box-arrow-right&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Cerrar Sesión </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/components/header/header.html</context>
           <context context-type="linenumber">45,46</context>
@@ -67,6 +76,7 @@
       </trans-unit>
       <trans-unit id="3085918089863099904" datatype="html">
         <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-box-arrow-in-right&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Iniciar Sesión </source>
+        <target><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-box-arrow-in-right&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Iniciar Sesión </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/components/header/header.html</context>
           <context context-type="linenumber">53,54</context>
@@ -78,6 +88,7 @@
       </trans-unit>
       <trans-unit id="8024932591315166082" datatype="html">
         <source>Iniciar Sesión</source>
+        <target>Iniciar Sesión</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.html</context>
           <context context-type="linenumber">8,9</context>
@@ -85,6 +96,7 @@
       </trans-unit>
       <trans-unit id="3928627057593638232" datatype="html">
         <source>Ingresa tus credenciales para acceder</source>
+        <target>Ingresa tus credenciales para acceder</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.html</context>
           <context context-type="linenumber">9,10</context>
@@ -92,6 +104,7 @@
       </trans-unit>
       <trans-unit id="4401057011206112121" datatype="html">
         <source>Correo electrónico</source>
+        <target>Correo electrónico</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.html</context>
           <context context-type="linenumber">14,15</context>
@@ -99,6 +112,7 @@
       </trans-unit>
       <trans-unit id="3940679262023491064" datatype="html">
         <source>tu@correo.com</source>
+        <target>tu@correo.com</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.html</context>
           <context context-type="linenumber">21,22</context>
@@ -106,6 +120,7 @@
       </trans-unit>
       <trans-unit id="2554200166987065387" datatype="html">
         <source>El correo es obligatorio</source>
+        <target>El correo es obligatorio</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.html</context>
           <context context-type="linenumber">27,28</context>
@@ -113,6 +128,7 @@
       </trans-unit>
       <trans-unit id="2679625057481756757" datatype="html">
         <source>El formato del correo no es válido</source>
+        <target>El formato del correo no es válido</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.html</context>
           <context context-type="linenumber">29,30</context>
@@ -120,6 +136,7 @@
       </trans-unit>
       <trans-unit id="7132730488496169673" datatype="html">
         <source>Contraseña</source>
+        <target>Contraseña</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.html</context>
           <context context-type="linenumber">36,37</context>
@@ -127,6 +144,7 @@
       </trans-unit>
       <trans-unit id="5114733433641546266" datatype="html">
         <source>Tu contraseña</source>
+        <target>Tu contraseña</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.html</context>
           <context context-type="linenumber">44,45</context>
@@ -134,6 +152,7 @@
       </trans-unit>
       <trans-unit id="6118062707121903803" datatype="html">
         <source>La contraseña es obligatoria</source>
+        <target>La contraseña es obligatoria</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.html</context>
           <context context-type="linenumber">58,59</context>
@@ -141,6 +160,7 @@
       </trans-unit>
       <trans-unit id="8211373597011122895" datatype="html">
         <source>La contraseña debe tener al menos 6 caracteres</source>
+        <target>La contraseña debe tener al menos 6 caracteres</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.html</context>
           <context context-type="linenumber">60,61</context>
@@ -148,6 +168,7 @@
       </trans-unit>
       <trans-unit id="2037725752305087837" datatype="html">
         <source> ¿No tienes una cuenta? <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;/register&quot; class=&quot;text-decoration-none&quot;&gt;"/>Regístrate aquí<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/></source>
+        <target> ¿No tienes una cuenta? <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;/register&quot; class=&quot;text-decoration-none&quot;&gt;"/>Regístrate aquí<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/></target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.html</context>
           <context context-type="linenumber">80,82</context>
@@ -155,6 +176,7 @@
       </trans-unit>
       <trans-unit id="3156815681052903063" datatype="html">
         <source>Bienvenido, <x id="PH" equiv-text="response.nombre"/> <x id="PH_1" equiv-text="response.apellido"/>!</source>
+        <target>Bienvenido, <x id="PH" equiv-text="response.nombre"/> <x id="PH_1" equiv-text="response.apellido"/>!</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.ts</context>
           <context context-type="linenumber">62</context>
@@ -162,6 +184,7 @@
       </trans-unit>
       <trans-unit id="6773075642225299208" datatype="html">
         <source>Sesión iniciada</source>
+        <target>Sesión iniciada</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.ts</context>
           <context context-type="linenumber">63</context>
@@ -169,6 +192,7 @@
       </trans-unit>
       <trans-unit id="5643140426608893283" datatype="html">
         <source>Ocultar contraseña</source>
+        <target>Ocultar contraseña</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.ts</context>
           <context context-type="linenumber">90</context>
@@ -176,6 +200,7 @@
       </trans-unit>
       <trans-unit id="3178720462552134269" datatype="html">
         <source>Mostrar contraseña</source>
+        <target>Mostrar contraseña</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.ts</context>
           <context context-type="linenumber">90</context>
@@ -184,3 +209,4 @@
     </body>
   </file>
 </xliff>
+

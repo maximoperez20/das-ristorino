@@ -59,8 +59,8 @@ export class LoginPage implements OnInit {
 
         // Mostrar mensaje de éxito
         this._messageService.showMessage({
-          text: `Bienvenido, ${response.nombre} ${response.apellido}!`,
-          title: 'Sesión iniciada'
+          text: $localize`Bienvenido, ${response.nombre} ${response.apellido}!`,
+          title: $localize`Sesión iniciada`
         });
 
         // Redirigir a mis reservas
@@ -84,6 +84,10 @@ export class LoginPage implements OnInit {
 
   toggleMostrarPassword(): void {
     this.mostrarPassword = !this.mostrarPassword;
+  }
+
+  getAriaLabelPassword(): string {
+    return this.mostrarPassword ? $localize`Ocultar contraseña` : $localize`Mostrar contraseña`;
   }
 
   get correo() {
