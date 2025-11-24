@@ -98,8 +98,8 @@ export class RegisterPage implements OnInit {
 
                // Mostrar mensaje de éxito
                this._messageService.showMessage({
-                 text: `¡Bienvenido, ${response.nombre} ${response.apellido}! Tu cuenta ha sido creada exitosamente.`,
-                 title: 'Registro exitoso'
+                 text: $localize`¡Bienvenido, ${response.nombre} ${response.apellido}! Tu cuenta ha sido creada exitosamente.`,
+                 title: $localize`Registro exitoso`
                });
 
                // Redirigir a preferencias (segundo paso del registro)
@@ -127,6 +127,14 @@ export class RegisterPage implements OnInit {
 
   toggleMostrarConfirmPassword(): void {
     this.mostrarConfirmPassword = !this.mostrarConfirmPassword;
+  }
+
+  getAriaLabelPassword(): string {
+    return this.mostrarPassword ? $localize`Ocultar contraseña` : $localize`Mostrar contraseña`;
+  }
+
+  getAriaLabelConfirmPassword(): string {
+    return this.mostrarConfirmPassword ? $localize`Ocultar contraseña` : $localize`Mostrar contraseña`;
   }
 
   get nombre() {

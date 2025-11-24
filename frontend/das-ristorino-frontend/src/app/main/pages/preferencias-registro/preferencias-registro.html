@@ -5,20 +5,20 @@
         <div class="card preferencias-card shadow">
           <div class="card-body p-4">
             <div class="text-center mb-4">
-              <h2 class="card-title mb-2">Preferencias Gastronómicas</h2>
-              <p class="text-muted">Selecciona tus preferencias para personalizar tu experiencia</p>
-              <p class="text-muted small">Puedes seleccionar múltiples opciones en cada categoría</p>
+              <h2 class="card-title mb-2" i18n>Preferencias Gastronómicas</h2>
+              <p class="text-muted" i18n>Selecciona tus preferencias para personalizar tu experiencia</p>
+              <p class="text-muted small" i18n>Puedes seleccionar múltiples opciones en cada categoría</p>
             </div>
 
             @if (cargando && categorias.length === 0) {
               <div class="text-center py-5">
                 <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden">Cargando...</span>
+                  <span class="visually-hidden" i18n>Cargando...</span>
                 </div>
               </div>
             } @else {
               @if (categorias.length === 0) {
-                <div class="alert alert-warning text-center" role="alert">
+                <div class="alert alert-warning text-center" role="alert" i18n>
                   No se pudieron cargar las categorías de preferencias.
                 </div>
               } @else {
@@ -55,7 +55,7 @@
                 <div class="resumen-selecciones mb-4">
                   <div class="alert alert-info" role="alert">
                     <i class="bi bi-info-circle me-2"></i>
-                    <strong>Total seleccionado:</strong> {{ totalSelecciones() }} preferencia{{ totalSelecciones() !== 1 ? 's' : '' }}
+                    <strong i18n>Total seleccionado:</strong> {{ totalSelecciones() }} {{ getTextoPreferencias() }}
                   </div>
                 </div>
 
@@ -64,7 +64,8 @@
                     type="button"
                     class="btn btn-outline-secondary"
                     (click)="omitir()"
-                    [disabled]="cargando">
+                    [disabled]="cargando"
+                    i18n>
                     <i class="bi bi-skip-forward me-2"></i>
                     Omitir este paso
                   </button>
@@ -72,7 +73,8 @@
                     type="button"
                     class="btn btn-primary"
                     (click)="guardarPreferencias()"
-                    [disabled]="cargando">
+                    [disabled]="cargando"
+                    i18n>
                     @if (cargando) {
                       <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                     } @else {
