@@ -319,7 +319,7 @@
         <target>preference</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.ts</context>
-          <context context-type="linenumber">129</context>
+          <context context-type="linenumber">130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1994712740645243734" datatype="html">
@@ -327,7 +327,7 @@
         <target>preferences</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.ts</context>
-          <context context-type="linenumber">129</context>
+          <context context-type="linenumber">130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7457119558620596403" datatype="html">
@@ -335,7 +335,7 @@
         <target>No preferences selected. You can continue.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.ts</context>
-          <context context-type="linenumber">149</context>
+          <context context-type="linenumber">151</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5166827722286287186" datatype="html">
@@ -343,7 +343,7 @@
         <target>No preferences</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.ts</context>
-          <context context-type="linenumber">150</context>
+          <context context-type="linenumber">152</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2811752961371624137" datatype="html">
@@ -351,7 +351,7 @@
         <target>Your gastronomic preferences have been saved successfully.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.ts</context>
-          <context context-type="linenumber">160</context>
+          <context context-type="linenumber">162</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8253475360221692409" datatype="html">
@@ -359,7 +359,7 @@
         <target>Preferences saved</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.ts</context>
-          <context context-type="linenumber">161</context>
+          <context context-type="linenumber">163</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7875220663406358589" datatype="html">
@@ -556,7 +556,7 @@
       </trans-unit>
       <trans-unit id="3986889358093539613" datatype="html">
         <source> ¿Ya tienes una cuenta? <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;/login&quot; class=&quot;text-decoration-none&quot;&gt;"/>Inicia sesión aquí<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/></source>
-        <target>¿Ya tienes una cuenta? Inicia sesión aquí</target>
+        <target>Already have an account?</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/register/register.html</context>
           <context context-type="linenumber">200,202</context>

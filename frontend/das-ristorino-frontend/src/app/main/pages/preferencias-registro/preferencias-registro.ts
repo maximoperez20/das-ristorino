@@ -4,6 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { PreferenciaResource } from '../../api/resources/preferencia-resource';
 import { AppMessageService } from '../../../core/services/app-message-service';
 import { AuthService } from '../../../core/services/auth-service';
+import { TranslateBdPipe } from '../../../core/pipes/translate-bd.pipe';
 import { ICategoriaConDominios } from '../../api/models/i-categoria-con-dominios';
 import { IPreferenciaItem } from '../../api/models/i-preferencia-item';
 import { IPreferenciaCliente } from '../../api/models/i-preferencia-cliente';
@@ -11,7 +12,7 @@ import { IPreferenciaCliente } from '../../api/models/i-preferencia-cliente';
 @Component({
   selector: 'app-preferencias-registro',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateBdPipe],
   templateUrl: './preferencias-registro.html',
   styleUrls: ['./preferencias-registro.scss'],
 })
@@ -128,6 +129,7 @@ export class PreferenciasRegistroPage implements OnInit {
     const total = this.totalSelecciones();
     return total === 1 ? $localize`preferencia` : $localize`preferencias`;
   }
+
 
   guardarPreferencias(): void {
     // Convertir las selecciones a formato IPreferenciaItem[]
