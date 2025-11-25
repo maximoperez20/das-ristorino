@@ -29,7 +29,7 @@ export class RestaurantesPage implements OnInit {
   }
 
   formatearHorario(horario: string | null): string {
-    if (!horario) return 'No disponible';
+    if (!horario) return $localize`No disponible`;
     // Formato esperado: "HH:mm:ss" -> convertir a "HH:mm"
     const partes = horario.split(':');
     if (partes.length >= 2) {
