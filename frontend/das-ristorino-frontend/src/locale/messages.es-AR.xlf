@@ -58,6 +58,162 @@
           <context context-type="linenumber">20</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="3255979668577259296" datatype="html">
+        <source>Sobre el restaurante</source>
+        <target>Sobre el restaurante</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">32,33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="27938269079184046" datatype="html">
+        <source>Dirección</source>
+        <target>Dirección</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">41,42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8437243144618493917" datatype="html">
+        <source>Teléfono</source>
+        <target>Teléfono</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">50,51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4768749765465246664" datatype="html">
+        <source>Email</source>
+        <target>Email</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">60,61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4274935054059886393" datatype="html">
+        <source>Horario</source>
+        <target>Horario</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">69,70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="846986420217451773" datatype="html">
+        <source>Días de atención</source>
+        <target>Días de atención</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">80,81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1563851922566456266" datatype="html">
+        <source>Capacidad</source>
+        <target>Capacidad</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">89,90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5965569851521247507" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ restaurante.capacidad }}"/> personas</source>
+        <target>Capacidad: {INTERPOLATION} personas</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">90,91</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2228061406315590457" datatype="html">
+        <source>Tipo de cocina</source>
+        <target>Tipo de cocina</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">97,98</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8152041600291841538" datatype="html">
+        <source>Información</source>
+        <target>Información</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">110,112</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5308089386353373336" datatype="html">
+        <source>Activo</source>
+        <target>Activo</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">113,114</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3838676801008878481" datatype="html">
+        <source>Inactivo</source>
+        <target>Inactivo</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">115,116</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4062077207205566613" datatype="html">
+        <source>Calificación</source>
+        <target>Calificación</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">120,121</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7922404467701065306" datatype="html">
+        <source>Sucursales</source>
+        <target>Sucursales</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">139,140</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2638998326203335346" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-check-circle-fill&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Seleccionada </source>
+        <target>Seleccionada</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">148,149</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4863862668920662665" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-people-fill text-primary&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Capacidad: <x id="INTERPOLATION" equiv-text="{{ sucursal.capacidad }}"/> personas </source>
+        <target>Capacidad</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">166,168</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7976033268821733717" datatype="html">
+        <source>Promociones</source>
+        <target>Promociones</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">208,209</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2441177355999625076" datatype="html">
+        <source>Restaurante no encontrado.</source>
+        <target>Restaurante no encontrado.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.html</context>
+          <context context-type="linenumber">221,222</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2173207350647937239" datatype="html">
+        <source>No disponible</source>
+        <target>No disponible</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/detalle-restaurante/detalle-restaurante.ts</context>
+          <context context-type="linenumber">60</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/restaurantes/restaurantes.ts</context>
+          <context context-type="linenumber">32</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="5657091963023266979" datatype="html">
         <source>Ristorino</source>
         <target>Ristorino</target>
@@ -664,6 +820,46 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/register/register.ts</context>
           <context context-type="linenumber">102</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8619332119681943179" datatype="html">
+        <source>Nuestros Restaurantes</source>
+        <target>Nuestros Restaurantes</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/restaurantes/restaurantes.html</context>
+          <context context-type="linenumber">5,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2023056404328866944" datatype="html">
+        <source>Descubre los mejores restaurantes disponibles</source>
+        <target>Descubre los mejores restaurantes disponibles</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/restaurantes/restaurantes.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="821630191661284582" datatype="html">
+        <source>No hay restaurantes disponibles en este momento.</source>
+        <target>No hay restaurantes disponibles en este momento.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/restaurantes/restaurantes.html</context>
+          <context context-type="linenumber">14,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="821060978568348898" datatype="html">
+        <source>Capacidad: <x id="INTERPOLATION" equiv-text="{{ restaurante.capacidad }}"/> personas</source>
+        <target>Capacidad</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/restaurantes/restaurantes.html</context>
+          <context context-type="linenumber">89,90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3687407110162199401" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-eye&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Ver Detalles </source>
+        <target>Ver Detalles</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/restaurantes/restaurantes.html</context>
+          <context context-type="linenumber">98,99</context>
         </context-group>
       </trans-unit>
     </body>

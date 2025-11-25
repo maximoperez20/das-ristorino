@@ -29,7 +29,7 @@
                 <div class="info-section">
                     @if (restaurante.descripcion) {
                         <div class="mb-4">
-                            <h3 class="section-title">Sobre el restaurante</h3>
+                            <h3 class="section-title" i18n>Sobre el restaurante</h3>
                             <p class="text-muted">{{ restaurante.descripcion }}</p>
                         </div>
                     }
@@ -38,7 +38,7 @@
                         <div class="info-item">
                             <i class="bi bi-geo-alt-fill text-primary"></i>
                             <div>
-                                <strong>Dirección</strong>
+                                <strong i18n>Dirección</strong>
                                 <p class="mb-0">{{ restaurante.direccion }}</p>
                             </div>
                         </div>
@@ -47,7 +47,7 @@
                             <div class="info-item">
                                 <i class="bi bi-telephone-fill text-primary"></i>
                                 <div>
-                                    <strong>Teléfono</strong>
+                                    <strong i18n>Teléfono</strong>
                                     <p class="mb-0">{{ restaurante.telefono }}</p>
                                 </div>
                             </div>
@@ -57,7 +57,7 @@
                             <div class="info-item">
                                 <i class="bi bi-envelope-fill text-primary"></i>
                                 <div>
-                                    <strong>Email</strong>
+                                    <strong i18n>Email</strong>
                                     <p class="mb-0">{{ restaurante.email }}</p>
                                 </div>
                             </div>
@@ -66,7 +66,7 @@
                         <div class="info-item">
                             <i class="bi bi-clock-fill text-primary"></i>
                             <div>
-                                <strong>Horario</strong>
+                                <strong i18n>Horario</strong>
                                 <p class="mb-0">
                                     {{ formatearHorario(restaurante.horarioApertura) }} - {{ formatearHorario(restaurante.horarioCierre) }}
                                 </p>
@@ -77,7 +77,7 @@
                             <div class="info-item">
                                 <i class="bi bi-calendar-week text-primary"></i>
                                 <div>
-                                    <strong>Días de atención</strong>
+                                    <strong i18n>Días de atención</strong>
                                     <p class="mb-0">{{ restaurante.diasAtencion }}</p>
                                 </div>
                             </div>
@@ -86,18 +86,18 @@
                         <div class="info-item">
                             <i class="bi bi-people-fill text-primary"></i>
                             <div>
-                                <strong>Capacidad</strong>
-                                <p class="mb-0">{{ restaurante.capacidad }} personas</p>
+                                <strong i18n>Capacidad</strong>
+                                <p class="mb-0" i18n>{{ restaurante.capacidad }} personas</p>
                             </div>
                         </div>
                     </div>
 
                     @if (restaurante.tipoCocina && restaurante.tipoCocina.length > 0) {
                         <div class="mb-4">
-                            <h3 class="section-title">Tipo de cocina</h3>
+                            <h3 class="section-title" i18n>Tipo de cocina</h3>
                             <div class="tags-container">
                                 @for (tipo of restaurante.tipoCocina; track tipo) {
-                                    <span class="badge bg-secondary me-2 mb-2">{{ tipo }}</span>
+                                    <span class="badge bg-secondary me-2 mb-2">{{ tipo | translateBd }}</span>
                                 }
                             </div>
                         </div>
@@ -107,17 +107,17 @@
 
             <div class="col-lg-4">
                 <div class="sidebar-card">
-                    <h4 class="mb-3">Información</h4>
+                    <h4 class="mb-3" i18n>Información</h4>
 
                     @if (restaurante.activo) {
-                        <span class="badge bg-success mb-3 d-block">Activo</span>
+                        <span class="badge bg-success mb-3 d-block" i18n>Activo</span>
                     } @else {
-                        <span class="badge bg-secondary mb-3 d-block">Inactivo</span>
+                        <span class="badge bg-secondary mb-3 d-block" i18n>Inactivo</span>
                     }
 
                     @if (restaurante.calificacion) {
                         <div class="mb-3">
-                            <strong>Calificación</strong>
+                            <strong i18n>Calificación</strong>
                             <div class="mt-2">
                                 @for (star of [1,2,3,4,5]; track star) {
                                     <i class="bi fs-5"
@@ -136,7 +136,7 @@
         @if (restaurante.sucursales && restaurante.sucursales.length > 0) {
             <div class="section-divider"></div>
             <div class="mb-5">
-                <h2 class="section-title mb-4">Sucursales</h2>
+                <h2 class="section-title mb-4" i18n>Sucursales</h2>
                 <div class="row g-4">
                     @for (sucursal of restaurante.sucursales; track sucursal.nroSucursal) {
                         <div class="col-md-6">
@@ -144,7 +144,7 @@
                                  [class.selected]="esSucursalSeleccionada(sucursal)"
                                  (click)="seleccionarSucursal(sucursal)">
                                 @if (esSucursalSeleccionada(sucursal)) {
-                                    <div class="selected-badge">
+                                    <div class="selected-badge" i18n>
                                         <i class="bi bi-check-circle-fill"></i> Seleccionada
                                     </div>
                                 }
@@ -162,7 +162,7 @@
                                         <i class="bi bi-telephone-fill text-primary"></i>
                                         {{ sucursal.telefonos }}
                                     </p>
-                                    <p class="mb-2">
+                                    <p class="mb-2" i18n>
                                         <i class="bi bi-people-fill text-primary"></i>
                                         Capacidad: {{ sucursal.capacidad }} personas
                                     </p>
@@ -205,7 +205,7 @@
         @if (restaurante.promociones && restaurante.promociones.length > 0) {
             <div class="section-divider"></div>
             <div class="mb-5">
-                <h2 class="section-title mb-4">Promociones</h2>
+                <h2 class="section-title mb-4" i18n>Promociones</h2>
                 @for (promocion of restaurante.promociones; track promocion.id) {
                 <app-promocion [promocion]="promocion"></app-promocion>
                 }
@@ -218,7 +218,7 @@
 } @else {
 <div class="container py-5">
     <div class="alert alert-warning text-center" role="alert">
-        <i class="bi bi-exclamation-triangle"></i> Restaurante no encontrado.
+        <i class="bi bi-exclamation-triangle"></i> <span i18n>Restaurante no encontrado.</span>
     </div>
 </div>
 }

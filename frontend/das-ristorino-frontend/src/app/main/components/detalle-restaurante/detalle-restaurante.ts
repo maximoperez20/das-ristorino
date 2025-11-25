@@ -7,11 +7,12 @@ import { HorariosDisponiblesComponent, HorarioSeleccionado } from '../horarios-d
 import { PromocionComponent } from "../promocion/promocion";
 import { FormularioReservaComponent } from '../formulario-reserva/formulario-reserva';
 import { AuthService } from '../../../core/services/auth-service';
+import { TranslateBdPipe } from '../../../core/pipes/translate-bd.pipe';
 
 @Component({
   selector: 'app-detalle-restaurante',
   standalone: true,
-  imports: [NgClass, HorariosDisponiblesComponent, PromocionComponent, FormularioReservaComponent],
+  imports: [NgClass, HorariosDisponiblesComponent, PromocionComponent, FormularioReservaComponent, TranslateBdPipe],
   templateUrl: './detalle-restaurante.html',
   styleUrls: ['./detalle-restaurante.scss'],
 })
@@ -56,7 +57,7 @@ export class DetalleRestauranteComponent implements OnInit {
   }
 
   formatearHorario(horario: string | null): string {
-    if (!horario) return 'No disponible';
+    if (!horario) return $localize`No disponible`;
     const partes = horario.split(':');
     if (partes.length >= 2) {
       return `${partes[0]}:${partes[1]}`;

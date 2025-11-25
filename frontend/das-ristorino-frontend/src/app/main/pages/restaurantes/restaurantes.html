@@ -2,8 +2,8 @@
   <div class="container-fluid py-4">
     <div class="row mb-4">
       <div class="col-12">
-        <h1 class="text-center mb-3">Nuestros Restaurantes</h1>
-        <p class="text-center text-muted">Descubre los mejores restaurantes disponibles</p>
+        <h1 class="text-center mb-3" i18n>Nuestros Restaurantes</h1>
+        <p class="text-center text-muted" i18n>Descubre los mejores restaurantes disponibles</p>
       </div>
     </div>
 
@@ -11,7 +11,7 @@
       <div class="row">
         <div class="col-12">
           <div class="alert alert-info text-center" role="alert">
-            <i class="bi bi-info-circle"></i> No hay restaurantes disponibles en este momento.
+            <i class="bi bi-info-circle"></i> <span i18n>No hay restaurantes disponibles en este momento.</span>
           </div>
         </div>
       </div>
@@ -86,14 +86,15 @@
 
                   <div class="info-item">
                     <i class="bi bi-people-fill text-primary"></i>
-                    <span class="ms-2">Capacidad: {{ restaurante.capacidad }} personas</span>
+                    <span class="ms-2" i18n>Capacidad: {{ restaurante.capacidad }} personas</span>
                   </div>
                 </div>
 
                 <div class="mt-auto">
                   <a 
                     (click)="redirigirADetalleRestaurante(restaurante)"
-                    class="btn btn-primary w-100">
+                    class="btn btn-primary w-100"
+                    i18n>
                     <i class="bi bi-eye"></i> Ver Detalles
                   </a>
                 </div>
