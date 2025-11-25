@@ -44,5 +44,9 @@ export class PromocionesPage implements OnInit {
         },
       });
   }
+
+  getAriaLabelSlide(index: number): string {
+    return $localize`Slide ${index}`;
+  }
   
 }

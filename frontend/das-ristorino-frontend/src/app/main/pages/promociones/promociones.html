@@ -4,8 +4,8 @@
   <div class="container-fluid py-5">
     <div class="row mb-4">
       <div class="col-12 text-center">
-        <h1 class="display-5 fw-bold mb-3">Promociones Especiales</h1>
-        <p class="lead text-muted">Descubre las mejores ofertas y descuentos en nuestros restaurantes</p>
+        <h1 class="display-5 fw-bold mb-3" i18n>Promociones Especiales</h1>
+        <p class="lead text-muted" i18n>Descubre las mejores ofertas y descuentos en nuestros restaurantes</p>
       </div>
     </div>
 
@@ -14,8 +14,8 @@
         <div class="col-12">
           <div class="alert alert-info text-center py-5" role="alert">
             <i class="bi bi-info-circle fs-1 d-block mb-3"></i>
-            <h5>No hay promociones activas en este momento</h5>
-            <p class="mb-0">Vuelve pronto para descubrir nuevas ofertas especiales</p>
+            <h5 i18n>No hay promociones activas en este momento</h5>
+            <p class="mb-0" i18n>Vuelve pronto para descubrir nuevas ofertas especiales</p>
           </div>
         </div>
       </div>
@@ -38,11 +38,11 @@
         @if (agrupadas.length > 1) {
           <button class="carousel-control-prev" type="button" data-bs-target="#cardsCarousel" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Anterior</span>
+            <span class="visually-hidden" i18n>Anterior</span>
           </button>
           <button class="carousel-control-next" type="button" data-bs-target="#cardsCarousel" data-bs-slide="next">
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Siguiente</span>
+            <span class="visually-hidden" i18n>Siguiente</span>
           </button>
         }
 
@@ -55,7 +55,7 @@
                 [attr.data-bs-slide-to]="$index"
                 [class.active]="$index === 0"
                 [attr.aria-current]="$index === 0 ? 'true' : null"
-                [attr.aria-label]="'Slide ' + ($index + 1)">
+                [attr.aria-label]="getAriaLabelSlide($index + 1)">
               </button>
             }
           </div>

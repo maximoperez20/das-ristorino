@@ -26,6 +26,38 @@
           <context context-type="linenumber">22</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="6143168124862335946" datatype="html">
+        <source> Descubre los Mejores Restaurantes </source>
+        <target>Restaurantes</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/banner-home/banner-home.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5915882550237024880" datatype="html">
+        <source> Encuentra tu restaurante ideal, reserva tu mesa y disfruta de las mejores promociones gastronómicas de Córdoba. </source>
+        <target>Encuentra tu restaurante ideal, reserva tu mesa y disfruta de las mejores promociones gastronómicas de Córdoba.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/banner-home/banner-home.html</context>
+          <context context-type="linenumber">9,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6058362986597685071" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-search me-2&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Explorar Restaurantes </source>
+        <target>Restaurantes</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/banner-home/banner-home.html</context>
+          <context context-type="linenumber">13,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6582879010398009896" datatype="html">
+        <source>Banner Home</source>
+        <target>Inicio</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/banner-home/banner-home.html</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="5657091963023266979" datatype="html">
         <source>Ristorino</source>
         <target>Ristorino</target>
@@ -360,6 +392,62 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.ts</context>
           <context context-type="linenumber">163</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="404948634376881934" datatype="html">
+        <source>Promociones Especiales</source>
+        <target>Promociones Especiales</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/promociones/promociones.html</context>
+          <context context-type="linenumber">7,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4363266996791583700" datatype="html">
+        <source>Descubre las mejores ofertas y descuentos en nuestros restaurantes</source>
+        <target>Descubre las mejores ofertas y descuentos en nuestros restaurantes</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/promociones/promociones.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2844481483123278364" datatype="html">
+        <source>No hay promociones activas en este momento</source>
+        <target>No hay promociones activas en este momento</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/promociones/promociones.html</context>
+          <context context-type="linenumber">17,18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6567649435748356439" datatype="html">
+        <source>Vuelve pronto para descubrir nuevas ofertas especiales</source>
+        <target>Vuelve pronto para descubrir nuevas ofertas especiales</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/promociones/promociones.html</context>
+          <context context-type="linenumber">18,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="452830638458584000" datatype="html">
+        <source>Anterior</source>
+        <target>Anterior</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/promociones/promociones.html</context>
+          <context context-type="linenumber">41,42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3237447972400589452" datatype="html">
+        <source>Siguiente</source>
+        <target>Siguiente</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/promociones/promociones.html</context>
+          <context context-type="linenumber">45,46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7339185575145442118" datatype="html">
+        <source>Slide <x id="PH" equiv-text="index"/></source>
+        <target>Slide</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/promociones/promociones.ts</context>
+          <context context-type="linenumber">49</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7875220663406358589" datatype="html">
