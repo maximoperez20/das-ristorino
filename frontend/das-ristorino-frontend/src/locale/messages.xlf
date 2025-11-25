@@ -285,42 +285,42 @@
         <source>preferencia</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.ts</context>
-          <context context-type="linenumber">129</context>
+          <context context-type="linenumber">130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1994712740645243734" datatype="html">
         <source>preferencias</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.ts</context>
-          <context context-type="linenumber">129</context>
+          <context context-type="linenumber">130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7457119558620596403" datatype="html">
         <source>No se seleccionaron preferencias. Puedes continuar.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.ts</context>
-          <context context-type="linenumber">149</context>
+          <context context-type="linenumber">151</context>
         </context-group>
       </trans-unit>
       <trans-unit id="5166827722286287186" datatype="html">
         <source>Sin preferencias</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.ts</context>
-          <context context-type="linenumber">150</context>
+          <context context-type="linenumber">152</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2811752961371624137" datatype="html">
         <source>Tus preferencias gastronómicas han sido guardadas exitosamente.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.ts</context>
-          <context context-type="linenumber">160</context>
+          <context context-type="linenumber">162</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8253475360221692409" datatype="html">
         <source>Preferencias guardadas</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.ts</context>
-          <context context-type="linenumber">161</context>
+          <context context-type="linenumber">163</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7875220663406358589" datatype="html">
