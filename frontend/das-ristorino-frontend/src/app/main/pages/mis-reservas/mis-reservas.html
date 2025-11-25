@@ -3,8 +3,8 @@
     <div class="row mb-4">
       <div class="col-12">
         <div class="d-flex justify-content-between align-items-center">
-          <h1 class="mb-0">Mis Reservas</h1>
-          <a routerLink="/mi-perfil" class="btn btn-outline-primary">
+          <h1 class="mb-0" i18n>Mis Reservas</h1>
+          <a routerLink="/mi-perfil" class="btn btn-outline-primary" i18n>
             <i class="bi bi-person-circle me-1"></i>
             Mi Perfil
           </a>
@@ -12,40 +12,40 @@
       </div>
     </div>
 
-    <h4>Filtrar por estado</h4>
+    <h4 i18n>Filtrar por estado</h4>
     <div class="d-flex flex-row gap-2 mb-4 flex-wrap">
       <button 
         class="btn"
         [ngClass]="filtroActivo === undefined ? 'btn-primary' : 'btn-outline-primary'"
-        (click)="filtrarPorEstado(undefined)">
+        (click)="filtrarPorEstado(undefined)" i18n>
         <i class="bi bi-list-ul me-1"></i>
         Todas
       </button>
       <button 
         class="btn"
         [ngClass]="filtroActivo === 'Confirmada' ? 'btn-success' : 'btn-outline-success'"
-        (click)="filtrarPorEstado('Confirmada')">
+        (click)="filtrarPorEstado('Confirmada')" i18n>
         <i class="bi bi-check-circle me-1"></i>
         Confirmada
       </button>
       <button 
         class="btn"
         [ngClass]="filtroActivo === 'Cancelada' ? 'btn-danger' : 'btn-outline-danger'"
-        (click)="filtrarPorEstado('Cancelada')">
+        (click)="filtrarPorEstado('Cancelada')" i18n>
         <i class="bi bi-x-circle me-1"></i>
         Cancelada
       </button>
       <button 
         class="btn"
         [ngClass]="filtroActivo === 'Pendiente' ? 'btn-warning' : 'btn-outline-warning'"
-        (click)="filtrarPorEstado('Pendiente')">
+        (click)="filtrarPorEstado('Pendiente')" i18n>
         <i class="bi bi-clock-history me-1"></i>
         Pendiente
       </button>
       <button 
         class="btn"
         [ngClass]="filtroActivo === 'Finalizada' ? 'btn-secondary' : 'btn-outline-secondary'"
-        (click)="filtrarPorEstado('Finalizada')">
+        (click)="filtrarPorEstado('Finalizada')" i18n>
         <i class="bi bi-check2-all me-1"></i>
         Finalizada
       </button>
@@ -54,7 +54,7 @@
     @if (reservasPorDia.length === 0) {
       <div class="row">
         <div class="col-12">
-          <div class="alert alert-info text-center" role="alert">
+          <div class="alert alert-info text-center" role="alert" i18n>
             <i class="bi bi-info-circle"></i> 
             @if (filtroActivo) {
               No tienes reservas con estado "{{ filtroActivo }}".
@@ -81,7 +81,7 @@
                         @if (reserva.nombre_restaurante) {
                           {{ reserva.nombre_restaurante }}
                         } @else {
-                          Reserva #{{ reserva.id.substring(0, 8) }}
+                          <ng-container i18n>Reserva #{{ reserva.id.substring(0, 8) }}</ng-container>
                         }
                       </h5>
                       <span class="badge" [ngClass]="obtenerBadgeEstado(reserva.estado)">
@@ -96,7 +96,7 @@
                     }
 
                     @if (reserva.nombre_zona) {
-                      <p class="text-muted small mb-2">
+                      <p class="text-muted small mb-2" i18n>
                         <i class="bi bi-geo-alt"></i> Zona: {{ reserva.nombre_zona }}
                       </p>
                     }
@@ -107,7 +107,7 @@
                         <span class="ms-2">{{ formatearHora(reserva.fecha_hora) }}</span>
                       </div>
 
-                      <div class="info-item mb-2">
+                      <div class="info-item mb-2" i18n>
                         <i class="bi bi-people-fill text-primary"></i>
                         <span class="ms-2">{{ reserva.cantidad_personas }} persona{{ reserva.cantidad_personas !== 1 ? 's' : '' }}</span>
                       </div>
@@ -128,7 +128,7 @@
                     </div>
 
                     @if (esReservaPasada(reserva.fecha_hora)) {
-                      <div class="alert alert-secondary small mb-0" role="alert">
+                      <div class="alert alert-secondary small mb-0" role="alert" i18n>
                         <i class="bi bi-clock-history"></i> Esta reserva ya pasó
                       </div>
                     }
