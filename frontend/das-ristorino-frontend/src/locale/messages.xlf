@@ -15,6 +15,10 @@
           <context context-type="sourcefile">src/app/core/layouts/message-dialog/message-dialog.html</context>
           <context context-type="linenumber">6,7</context>
         </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.ts</context>
+          <context context-type="linenumber">154</context>
+        </context-group>
       </trans-unit>
       <trans-unit id="740484157946723524" datatype="html">
         <source>Mensaje de error</source>
@@ -189,6 +193,160 @@
           <context context-type="linenumber">32</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="372000693758229409" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calendar-check&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Confirmar Reserva </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">7,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8376830740524331942" datatype="html">
+        <source>Resumen de la reserva</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">15,16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6922473840713805444" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Zona:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> <x id="INTERPOLATION" equiv-text="{{ horarioSeleccionado.nomZona }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">18,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="502589037601883164" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Fecha:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> <x id="INTERPOLATION" equiv-text="{{ formatearFechaLegible(horarioSeleccionado.fecha) }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">22,23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3585633541682188597" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Horario:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> <x id="INTERPOLATION" equiv-text="{{ horarioSeleccionado.horaDesde }}"/> - <x id="INTERPOLATION_1" equiv-text="{{ horarioSeleccionado.horaHasta }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">26,27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6236761762116751853" datatype="html">
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Disponibilidad:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> <x id="INTERPOLATION" equiv-text="{{ horarioSeleccionado.disponibilidad }}"/> lugares</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">30,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2609677848876218406" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-exclamation-triangle&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Esta zona no permite menores </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">34,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3892734246693892145" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-person&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Cantidad de adultos <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-danger&quot;&gt;"/>*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">42,43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1433950538067159480" datatype="html">
+        <source>Mínimo 1 adulto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">53,54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8766150903167632185" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-person-heart&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Cantidad de menores </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">58,59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8777583193709170399" datatype="html">
+        <source>Esta zona no permite menores</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">70,71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8238257777089149983" datatype="html">
+        <source>Máximo <x id="INTERPOLATION" equiv-text="{{ maxPersonas - cantAdultos }}"/> menores</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">72,73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7759024184299627569" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-info-circle&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>Total de personas:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> <x id="INTERPOLATION" equiv-text="{{ totalPersonas }}"/> / <x id="INTERPOLATION_1" equiv-text="{{ maxPersonas }}"/> disponibles </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">78,80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6060080757060540228" datatype="html">
+        <source> Cancelar </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">91</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6121140465240990592" datatype="html">
+        <source>Confirmando...</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">99,100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4974596472176294327" datatype="html">
+        <source>Confirmar Reserva</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.html</context>
+          <context context-type="linenumber">101,102</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5080443957187125667" datatype="html">
+        <source>Debe haber al menos 1 adulto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.ts</context>
+          <context context-type="linenumber">80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5058923122027342206" datatype="html">
+        <source>La cantidad de menores no puede ser negativa</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.ts</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7260311314565047398" datatype="html">
+        <source>La zona seleccionada no permite menores</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.ts</context>
+          <context context-type="linenumber">90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8671696029877780442" datatype="html">
+        <source>No hay suficiente disponibilidad. Disponible: <x id="PH" equiv-text="this.horarioSeleccionado.disponibilidad"/>, Solicitado: <x id="PH_1" equiv-text="totalPersonas"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.ts</context>
+          <context context-type="linenumber">96</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6541655022459610213" datatype="html">
+        <source>Reserva confirmada exitosamente. Código: <x id="PH" equiv-text="response.codigoReserva"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.ts</context>
+          <context context-type="linenumber">120</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1761287890067756202" datatype="html">
+        <source>Error al confirmar la reserva</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/formulario-reserva/formulario-reserva.ts</context>
+          <context context-type="linenumber">131</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="5657091963023266979" datatype="html">
         <source>Ristorino</source>
         <context-group purpose="location">
@@ -240,6 +398,66 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/login/login.html</context>
           <context context-type="linenumber">72,74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6512199711570273310" datatype="html">
+        <source>Horarios Disponibles</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/horarios-disponibles/horarios-disponibles.html</context>
+          <context context-type="linenumber">3,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1878944583384618422" datatype="html">
+        <source>Cargando...</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/horarios-disponibles/horarios-disponibles.html</context>
+          <context context-type="linenumber">34,35</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.html</context>
+          <context context-type="linenumber">16,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2917563364068917136" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-people&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Capacidad: <x id="INTERPOLATION" equiv-text="{{ zona.capacidadZona }}"/> </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/horarios-disponibles/horarios-disponibles.html</context>
+          <context context-type="linenumber">49,50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4982427651094755412" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-check-circle&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Permite menores </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/horarios-disponibles/horarios-disponibles.html</context>
+          <context context-type="linenumber">53,54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="446906646354962335" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-check-circle&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> <x id="INTERPOLATION" equiv-text="{{ horario.disponibilidad }}"/> disponibles </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/horarios-disponibles/horarios-disponibles.html</context>
+          <context context-type="linenumber">75,77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1050490794599236310" datatype="html">
+        <source> (<x id="INTERPOLATION" equiv-text="{{ horario.yaReservados }}"/> reservados) </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/horarios-disponibles/horarios-disponibles.html</context>
+          <context context-type="linenumber">80,81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3458233552356534270" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-info-circle&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> No hay horarios disponibles para esta fecha. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/horarios-disponibles/horarios-disponibles.html</context>
+          <context context-type="linenumber">92,95</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="4157850060666607654" datatype="html">
+        <source>Error al cargar horarios disponibles</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/components/horarios-disponibles/horarios-disponibles.ts</context>
+          <context context-type="linenumber">96</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8024932591315166082" datatype="html">
@@ -410,13 +628,6 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.html</context>
           <context context-type="linenumber">10,11</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="1878944583384618422" datatype="html">
-        <source>Cargando...</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/main/pages/preferencias-registro/preferencias-registro.html</context>
-          <context context-type="linenumber">16,17</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7982248861231662343" datatype="html">

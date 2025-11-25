@@ -77,23 +77,23 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
     }
 
     if (this.cantAdultos < 1) {
-      this.error = 'Debe haber al menos 1 adulto';
+      this.error = $localize`Debe haber al menos 1 adulto`;
       return;
     }
 
     if (this.cantMenores < 0) {
-      this.error = 'La cantidad de menores no puede ser negativa';
+      this.error = $localize`La cantidad de menores no puede ser negativa`;
       return;
     }
 
     if (this.cantMenores > 0 && !this.horarioSeleccionado.permiteMenores) {
-      this.error = 'La zona seleccionada no permite menores';
+      this.error = $localize`La zona seleccionada no permite menores`;
       return;
     }
 
     const totalPersonas = this.cantAdultos + this.cantMenores;
     if (totalPersonas > this.horarioSeleccionado.disponibilidad) {
-      this.error = `No hay suficiente disponibilidad. Disponible: ${this.horarioSeleccionado.disponibilidad}, Solicitado: ${totalPersonas}`;
+      this.error = $localize`No hay suficiente disponibilidad. Disponible: ${this.horarioSeleccionado.disponibilidad}, Solicitado: ${totalPersonas}`;
       return;
     }
 
@@ -117,7 +117,7 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
       next: (response) => {
         this.loading = false;
         this._messageService.showSuccess(
-          `Reserva confirmada exitosamente. Código: ${response.codigoReserva}`
+          $localize`Reserva confirmada exitosamente. Código: ${response.codigoReserva}`
         );
         this.reservaConfirmada.emit();
         this.cerrar();
@@ -128,7 +128,7 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
       },
       error: (err) => {
         this.loading = false;
-        this.error = err.error?.error || err.error?.message || 'Error al confirmar la reserva';
+        this.error = err.error?.error || err.error?.message || $localize`Error al confirmar la reserva`;
         console.error('Error confirmando reserva:', err);
       }
     });
@@ -148,6 +148,10 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
 
   get maxPersonas(): number {
     return this.horarioSeleccionado?.disponibilidad || 0;
+  }
+
+  getCerrarAriaLabel(): string {
+    return $localize`Cerrar`;
   }
 }
 

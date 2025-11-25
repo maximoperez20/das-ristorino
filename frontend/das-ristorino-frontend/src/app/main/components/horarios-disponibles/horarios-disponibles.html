@@ -1,6 +1,6 @@
 <div class="horarios-disponibles-container">
   <div class="header-section mb-4">
-    <h3 class="mb-2">Horarios Disponibles</h3>
+    <h3 class="mb-2" i18n>Horarios Disponibles</h3>
     <div class="info-badge">
       <i class="bi bi-building"></i>
       <span>{{ nombreSucursal }}</span>
@@ -31,7 +31,7 @@
   @if (loading) {
     <div class="text-center py-5">
       <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Cargando...</span>
+        <span class="visually-hidden" i18n>Cargando...</span>
       </div>
     </div>
   } @else if (error) {
@@ -45,11 +45,11 @@
           <div class="zona-header">
             <h5 class="mb-1">{{ zona.nomZona }}</h5>
             <div class="zona-info">
-              <span class="badge bg-info me-2">
+              <span class="badge bg-info me-2" i18n>
                 <i class="bi bi-people"></i> Capacidad: {{ zona.capacidadZona }}
               </span>
               @if (zona.permiteMenores) {
-                <span class="badge bg-success">
+                <span class="badge bg-success" i18n>
                   <i class="bi bi-check-circle"></i> Permite menores
                 </span>
               }
@@ -71,12 +71,12 @@
                   {{ horario.horaDesde }} - {{ horario.horaHasta }}
                 </div>
                 <div class="horario-info">
-                  <span class="disponibilidad">
+                  <span class="disponibilidad" i18n>
                     <i class="bi bi-check-circle"></i>
                     {{ horario.disponibilidad }} disponibles
                   </span>
                   @if (horario.yaReservados > 0) {
-                    <span class="reservados">
+                    <span class="reservados" i18n>
                       ({{ horario.yaReservados }} reservados)
                     </span>
                   }
@@ -88,7 +88,7 @@
       }
     </div>
   } @else {
-    <div class="alert alert-info text-center" role="alert">
+    <div class="alert alert-info text-center" role="alert" i18n>
       <i class="bi bi-info-circle"></i> No hay horarios disponibles para esta fecha.
     </div>
   }
