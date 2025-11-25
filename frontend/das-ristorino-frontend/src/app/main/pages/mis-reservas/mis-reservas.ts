@@ -74,7 +74,7 @@ export class MisReservasPage implements OnInit {
       if (!gruposMap.has(fechaKey)) {
         const esHoy = fechaReserva.getTime() === hoy.getTime();
         const titulo = esHoy 
-          ? 'Hoy' 
+          ? $localize`Hoy` 
           : this._dateUtils.formatearFechaLegible(fechaReserva);
 
         gruposMap.set(fechaKey, {
@@ -90,8 +90,8 @@ export class MisReservasPage implements OnInit {
 
     // Ordenar grupos: "Hoy" primero, luego por fecha descendente (más recientes/futuras primero)
     const grupos = Array.from(gruposMap.values()).sort((a, b) => {
-      const esAHoy = a.titulo === 'Hoy';
-      const esBHoy = b.titulo === 'Hoy';
+      const esAHoy = a.titulo === $localize`Hoy`;
+      const esBHoy = b.titulo === $localize`Hoy`;
       
       // Si uno es "Hoy" y el otro no, "Hoy" va primero
       if (esAHoy && !esBHoy) return -1;
@@ -114,7 +114,7 @@ export class MisReservasPage implements OnInit {
   }
 
   formatearFecha(fecha: string): string {
-    if (!fecha) return 'No disponible';
+    if (!fecha) return $localize`No disponible`;
     try {
       const date = new Date(fecha);
       return this._dateUtils.formatearFechaHora(date);
@@ -124,7 +124,7 @@ export class MisReservasPage implements OnInit {
   }
 
   formatearHora(fecha: string): string {
-    if (!fecha) return 'No disponible';
+    if (!fecha) return $localize`No disponible`;
     try {
       const date = new Date(fecha);
       return date.toLocaleTimeString('es-AR', {

@@ -8,14 +8,15 @@
         type="text"
         class="form-control"
         formControlName="consulta"
-        placeholder="Buscar restaurantes con lenguaje natural..."
+        placeholder="Buscar restaurantes con lenguaje natural..." i18n-placeholder
         autocomplete="off"
         [class.is-invalid]="consulta?.invalid && consulta?.touched">
     </div>
     <button 
       type="submit" 
       class="btn btn-primary"
-      [disabled]="buscarForm.invalid">
+      [disabled]="buscarForm.invalid"
+      i18n>
       <i class="bi bi-search me-1"></i>
       <span class="d-none d-md-inline">Buscar</span>
     </button>
@@ -24,10 +25,10 @@
   @if (consulta?.invalid && consulta?.touched) {
     <div class="invalid-feedback d-block mt-1">
       @if (consulta?.errors?.['required']) {
-        <small class="text-danger">Por favor ingresa una búsqueda</small>
+        <small class="text-danger" i18n>Por favor ingresa una búsqueda</small>
       }
       @if (consulta?.errors?.['maxlength']) {
-        <small class="text-danger">La búsqueda no puede exceder 500 caracteres</small>
+        <small class="text-danger" i18n>La búsqueda no puede exceder 500 caracteres</small>
       }
     </div>
   }
