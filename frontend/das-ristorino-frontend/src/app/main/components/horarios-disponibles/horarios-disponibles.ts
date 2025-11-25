@@ -93,7 +93,7 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
         this.loading = false;
       },
       error: (err) => {
-        this.error = 'Error al cargar horarios disponibles';
+        this.error = $localize`Error al cargar horarios disponibles`;
         this.loading = false;
         console.error('Error cargando horarios:', err);
       }

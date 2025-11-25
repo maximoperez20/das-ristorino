@@ -3,34 +3,34 @@
   <div class="modal-container">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h4 class="modal-title">
+        <h4 class="modal-title" i18n>
           <i class="bi bi-calendar-check"></i> Confirmar Reserva
         </h4>
-        <button type="button" class="btn-close" (click)="cerrar()" aria-label="Cerrar"></button>
+        <button type="button" class="btn-close" (click)="cerrar()" [attr.aria-label]="getCerrarAriaLabel()"></button>
       </div>
 
       <div class="modal-body">
         @if (horarioSeleccionado) {
           <div class="resumen-reserva mb-4">
-            <h5 class="mb-3">Resumen de la reserva</h5>
+            <h5 class="mb-3" i18n>Resumen de la reserva</h5>
             <div class="resumen-item">
               <i class="bi bi-building"></i>
-              <span><strong>Zona:</strong> {{ horarioSeleccionado.nomZona }}</span>
+              <span i18n><strong>Zona:</strong> {{ horarioSeleccionado.nomZona }}</span>
             </div>
             <div class="resumen-item">
               <i class="bi bi-calendar3"></i>
-              <span><strong>Fecha:</strong> {{ formatearFechaLegible(horarioSeleccionado.fecha) }}</span>
+              <span i18n><strong>Fecha:</strong> {{ formatearFechaLegible(horarioSeleccionado.fecha) }}</span>
             </div>
             <div class="resumen-item">
               <i class="bi bi-clock"></i>
-              <span><strong>Horario:</strong> {{ horarioSeleccionado.horaDesde }} - {{ horarioSeleccionado.horaHasta }}</span>
+              <span i18n><strong>Horario:</strong> {{ horarioSeleccionado.horaDesde }} - {{ horarioSeleccionado.horaHasta }}</span>
             </div>
             <div class="resumen-item">
               <i class="bi bi-people"></i>
-              <span><strong>Disponibilidad:</strong> {{ horarioSeleccionado.disponibilidad }} lugares</span>
+              <span i18n><strong>Disponibilidad:</strong> {{ horarioSeleccionado.disponibilidad }} lugares</span>
             </div>
             @if (!horarioSeleccionado.permiteMenores) {
-              <div class="alert alert-warning mt-3 mb-0">
+              <div class="alert alert-warning mt-3 mb-0" i18n>
                 <i class="bi bi-exclamation-triangle"></i> Esta zona no permite menores
               </div>
             }
@@ -38,7 +38,7 @@
 
           <form (ngSubmit)="confirmarReserva()">
             <div class="mb-3">
-              <label for="cantAdultos" class="form-label">
+              <label for="cantAdultos" class="form-label" i18n>
                 <i class="bi bi-person"></i> Cantidad de adultos <span class="text-danger">*</span>
               </label>
               <input 
@@ -50,11 +50,11 @@
                 min="1"
                 max="{{ maxPersonas }}"
                 required>
-              <small class="form-text text-muted">Mínimo 1 adulto</small>
+              <small class="form-text text-muted" i18n>Mínimo 1 adulto</small>
             </div>
 
             <div class="mb-3">
-              <label for="cantMenores" class="form-label">
+              <label for="cantMenores" class="form-label" i18n>
                 <i class="bi bi-person-heart"></i> Cantidad de menores
               </label>
               <input 
@@ -67,14 +67,14 @@
                 [max]="horarioSeleccionado.permiteMenores ? maxPersonas - cantAdultos : 0"
                 [disabled]="!horarioSeleccionado.permiteMenores">
               @if (!horarioSeleccionado.permiteMenores) {
-                <small class="form-text text-muted">Esta zona no permite menores</small>
+                <small class="form-text text-muted" i18n>Esta zona no permite menores</small>
               } @else {
-                <small class="form-text text-muted">Máximo {{ maxPersonas - cantAdultos }} menores</small>
+                <small class="form-text text-muted" i18n>Máximo {{ maxPersonas - cantAdultos }} menores</small>
               }
             </div>
 
             <div class="mb-3">
-              <div class="alert alert-info">
+              <div class="alert alert-info" i18n>
                 <i class="bi bi-info-circle"></i>
                 <strong>Total de personas:</strong> {{ totalPersonas }} / {{ maxPersonas }} disponibles
               </div>
@@ -87,7 +87,7 @@
             }
 
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" (click)="cerrar()" [disabled]="loading">
+              <button type="button" class="btn btn-secondary" (click)="cerrar()" [disabled]="loading" i18n>
                 Cancelar
               </button>
               <button 
@@ -96,9 +96,9 @@
                 [disabled]="loading || totalPersonas > maxPersonas || cantAdultos < 1">
                 @if (loading) {
                   <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  Confirmando...
+                  <span i18n>Confirmando...</span>
                 } @else {
-                  <i class="bi bi-check-circle"></i> Confirmar Reserva
+                  <i class="bi bi-check-circle"></i> <span i18n>Confirmar Reserva</span>
                 }
               </button>
             </div>
