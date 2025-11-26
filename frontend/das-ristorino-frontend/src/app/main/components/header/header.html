@@ -20,6 +20,29 @@
                 </div>
             </div>
             <ul class="navbar-nav">
+                <li class="nav-item dropdown me-2">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-translate"></i>
+                        <span class="d-none d-md-inline ms-1">{{ currentLanguageName }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        @for (lang of availableLanguages; track lang.codIdioma) {
+                            <li>
+                                <a class="dropdown-item" 
+                                   [class.active]="currentLanguage === lang.codIdioma"
+                                   (click)="changeLanguage(lang.codIdioma)"
+                                   style="cursor: pointer;">
+                                    @if (currentLanguage === lang.codIdioma) {
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+                                    } @else {
+                                        <i class="bi bi-circle me-2"></i>
+                                    }
+                                    {{ lang.nombre }}
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </li>
                 @if (isAuthenticated) {
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
