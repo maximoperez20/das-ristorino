@@ -106,10 +106,13 @@ public class ReservaRepository {
     
     /**
      * Obtener reservas por nro_cliente
+     * @param nroCliente UUID del cliente
+     * @param nroIdioma Número de idioma (0=es-AR, 1=en-US)
      */
-    public List<ReservaResponseDto> findByNroCliente(String nroCliente) {
+    public List<ReservaResponseDto> findByNroCliente(String nroCliente, Integer nroIdioma) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("nro_cliente", nroCliente);
+                .addValue("nro_cliente", nroCliente)
+                .addValue("nro_idioma", nroIdioma);
         return jdbcCallFactory.executeQuery("sp_ObtenerReservasPorNroCliente", "dbo", params, "reservas", ReservaResponseDto.class);
     }
     

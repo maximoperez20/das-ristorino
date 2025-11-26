@@ -7,6 +7,7 @@ import ar.edu.ubp.das.backend.dto.RestauranteDetalleDto;
 import ar.edu.ubp.das.backend.dto.SucursalDto;
 import ar.edu.ubp.das.backend.service.BusquedaNLPService;
 import ar.edu.ubp.das.backend.service.RestauranteService;
+import ar.edu.ubp.das.backend.service.LanguageService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +38,12 @@ public class RestauranteResource {
     
     private final RestauranteService restauranteService;
     private final BusquedaNLPService busquedaNLPService;
+    private final LanguageService languageService;
     
-    public RestauranteResource(RestauranteService restauranteService, BusquedaNLPService busquedaNLPService) {
+    public RestauranteResource(RestauranteService restauranteService, BusquedaNLPService busquedaNLPService, LanguageService languageService) {
         this.restauranteService = restauranteService;
         this.busquedaNLPService = busquedaNLPService;
+        this.languageService = languageService;
     }
 
     @GetMapping
@@ -54,8 +57,11 @@ public class RestauranteResource {
      * Incluye: nombre, tipo de cocina, descripción, imágenes, promociones vigentes y sucursales
      */
     @GetMapping("/{nroRestaurante}")
-    public ResponseEntity<RestauranteDetalleDto> getRestauranteById(@PathVariable String nroRestaurante) {
-        Optional<RestauranteDetalleDto> restaurante = restauranteService.obtenerDetalleRestaurantePorId(nroRestaurante);
+    public ResponseEntity<RestauranteDetalleDto> getRestauranteById(
+            @PathVariable String nroRestaurante,
+            @RequestHeader(value = "X-Nro-Idioma", required = false) Integer nroIdiomaHeader) {
+        Integer nroIdioma = languageService.getNroIdiomaFromRequest(nroIdiomaHeader);
+        Optional<RestauranteDetalleDto> restaurante = restauranteService.obtenerDetalleRestaurantePorId(nroRestaurante, nroIdioma);
         return restaurante.map(ResponseEntity::ok)
                           .orElseGet(() -> ResponseEntity.notFound().build());
     }

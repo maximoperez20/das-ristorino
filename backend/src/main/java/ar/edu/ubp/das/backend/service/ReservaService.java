@@ -59,8 +59,8 @@ public class ReservaService {
         return reservaRepository.existsById(id);
     }
     
-    public List<ReservaResponseDto> obtenerReservasPorNroCliente(String nroCliente) {
-        return reservaRepository.findByNroCliente(nroCliente);
+    public List<ReservaResponseDto> obtenerReservasPorNroCliente(String nroCliente, Integer nroIdioma) {
+        return reservaRepository.findByNroCliente(nroCliente, nroIdioma);
     }
     
     

@@ -5,6 +5,7 @@ import ar.edu.ubp.das.backend.dto.PromocionDto;
 import ar.edu.ubp.das.backend.dto.RegistrarClickDto;
 import ar.edu.ubp.das.backend.service.ClickService;
 import ar.edu.ubp.das.backend.service.PromocionService;
+import ar.edu.ubp.das.backend.service.LanguageService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,15 +30,19 @@ public class PromocionResource {
     
     private final PromocionService promocionService;
     private final ClickService clickService;
+    private final LanguageService languageService;
     
-    public PromocionResource(PromocionService promocionService, ClickService clickService) {
+    public PromocionResource(PromocionService promocionService, ClickService clickService, LanguageService languageService) {
         this.promocionService = promocionService;
         this.clickService = clickService;
+        this.languageService = languageService;
     }
 
     @GetMapping
-    public ResponseEntity<List<PromocionDto>> getAllPromociones() {
-        List<PromocionDto> promociones = promocionService.obtenerTodasLasPromociones();
+    public ResponseEntity<List<PromocionDto>> getAllPromociones(
+            @RequestHeader(value = "X-Nro-Idioma", required = false) Integer nroIdiomaHeader) {
+        Integer nroIdioma = languageService.getNroIdiomaFromRequest(nroIdiomaHeader);
+        List<PromocionDto> promociones = promocionService.obtenerTodasLasPromociones(nroIdioma);
         return ResponseEntity.ok(promociones);
     }
 

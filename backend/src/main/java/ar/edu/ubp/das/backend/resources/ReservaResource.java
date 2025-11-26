@@ -3,6 +3,7 @@ package ar.edu.ubp.das.backend.resources;
 import ar.edu.ubp.das.backend.dto.*;
 import ar.edu.ubp.das.backend.service.ReservaService;
 import ar.edu.ubp.das.backend.service.RestauranteService;
+import ar.edu.ubp.das.backend.service.LanguageService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +26,14 @@ public class ReservaResource {
     private static final Logger logger = LoggerFactory.getLogger(ReservaResource.class);
     
     private final ReservaService reservaService;
+    private final LanguageService languageService;
     
     @Autowired
     private RestauranteService restauranteService;
     
-    public ReservaResource(ReservaService reservaService) {
+    public ReservaResource(ReservaService reservaService, LanguageService languageService) {
         this.reservaService = reservaService;
+        this.languageService = languageService;
     }
 
     @GetMapping
@@ -147,7 +150,9 @@ public class ReservaResource {
     }
     
     @GetMapping("/mis-reservas")
-    public ResponseEntity<?> getMisReservas(Authentication authentication) {
+    public ResponseEntity<?> getMisReservas(
+            Authentication authentication,
+            @RequestHeader(value = "X-Nro-Idioma", required = false) Integer nroIdiomaHeader) {
         try {
             if (authentication == null || !(authentication.getPrincipal() instanceof Jwt)) {
                 logger.warn("Intento de acceso sin autenticación válida");
@@ -164,8 +169,9 @@ public class ReservaResource {
                         .body(Map.of("error", "Token inválido: falta nroCliente"));
             }
             
-            logger.info("Obteniendo reservas para cliente: {}", nroCliente);
-            List<ReservaResponseDto> reservas = reservaService.obtenerReservasPorNroCliente(nroCliente);
+            Integer nroIdioma = languageService.getNroIdiomaFromRequest(nroIdiomaHeader);
+            logger.info("Obteniendo reservas para cliente: {} con nro_idioma: {}", nroCliente, nroIdioma);
+            List<ReservaResponseDto> reservas = reservaService.obtenerReservasPorNroCliente(nroCliente, nroIdioma);
             return ResponseEntity.ok(reservas);
             
         } catch (Exception e) {

@@ -69,10 +69,11 @@ public class PromocionRepository {
     
     /**
      * Obtener todas las promociones
+     * @param nroIdioma Número de idioma (0=es-AR, 1=en-US)
      */
-    public List<PromocionDto> findAll() {
-        String sql = "EXEC sp_ObtenerTodasLasPromociones";
-        return jdbcTemplate.query(sql, promocionRowMapper);
+    public List<PromocionDto> findAll(Integer nroIdioma) {
+        String sql = "EXEC sp_ObtenerTodasLasPromociones ?";
+        return jdbcTemplate.query(sql, promocionRowMapper, nroIdioma);
     }
     
     /**

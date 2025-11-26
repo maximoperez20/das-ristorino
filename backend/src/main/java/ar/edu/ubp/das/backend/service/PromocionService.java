@@ -20,9 +20,10 @@ public class PromocionService {
     
     /**
      * Obtener todas las promociones
+     * @param nroIdioma Número de idioma (0=es-AR, 1=en-US)
      */
-    public List<PromocionDto> obtenerTodasLasPromociones() {
-        return promocionRepository.findAll();
+    public List<PromocionDto> obtenerTodasLasPromociones(Integer nroIdioma) {
+        return promocionRepository.findAll(nroIdioma);
     }
     
     /**

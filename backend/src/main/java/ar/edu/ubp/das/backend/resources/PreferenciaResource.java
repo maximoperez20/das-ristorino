@@ -2,6 +2,7 @@ package ar.edu.ubp.das.backend.resources;
 
 import ar.edu.ubp.das.backend.dto.*;
 import ar.edu.ubp.das.backend.service.PreferenciaService;
+import ar.edu.ubp.das.backend.service.LanguageService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +26,11 @@ public class PreferenciaResource {
     private static final Logger logger = LoggerFactory.getLogger(PreferenciaResource.class);
     
     private final PreferenciaService preferenciaService;
+    private final LanguageService languageService;
     
-    public PreferenciaResource(PreferenciaService preferenciaService) {
+    public PreferenciaResource(PreferenciaService preferenciaService, LanguageService languageService) {
         this.preferenciaService = preferenciaService;
+        this.languageService = languageService;
     }
     
     /**
@@ -35,9 +38,11 @@ public class PreferenciaResource {
      * Endpoint público (no requiere autenticación)
      */
     @GetMapping("/categorias")
-    public ResponseEntity<List<CategoriaConDominiosDto>> obtenerCategorias() {
+    public ResponseEntity<List<CategoriaConDominiosDto>> obtenerCategorias(
+            @RequestHeader(value = "X-Nro-Idioma", required = false) Integer nroIdiomaHeader) {
         try {
-            List<CategoriaConDominiosDto> categorias = preferenciaService.obtenerTodasLasCategoriasConDominios();
+            Integer nroIdioma = languageService.getNroIdiomaFromRequest(nroIdiomaHeader);
+            List<CategoriaConDominiosDto> categorias = preferenciaService.obtenerTodasLasCategoriasConDominios(nroIdioma);
             return ResponseEntity.ok(categorias);
         } catch (Exception e) {
             logger.error("Error al obtener categorías de preferencias", e);

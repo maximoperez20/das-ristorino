@@ -32,8 +32,9 @@ public class PreferenciaRepository {
     
     /**
      * Obtener todas las categorías con sus dominios
+     * @param nroIdioma Número de idioma (0=es-AR, 1=en-US)
      */
-    public List<CategoriaConDominiosDto> obtenerTodasLasCategoriasConDominios() {
+    public List<CategoriaConDominiosDto> obtenerTodasLasCategoriasConDominios(Integer nroIdioma) {
         // Ejecutar el stored procedure que retorna dos result sets
         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
                 .withProcedureName("sp_ObtenerTodasLasCategoriasConDominios")
@@ -41,7 +42,10 @@ public class PreferenciaRepository {
                 .returningResultSet("categorias", BeanPropertyRowMapper.newInstance(CategoriaPreferenciaDto.class))
                 .returningResultSet("dominios", BeanPropertyRowMapper.newInstance(DominioPreferenciaDto.class));
         
-        Map<String, Object> result = jdbcCall.execute(new MapSqlParameterSource());
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("nro_idioma", nroIdioma);
+        
+        Map<String, Object> result = jdbcCall.execute(params);
         
         // Obtener los result sets
         @SuppressWarnings("unchecked")

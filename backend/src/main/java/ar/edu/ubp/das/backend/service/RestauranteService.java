@@ -36,8 +36,8 @@ public class RestauranteService {
         return restauranteRepository.findById(nroRestaurante);
     }
     
-    public Optional<RestauranteDetalleDto> obtenerDetalleRestaurantePorId(String nroRestaurante) {
-        return restauranteRepository.findDetalleById(nroRestaurante);
+    public Optional<RestauranteDetalleDto> obtenerDetalleRestaurantePorId(String nroRestaurante, Integer nroIdioma) {
+        return restauranteRepository.findDetalleById(nroRestaurante, nroIdioma);
     }
     
     public List<SucursalDto> obtenerSucursales(String nroRestaurante) {
