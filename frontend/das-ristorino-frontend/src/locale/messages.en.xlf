@@ -247,11 +247,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/mis-reservas/mis-reservas.ts</context>
-          <context context-type="linenumber">117</context>
+          <context context-type="linenumber">118</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/mis-reservas/mis-reservas.ts</context>
-          <context context-type="linenumber">127</context>
+          <context context-type="linenumber">128</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/restaurantes/restaurantes.ts</context>
@@ -866,12 +866,21 @@
           <context context-type="linenumber">100,101</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="7518340609325481983" datatype="html">
-        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-people-fill text-primary&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;ms-2&quot;&gt;"/><x id="INTERPOLATION" equiv-text="{{ reserva.cantidad_personas }}"/> persona<x id="INTERPOLATION_1" equiv-text="{{ reserva.cantidad_personas !== 1 ? &apos;s&apos; : &apos;&apos; }}"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
-        <target>Select your preferences to personalize your experience</target>
+      <trans-unit id="8856905278208146821" datatype="html">
+        <source> <x id="ICU" equiv-text="{reserva.cantidad_personas, plural, =1 {1 persona} other {{{reserva.cantidad_personas}} personas}}" xid="2136963665212625077"/> </source>
+        <target>Error connecting to service</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/mis-reservas/mis-reservas.html</context>
-          <context context-type="linenumber">111,113</context>
+          <context context-type="linenumber">113,114</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3584132922959733737" datatype="html">
+        <source>{VAR_PLURAL, plural, =1 {1 persona} other {<x id="INTERPOLATION"/> personas}}</source>
+        <target>{VAR_PLURAL, plural, =1 {1 person} other {<x id="INTERPOLATION"/> people}}</target>
+        <target>{VAR_PLURAL, plural, =1 {1 persona} other { personas}}</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/mis-reservas/mis-reservas.html</context>
+          <context context-type="linenumber">113</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1475104061241693994" datatype="html">
@@ -879,7 +888,7 @@
         <target>This reservation has already passed</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/mis-reservas/mis-reservas.html</context>
-          <context context-type="linenumber">132,133</context>
+          <context context-type="linenumber">134,135</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4156337392876515105" datatype="html">
@@ -887,15 +896,15 @@
         <target>Today</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/mis-reservas/mis-reservas.ts</context>
-          <context context-type="linenumber">77</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/main/pages/mis-reservas/mis-reservas.ts</context>
-          <context context-type="linenumber">93</context>
+          <context context-type="linenumber">78</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/main/pages/mis-reservas/mis-reservas.ts</context>
           <context context-type="linenumber">94</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/mis-reservas/mis-reservas.ts</context>
+          <context context-type="linenumber">95</context>
         </context-group>
       </trans-unit>
       <trans-unit id="601950061840936090" datatype="html">

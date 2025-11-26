@@ -87,7 +87,21 @@ export class TranslateBdPipe implements PipeTransform {
     'Pizzeria': { 'es-AR': 'Pizzería', 'en': 'Pizzeria' },
     'Sushi': { 'es-AR': 'Sushi', 'en': 'Sushi' },
     'Fast Food': { 'es-AR': 'Fast Food', 'en': 'Fast Food' },
-    'Gourmet': { 'es-AR': 'Gourmet', 'en': 'Gourmet' }
+    'Gourmet': { 'es-AR': 'Gourmet', 'en': 'Gourmet' },
+    
+    // Estados de Reserva
+    'Pendiente': { 'es-AR': 'Pendiente', 'en': 'Pending' },
+    'Pending': { 'es-AR': 'Pendiente', 'en': 'Pending' },
+    'Confirmada': { 'es-AR': 'Confirmada', 'en': 'Confirmed' },
+    'Confirmed': { 'es-AR': 'Confirmada', 'en': 'Confirmed' },
+    'Cancelada': { 'es-AR': 'Cancelada', 'en': 'Cancelled' },
+    'Cancelled': { 'es-AR': 'Cancelada', 'en': 'Cancelled' },
+    'Finalizada': { 'es-AR': 'Finalizada', 'en': 'Completed' },
+    'Completed': { 'es-AR': 'Finalizada', 'en': 'Completed' },
+    'En curso': { 'es-AR': 'En curso', 'en': 'In Progress' },
+    'In Progress': { 'es-AR': 'En curso', 'en': 'In Progress' },
+    'CANCELADA': { 'es-AR': 'Cancelada', 'en': 'Cancelled' },
+    'PENDIENTE': { 'es-AR': 'Pendiente', 'en': 'Pending' }
   };
 
   transform(value: string): string {
