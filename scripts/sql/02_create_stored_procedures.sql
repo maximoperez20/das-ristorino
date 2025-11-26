@@ -1281,24 +1281,32 @@ GO
 
 -- Obtener preferencias de un cliente
 CREATE OR ALTER PROCEDURE sp_ObtenerPreferenciasCliente
-    @nro_cliente VARCHAR(36)
+    @nro_cliente VARCHAR(36),
+    @nro_idioma INT = 0  -- Default: es-AR
 AS
 BEGIN
     SET NOCOUNT ON;
     
     SELECT 
         pc.cod_categoria AS codCategoria,
-        cp.nom_categoria AS nombreCategoria,
+        ISNULL(icp.categoria, cp.nom_categoria) AS nombreCategoria,
         pc.nro_valor_dominio AS nroValorDominio,
-        dcp.nom_valor_dominio AS nombreDominio,
+        ISNULL(idcp.valor_dominio, dcp.nom_valor_dominio) AS nombreDominio,
         pc.observaciones
     FROM preferencias_clientes pc
     INNER JOIN categorias_preferencias cp ON pc.cod_categoria = cp.cod_categoria
+    LEFT JOIN idiomas_categorias_preferencias icp 
+        ON cp.cod_categoria = icp.cod_categoria 
+        AND icp.nro_idioma = @nro_idioma
     INNER JOIN dominio_categorias_preferencias dcp 
         ON pc.cod_categoria = dcp.cod_categoria 
         AND pc.nro_valor_dominio = dcp.nro_valor_dominio
+    LEFT JOIN idiomas_dominio_cat_preferencias idcp
+        ON dcp.cod_categoria = idcp.cod_categoria
+        AND dcp.nro_valor_dominio = idcp.nro_valor_dominio
+        AND idcp.nro_idioma = @nro_idioma
     WHERE pc.nro_cliente = @nro_cliente
-    ORDER BY cp.nom_categoria, dcp.nom_valor_dominio;
+    ORDER BY ISNULL(icp.categoria, cp.nom_categoria), ISNULL(idcp.valor_dominio, dcp.nom_valor_dominio);
 END;
 GO
 
