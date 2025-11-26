@@ -109,8 +109,12 @@
 
                       <div class="info-item mb-2">
                         <i class="bi bi-people-fill text-primary"></i>
-                        <span class="ms-2" i18n>
-                          {reserva.cantidad_personas, plural, =1 {1 persona} other {{{reserva.cantidad_personas}} personas}}
+                        <span class="ms-2">
+                          @if (reserva.cantidad_personas === 1) {
+                            <ng-container i18n="@@reserva.1persona">1 persona</ng-container>
+                          } @else {
+                            <ng-container i18n="@@reserva.personas">{{ reserva.cantidad_personas }} personas</ng-container>
+                          }
                         </span>
                       </div>
 
