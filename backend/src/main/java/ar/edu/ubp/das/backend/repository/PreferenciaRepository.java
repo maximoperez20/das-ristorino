@@ -99,10 +99,13 @@ public class PreferenciaRepository {
     
     /**
      * Obtener preferencias de un cliente
+     * @param nroCliente UUID del cliente
+     * @param nroIdioma Número de idioma (0=es-AR, 1=en-US)
      */
-    public List<PreferenciaClienteDto> obtenerPreferenciasCliente(String nroCliente) {
+    public List<PreferenciaClienteDto> obtenerPreferenciasCliente(String nroCliente, Integer nroIdioma) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("nro_cliente", nroCliente);
+                .addValue("nro_cliente", nroCliente)
+                .addValue("nro_idioma", nroIdioma);
         
         return jdbcCallFactory.executeQuery(
                 "sp_ObtenerPreferenciasCliente", "dbo", params, "preferencias", PreferenciaClienteDto.class);

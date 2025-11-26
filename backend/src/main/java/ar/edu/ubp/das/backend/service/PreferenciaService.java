@@ -41,10 +41,12 @@ public class PreferenciaService {
     
     /**
      * Obtener preferencias de un cliente
+     * @param nroCliente UUID del cliente
+     * @param nroIdioma Número de idioma (0=es-AR, 1=en-US)
      */
-    public List<PreferenciaClienteDto> obtenerPreferenciasCliente(String nroCliente) {
-        logger.info("Obteniendo preferencias para cliente: {}", nroCliente);
-        return preferenciaRepository.obtenerPreferenciasCliente(nroCliente);
+    public List<PreferenciaClienteDto> obtenerPreferenciasCliente(String nroCliente, Integer nroIdioma) {
+        logger.info("Obteniendo preferencias para cliente: {} con nro_idioma: {}", nroCliente, nroIdioma);
+        return preferenciaRepository.obtenerPreferenciasCliente(nroCliente, nroIdioma);
     }
 }
 

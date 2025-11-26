@@ -95,7 +95,9 @@ public class PreferenciaResource {
      * Endpoint protegido (requiere autenticación)
      */
     @GetMapping("/mis-preferencias")
-    public ResponseEntity<List<PreferenciaClienteDto>> obtenerMisPreferencias(Authentication authentication) {
+    public ResponseEntity<List<PreferenciaClienteDto>> obtenerMisPreferencias(
+            Authentication authentication,
+            @RequestHeader(value = "X-Nro-Idioma", required = false) Integer nroIdiomaHeader) {
         try {
             // Obtener nroCliente del JWT
             if (authentication == null || !(authentication.getPrincipal() instanceof Jwt)) {
@@ -109,7 +111,8 @@ public class PreferenciaResource {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
             
-            List<PreferenciaClienteDto> preferencias = preferenciaService.obtenerPreferenciasCliente(nroCliente);
+            Integer nroIdioma = languageService.getNroIdiomaFromRequest(nroIdiomaHeader);
+            List<PreferenciaClienteDto> preferencias = preferenciaService.obtenerPreferenciasCliente(nroCliente, nroIdioma);
             return ResponseEntity.ok(preferencias);
         } catch (Exception e) {
             logger.error("Error al obtener preferencias del cliente", e);
