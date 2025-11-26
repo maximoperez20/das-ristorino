@@ -297,7 +297,8 @@ GO
 
 -- 8.1. Obtener reservas por nro_cliente
 CREATE OR ALTER PROCEDURE sp_ObtenerReservasPorNroCliente
-    @nro_cliente VARCHAR(36)
+    @nro_cliente VARCHAR(36),
+    @nro_idioma INT = 0  -- Default: es-AR
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -309,26 +310,29 @@ BEGIN
         CAST(CAST(rr.fecha_reserva AS VARCHAR(10)) + ' ' + CAST(rr.hora_desde AS VARCHAR(8)) AS DATETIME2) as fecha_hora,
         (rr.cant_adultos + rr.cant_menores) as cantidad_personas,
         CASE 
-            WHEN rr.cancelada = 1 THEN 'CANCELADA'
-            WHEN er.nom_estado IS NOT NULL THEN er.nom_estado
-            ELSE 'PENDIENTE'
+            WHEN rr.cancelada = 1 THEN ISNULL(ier.estado, 'CANCELADA')
+            WHEN er.nom_estado IS NOT NULL THEN ISNULL(ier.estado, er.nom_estado)
+            ELSE ISNULL(ier.estado, 'PENDIENTE')
         END as estado,
         rr.notas as observaciones,
         rr.fecha_hora_registro as fecha_creacion,
         rr.fecha_hora_cancelacion as fecha_actualizacion,
         r.razon_social as nombre_restaurante,
         s.nom_sucursal as nombre_sucursal,
-        (SELECT TOP 1 iz.zona 
-         FROM idiomas_zonas_suc_restaurantes iz
-         WHERE iz.nro_restaurante = rr.nro_restaurante 
-           AND iz.nro_sucursal = rr.nro_sucursal 
-           AND iz.cod_zona = rr.cod_zona
-         ORDER BY iz.nro_idioma) as nombre_zona
+        ISNULL(iz.zona, 'Zona') as nombre_zona
     FROM reservas_restaurantes rr
     LEFT JOIN clientes c ON c.nro_cliente = rr.nro_cliente
     LEFT JOIN estados_reservas er ON er.cod_estado = rr.cod_estado
+    LEFT JOIN idiomas_estados_reservas ier 
+        ON er.cod_estado = ier.cod_estado 
+        AND ier.nro_idioma = @nro_idioma
     LEFT JOIN restaurantes r ON r.nro_restaurante = rr.nro_restaurante
     LEFT JOIN sucursales_restaurantes s ON s.nro_restaurante = rr.nro_restaurante AND s.nro_sucursal = rr.nro_sucursal
+    LEFT JOIN idiomas_zonas_suc_restaurantes iz
+        ON iz.nro_restaurante = rr.nro_restaurante 
+        AND iz.nro_sucursal = rr.nro_sucursal 
+        AND iz.cod_zona = rr.cod_zona
+        AND iz.nro_idioma = @nro_idioma
     WHERE rr.nro_cliente = @nro_cliente
     ORDER BY rr.fecha_reserva DESC, rr.hora_desde DESC;
 END;
@@ -574,7 +578,8 @@ GO
 -- Obtener promociones vigentes de un restaurante
 -- =============================
 CREATE OR ALTER PROCEDURE sp_ObtenerPromocionesPorRestaurante
-    @nroRestaurante VARCHAR(36)
+    @nroRestaurante VARCHAR(36),
+    @nro_idioma INT = 0  -- Default: es-AR
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -600,6 +605,7 @@ BEGIN
         CAST(0 AS BIT) AS requiere_codigo
     FROM contenidos_restaurantes cr
     WHERE cr.nro_restaurante = @nroRestaurante
+      AND cr.nro_idioma = @nro_idioma  -- FILTRAR POR IDIOMA
       AND cr.contenido_promocional IS NOT NULL  -- Solo promociones (no contenidos generales)
       AND cr.fecha_ini_vigencia IS NOT NULL
       AND cr.fecha_fin_vigencia IS NOT NULL
@@ -861,6 +867,7 @@ GO
 -- Promociones (mínimo para listar)
 -- =============================
 CREATE OR ALTER PROCEDURE sp_ObtenerTodasLasPromociones
+    @nro_idioma INT = 0  -- Default: es-AR
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -885,7 +892,8 @@ BEGIN
         cr.cod_contenido_restaurante AS codigo_promocion,
         CAST(0 AS BIT) AS requiere_codigo
     FROM contenidos_restaurantes cr
-    WHERE cr.fecha_fin_vigencia IS NOT NULL
+    WHERE cr.nro_idioma = @nro_idioma  -- FILTRAR POR IDIOMA
+      AND cr.fecha_fin_vigencia IS NOT NULL
       AND CAST(GETDATE() AS DATE) <= cr.fecha_fin_vigencia;
 END;
 GO

@@ -127,8 +127,10 @@ public class RestauranteRepository {
     
     /**
      * Obtener detalle completo de un restaurante (para Requerimiento 11)
+     * @param nroRestaurante UUID del restaurante
+     * @param nroIdioma Número de idioma (0=es-AR, 1=en-US)
      */
-    public Optional<RestauranteDetalleDto> findDetalleById(String nroRestaurante) {
+    public Optional<RestauranteDetalleDto> findDetalleById(String nroRestaurante, Integer nroIdioma) {
         // Obtener datos básicos
         RestauranteDto restaurante = findById(nroRestaurante)
                 .orElse(null);
@@ -161,7 +163,7 @@ public class RestauranteRepository {
         detalle.setSucursales(sucursales);
         
         // Obtener promociones vigentes
-        List<PromocionDto> promociones = obtenerPromociones(nroRestaurante);
+        List<PromocionDto> promociones = obtenerPromociones(nroRestaurante, nroIdioma);
         detalle.setPromociones(promociones);
         
         // Imágenes (por ahora vacío, se puede implementar después)
@@ -188,10 +190,12 @@ public class RestauranteRepository {
     
     /**
      * Obtener promociones vigentes de un restaurante
+     * @param nroRestaurante UUID del restaurante
+     * @param nroIdioma Número de idioma (0=es-AR, 1=en-US)
      */
-    private List<PromocionDto> obtenerPromociones(String nroRestaurante) {
-        String sql = "EXEC sp_ObtenerPromocionesPorRestaurante ?";
-        return jdbcTemplate.query(sql, promocionRowMapper, nroRestaurante);
+    private List<PromocionDto> obtenerPromociones(String nroRestaurante, Integer nroIdioma) {
+        String sql = "EXEC sp_ObtenerPromocionesPorRestaurante ?, ?";
+        return jdbcTemplate.query(sql, promocionRowMapper, nroRestaurante, nroIdioma);
     }
     
     /**

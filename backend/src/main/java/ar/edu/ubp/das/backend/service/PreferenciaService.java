@@ -24,10 +24,11 @@ public class PreferenciaService {
     
     /**
      * Obtener todas las categorías con sus dominios
+     * @param nroIdioma Número de idioma (0=es-AR, 1=en-US)
      */
-    public List<CategoriaConDominiosDto> obtenerTodasLasCategoriasConDominios() {
-        logger.info("Obteniendo todas las categorías con sus dominios");
-        return preferenciaRepository.obtenerTodasLasCategoriasConDominios();
+    public List<CategoriaConDominiosDto> obtenerTodasLasCategoriasConDominios(Integer nroIdioma) {
+        logger.info("Obteniendo todas las categorías con sus dominios para nro_idioma: {}", nroIdioma);
+        return preferenciaRepository.obtenerTodasLasCategoriasConDominios(nroIdioma);
     }
     
     /**
