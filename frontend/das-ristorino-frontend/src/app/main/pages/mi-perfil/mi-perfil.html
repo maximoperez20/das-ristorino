@@ -2,7 +2,7 @@
   <div class="container-fluid py-4">
     <div class="row mb-4">
       <div class="col-12">
-        <h1 class="text-center mb-4">Mi Perfil</h1>
+        <h1 class="text-center mb-4" i18n>Mi Perfil</h1>
       </div>
     </div>
 
@@ -28,12 +28,12 @@
                     </div>
                     <div class="detail-item">
                       <i class="bi bi-person-badge"></i>
-                      <span class="small">Cliente #{{ usuario.nroCliente.substring(0, 8) }}</span>
+                      <span class="small" i18n>Cliente #{{ usuario.nroCliente.substring(0, 8) }}</span>
                     </div>
                   </div>
                 </div>
                 <div class="col-auto">
-                  <a routerLink="/mis-reservas" class="btn btn-outline-light btn-sm">
+                  <a routerLink="/mis-reservas" class="btn btn-outline-light btn-sm" i18n>
                     <i class="bi bi-calendar-check me-1"></i>
                     Ver mis reservas
                   </a>
@@ -50,7 +50,7 @@
       <div class="col-12">
         <div class="card preferencias-card shadow-sm">
           <div class="card-header bg-light">
-            <h5 class="mb-0">
+            <h5 class="mb-0" i18n>
               <i class="bi bi-heart-fill text-danger me-2"></i>
               Mis Preferencias Gastronómicas
             </h5>
@@ -59,11 +59,11 @@
             @if (cargandoPreferencias) {
               <div class="text-center py-3">
                 <div class="spinner-border spinner-border-sm text-primary" role="status">
-                  <span class="visually-hidden">Cargando preferencias...</span>
+                  <span class="visually-hidden" i18n>Cargando preferencias...</span>
                 </div>
               </div>
             } @else if (preferencias.length === 0) {
-              <div class="alert alert-info mb-0" role="alert">
+              <div class="alert alert-info mb-0" role="alert" i18n>
                 <i class="bi bi-info-circle me-2"></i>
                 No has configurado preferencias gastronómicas aún.
                 <a routerLink="/preferencias-registro" class="alert-link ms-2">
@@ -76,12 +76,12 @@
                   <div class="preferencia-categoria mb-3">
                     <h6 class="categoria-title mb-2">
                       <i class="bi bi-tag-fill text-primary me-2"></i>
-                      {{ categoria }}
+                      {{ categoria | translateBd }}
                     </h6>
                     <div class="preferencias-chips">
                       @for (pref of obtenerPreferenciasPorCategoria(categoria); track pref.nroValorDominio) {
                         <span class="badge bg-primary preferencia-chip me-2 mb-2">
-                          {{ pref.nombreDominio }}
+                          {{ pref.nombreDominio | translateBd }}
                         </span>
                       }
                     </div>
@@ -89,7 +89,7 @@
                 }
               </div>
               <div class="mt-3">
-                <a routerLink="/preferencias-registro" class="btn btn-outline-primary btn-sm">
+                <a routerLink="/preferencias-registro" class="btn btn-outline-primary btn-sm" i18n>
                   <i class="bi bi-pencil me-1"></i>
                   Editar preferencias
                 </a>
