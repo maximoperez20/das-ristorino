@@ -4,7 +4,6 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { PreferenciaResource } from '../../api/resources/preferencia-resource';
 import { AppMessageService } from '../../../core/services/app-message-service';
 import { AuthService } from '../../../core/services/auth-service';
-import { TranslateBdPipe } from '../../../core/pipes/translate-bd.pipe';
 import { ICategoriaConDominios } from '../../api/models/i-categoria-con-dominios';
 import { IPreferenciaItem } from '../../api/models/i-preferencia-item';
 import { IPreferenciaCliente } from '../../api/models/i-preferencia-cliente';
@@ -12,7 +11,7 @@ import { IPreferenciaCliente } from '../../api/models/i-preferencia-cliente';
 @Component({
   selector: 'app-preferencias-registro',
   standalone: true,
-  imports: [CommonModule, TranslateBdPipe],
+  imports: [CommonModule],
   templateUrl: './preferencias-registro.html',
   styleUrls: ['./preferencias-registro.scss'],
 })

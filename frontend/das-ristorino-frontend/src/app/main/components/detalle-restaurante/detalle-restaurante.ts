@@ -7,12 +7,11 @@ import { HorariosDisponiblesComponent, HorarioSeleccionado } from '../horarios-d
 import { PromocionComponent } from "../promocion/promocion";
 import { FormularioReservaComponent } from '../formulario-reserva/formulario-reserva';
 import { AuthService } from '../../../core/services/auth-service';
-import { TranslateBdPipe } from '../../../core/pipes/translate-bd.pipe';
 
 @Component({
   selector: 'app-detalle-restaurante',
   standalone: true,
-  imports: [NgClass, HorariosDisponiblesComponent, PromocionComponent, FormularioReservaComponent, TranslateBdPipe],
+  imports: [NgClass, HorariosDisponiblesComponent, PromocionComponent, FormularioReservaComponent],
   templateUrl: './detalle-restaurante.html',
   styleUrls: ['./detalle-restaurante.scss'],
 })

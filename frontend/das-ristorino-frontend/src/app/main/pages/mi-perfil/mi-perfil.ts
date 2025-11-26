@@ -4,12 +4,11 @@ import { Router, RouterLink } from '@angular/router';
 import { IPreferenciaCliente } from '../../api/models/i-preferencia-cliente';
 import { AuthService } from '../../../core/services/auth-service';
 import { PreferenciaResource } from '../../api/resources/preferencia-resource';
-import { TranslateBdPipe } from '../../../core/pipes/translate-bd.pipe';
 
 @Component({
   selector: 'app-mi-perfil',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateBdPipe],
+  imports: [CommonModule, RouterLink],
   templateUrl: './mi-perfil.html',
   styleUrls: ['./mi-perfil.scss'],
 })

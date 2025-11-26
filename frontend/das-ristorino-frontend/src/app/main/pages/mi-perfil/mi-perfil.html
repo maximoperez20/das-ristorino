@@ -76,12 +76,12 @@
                   <div class="preferencia-categoria mb-3">
                     <h6 class="categoria-title mb-2">
                       <i class="bi bi-tag-fill text-primary me-2"></i>
-                      {{ categoria | translateBd }}
+                      {{ categoria }}
                     </h6>
                     <div class="preferencias-chips">
                       @for (pref of obtenerPreferenciasPorCategoria(categoria); track pref.nroValorDominio) {
                         <span class="badge bg-primary preferencia-chip me-2 mb-2">
-                          {{ pref.nombreDominio | translateBd }}
+                          {{ pref.nombreDominio }}
                         </span>
                       }
                     </div>

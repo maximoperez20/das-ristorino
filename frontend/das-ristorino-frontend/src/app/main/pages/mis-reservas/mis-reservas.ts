@@ -4,7 +4,6 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { IReserva } from '../../api/models/i-reserva';
 import { AuthService } from '../../../core/services/auth-service';
 import { DateUtilsService } from '../../../core/services/date-utils.service';
-import { TranslateBdPipe } from '../../../core/pipes/translate-bd.pipe';
 
 interface ReservaPorDia {
   fecha: Date;
@@ -16,7 +15,7 @@ interface ReservaPorDia {
 @Component({
   selector: 'app-mis-reservas',
   standalone: true,
-  imports: [CommonModule, RouterLink, TranslateBdPipe],
+  imports: [CommonModule, RouterLink],
   templateUrl: './mis-reservas.html',
   styleUrls: ['./mis-reservas.scss'],
 })
