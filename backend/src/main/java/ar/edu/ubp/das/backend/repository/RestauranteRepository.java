@@ -155,7 +155,7 @@ public class RestauranteRepository {
         detalle.setDiasAtencion(restaurante.getDiasAtencion());
         
         // Obtener tipos de cocina
-        List<String> tiposCocina = obtenerTiposCocina(nroRestaurante);
+        List<String> tiposCocina = obtenerTiposCocina(nroRestaurante, nroIdioma);
         detalle.setTipoCocina(tiposCocina);
         
         // Obtener sucursales
@@ -174,10 +174,12 @@ public class RestauranteRepository {
     
     /**
      * Obtener tipos de cocina de un restaurante
+     * @param nroRestaurante UUID del restaurante
+     * @param nroIdioma Número de idioma (0=es-AR, 1=en-US)
      */
-    private List<String> obtenerTiposCocina(String nroRestaurante) {
-        String sql = "EXEC sp_ObtenerTiposCocinaPorRestaurante ?";
-        return jdbcTemplate.queryForList(sql, String.class, nroRestaurante);
+    private List<String> obtenerTiposCocina(String nroRestaurante, Integer nroIdioma) {
+        String sql = "EXEC sp_ObtenerTiposCocinaPorRestaurante ?, ?";
+        return jdbcTemplate.queryForList(sql, String.class, nroRestaurante, nroIdioma);
     }
     
     /**
