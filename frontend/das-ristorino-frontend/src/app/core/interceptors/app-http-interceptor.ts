@@ -2,12 +2,14 @@ import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { LoaderService } from '../services/loader-service';
 import { AuthService } from '../services/auth-service';
+import { LanguageService } from '../services/language-service';
 import { finalize } from 'rxjs';
 
 /**
  * Interceptor HTTP que:
  * 1. Muestra/oculta el loader en todas las peticiones
  * 2. Agrega el token JWT a las peticiones que lo requieren
+ * 3. Agrega el header X-Nro-Idioma a todas las peticiones /api/*
  * 
  * ESTRATEGIA: Whitelist (lista de endpoints públicos)
  * - Por defecto, TODOS los endpoints de /api/ reciben token si está disponible
@@ -17,6 +19,7 @@ import { finalize } from 'rxjs';
 export const appHttpInterceptor: HttpInterceptorFn = (req, next) => {
   const _loader = inject(LoaderService);
   const _auth = inject(AuthService);
+  const _language = inject(LanguageService);
   
   _loader.start();
   
@@ -61,11 +64,25 @@ export const appHttpInterceptor: HttpInterceptorFn = (req, next) => {
     && token 
     && (!isPublicEndpoint || isOptionalAuthEndpoint);
   
+  // Agregar header X-Nro-Idioma a todas las peticiones /api/*
+  const nroIdioma = _language.getNroIdioma();
+  
+  // Construir headers
+  const headers: { [key: string]: string } = {};
+  
   if (shouldAddToken) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  // Agregar header de idioma a todas las peticiones de la API
+  if (isApiRequest) {
+    headers['X-Nro-Idioma'] = nroIdioma.toString();
+  }
+  
+  // Clonar request con los headers si hay alguno para agregar
+  if (Object.keys(headers).length > 0) {
     req = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`
-      }
+      setHeaders: headers
     });
   }
         
