@@ -15,17 +15,33 @@ export class LanguageService {
 
   /**
    * Obtiene el código de idioma actual.
-   * Prioridad: localStorage > LOCALE_ID > default (es-AR)
+   * En desarrollo: detecta por puerto (4200 = es-AR, 4201 = en)
+   * En producción: detecta por baseHref (/ = es-AR, /en/ = en) o LOCALE_ID
    */
   getCurrentLanguage(): string {
-    // Intentar obtener de localStorage primero
-    const stored = localStorage.getItem(this.STORAGE_KEY);
-    if (stored && (stored === 'es-AR' || stored === 'en')) {
-      return stored;
+    // Detectar si estamos en desarrollo
+    const currentUrl = typeof window !== 'undefined' ? new URL(window.location.href) : null;
+    const isDevelopment = currentUrl && (currentUrl.hostname === 'localhost' || currentUrl.hostname === '127.0.0.1');
+    
+    if (isDevelopment && currentUrl) {
+      // En desarrollo: detectar por puerto
+      const currentPort = parseInt(currentUrl.port) || (currentUrl.protocol === 'https:' ? 443 : 80);
+      if (currentPort === 4201) {
+        return 'en';
+      }
+      // Puerto 4200 o cualquier otro → es-AR
+      return 'es-AR';
     }
-
-    // Si no hay en localStorage, usar LOCALE_ID
-    // LOCALE_ID puede ser 'es-AR' o 'en' según la configuración de build
+    
+    // En producción: detectar por baseHref o LOCALE_ID
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname;
+      if (pathname.startsWith('/en/') || pathname === '/en') {
+        return 'en';
+      }
+    }
+    
+    // Si no hay baseHref, usar LOCALE_ID
     if (this.locale === 'en' || this.locale.startsWith('en')) {
       return 'en';
     }
@@ -57,8 +73,8 @@ export class LanguageService {
 
   /**
    * Establece el idioma preferido y lo guarda en localStorage.
-   * Nota: Para cambiar realmente el idioma de la aplicación, se debe recargar la página
-   * con el baseHref correspondiente (/ para es-AR, /en/ para en).
+   * En desarrollo: redirige al puerto correspondiente (4200 para es-AR, 4201 para en).
+   * En producción: recarga la página con el baseHref correspondiente (/ para es-AR, /en/ para en).
    * 
    * @param codIdioma Código de idioma ('es-AR' o 'en')
    */
@@ -70,21 +86,39 @@ export class LanguageService {
 
     localStorage.setItem(this.STORAGE_KEY, codIdioma);
 
-    // Recargar la página con el nuevo idioma
-    const baseHref = codIdioma === 'en' ? '/en/' : '/';
-    const currentPath = window.location.pathname;
+    const currentUrl = new URL(window.location.href);
+    const isDevelopment = currentUrl.hostname === 'localhost' || currentUrl.hostname === '127.0.0.1';
     
-    // Remover el baseHref actual si existe
-    let newPath = currentPath;
-    if (currentPath.startsWith('/en/')) {
-      newPath = currentPath.substring(4); // Remover '/en/'
-    } else if (currentPath === '/en') {
-      newPath = '/';
-    }
+    if (isDevelopment) {
+      // En desarrollo: cambiar de puerto
+      const currentPort = parseInt(currentUrl.port) || (currentUrl.protocol === 'https:' ? 443 : 80);
+      const targetPort = codIdioma === 'en' ? 4201 : 4200;
+      
+      // Si ya estamos en el puerto correcto, no hacer nada
+      if (currentPort === targetPort) {
+        return;
+      }
+      
+      // Construir nueva URL con el puerto correcto
+      const newUrl = `${currentUrl.protocol}//${currentUrl.hostname}:${targetPort}${currentUrl.pathname}${currentUrl.search}`;
+      window.location.href = newUrl;
+    } else {
+      // En producción: cambiar baseHref
+      const baseHref = codIdioma === 'en' ? '/en/' : '/';
+      const currentPath = window.location.pathname;
+      
+      // Remover el baseHref actual si existe
+      let newPath = currentPath;
+      if (currentPath.startsWith('/en/')) {
+        newPath = currentPath.substring(4); // Remover '/en/'
+      } else if (currentPath === '/en') {
+        newPath = '/';
+      }
 
-    // Construir la nueva URL
-    const newUrl = baseHref + (newPath === '/' ? '' : newPath.substring(1));
-    window.location.href = newUrl;
+      // Construir la nueva URL
+      const newUrl = baseHref + (newPath === '/' ? '' : newPath.substring(1));
+      window.location.href = newUrl;
+    }
   }
 
   /**
