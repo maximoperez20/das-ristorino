@@ -556,17 +556,22 @@ GO
 -- Obtener tipos de cocina de un restaurante
 -- =============================
 CREATE OR ALTER PROCEDURE sp_ObtenerTiposCocinaPorRestaurante
-    @nroRestaurante VARCHAR(36)
+    @nroRestaurante VARCHAR(36),
+    @nro_idioma INT = 0  -- Default: es-AR
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT 
-        dcp.nom_valor_dominio AS tipo_cocina
+        ISNULL(idcp.valor_dominio, dcp.nom_valor_dominio) AS tipo_cocina
     FROM preferencias_restaurantes pr
     JOIN categorias_preferencias cp ON pr.cod_categoria = cp.cod_categoria
     JOIN dominio_categorias_preferencias dcp ON pr.cod_categoria = dcp.cod_categoria 
       AND pr.nro_valor_dominio = dcp.nro_valor_dominio
+    LEFT JOIN idiomas_dominio_cat_preferencias idcp
+        ON dcp.cod_categoria = idcp.cod_categoria
+        AND dcp.nro_valor_dominio = idcp.nro_valor_dominio
+        AND idcp.nro_idioma = @nro_idioma
     WHERE pr.nro_restaurante = @nroRestaurante 
       AND cp.nom_categoria = 'Tipo de comida'
       AND pr.nro_sucursal IS NULL  -- Solo preferencias del restaurante, no de sucursal específica
