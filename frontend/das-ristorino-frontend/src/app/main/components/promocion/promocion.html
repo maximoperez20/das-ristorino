@@ -31,7 +31,7 @@
       @if (promocion?.fechaFin) {
         <div class="info-item mb-2">
           <i class="bi bi-calendar-check text-primary"></i>
-          <span class="small ms-2">Válido hasta: {{ formatearFecha(promocion?.fechaFin) }}</span>
+          <span class="small ms-2">{{ textoValidoHasta }}</span>
         </div>
       }
       
@@ -40,11 +40,11 @@
           <i class="bi bi-people-fill text-primary"></i>
           <span class="small ms-2">
             @if (promocion?.minPersonas && promocion?.maxPersonas) {
-              {{ promocion?.minPersonas }} - {{ promocion?.maxPersonas }} personas
+              <span i18n>{{ promocion?.minPersonas }} - {{ promocion?.maxPersonas }} personas</span>
             } @else if (promocion?.minPersonas) {
-              Mínimo {{ promocion?.minPersonas }} personas
+              <span i18n>Mínimo {{ promocion?.minPersonas }} personas</span>
             } @else if (promocion?.maxPersonas) {
-              Máximo {{ promocion?.maxPersonas }} personas
+              <span i18n>Máximo {{ promocion?.maxPersonas }} personas</span>
             }
           </span>
         </div>
@@ -55,7 +55,7 @@
       class="btn btn-primary w-100 mt-auto" 
       (click)="registrarClickPromocion()">
       <i class="bi bi-arrow-right-circle me-2"></i>
-      Ver Restaurante
+      <span i18n>Ver Restaurante</span>
     </button>
   </div>
 </div>

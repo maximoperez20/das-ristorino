@@ -48,4 +48,10 @@ export class PromocionComponent {
     return this._dateUtils.formatearFecha(fecha);
   }
 
+  get textoValidoHasta(): string {
+    const fechaFormateada = this.formatearFecha(this.promocion?.fechaFin);
+    if (!fechaFormateada) return '';
+    return $localize`Válido hasta:` + ' ' + fechaFormateada;
+  }
+
 }
