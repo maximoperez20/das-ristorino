@@ -47,7 +47,6 @@ public class RestauranteRepository {
             restaurante.setCapacidad(rs.getInt("capacidad"));
             restaurante.setHorarioApertura(rs.getTime("horario_apertura").toLocalTime());
             restaurante.setHorarioCierre(rs.getTime("horario_cierre").toLocalTime());
-            restaurante.setDescripcion(rs.getString("descripcion"));
             restaurante.setCategoria(rs.getString("categoria"));
             restaurante.setCalificacion(rs.getDouble("calificacion"));
             restaurante.setActivo(rs.getBoolean("activo"));
@@ -149,7 +148,6 @@ public class RestauranteRepository {
         detalle.setCapacidad(restaurante.getCapacidad());
         detalle.setHorarioApertura(restaurante.getHorarioApertura());
         detalle.setHorarioCierre(restaurante.getHorarioCierre());
-        detalle.setDescripcion(restaurante.getDescripcion());
         detalle.setCalificacion(restaurante.getCalificacion());
         detalle.setActivo(restaurante.getActivo());
         detalle.setDiasAtencion(restaurante.getDiasAtencion());

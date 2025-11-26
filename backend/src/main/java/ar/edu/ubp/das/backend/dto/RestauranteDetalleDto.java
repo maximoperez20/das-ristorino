@@ -19,7 +19,6 @@ public class RestauranteDetalleDto {
     private Integer capacidad;
     private LocalTime horarioApertura;
     private LocalTime horarioCierre;
-    private String descripcion;
     private List<String> tipoCocina;  // Lista de tipos de comida (ej: ["Sushi", "Japonés"])
     private Double calificacion;
     private Boolean activo;
@@ -96,14 +95,6 @@ public class RestauranteDetalleDto {
     
     public void setHorarioCierre(LocalTime horarioCierre) {
         this.horarioCierre = horarioCierre;
-    }
-    
-    public String getDescripcion() {
-        return descripcion;
-    }
-    
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
     }
     
     public List<String> getTipoCocina() {
