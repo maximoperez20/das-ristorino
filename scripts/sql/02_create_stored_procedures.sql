@@ -1200,23 +1200,31 @@ GO
 
 -- Obtener todas las categorías con sus dominios (más eficiente para el frontend)
 CREATE OR ALTER PROCEDURE sp_ObtenerTodasLasCategoriasConDominios
+    @nro_idioma INT = 0  -- Default: es-AR
 AS
 BEGIN
     SET NOCOUNT ON;
     
-    -- Primero obtener las categorías
+    -- Primero obtener las categorías traducidas
     SELECT 
-        cod_categoria AS codCategoria,
-        nom_categoria AS nombre
-    FROM categorias_preferencias
-    ORDER BY nom_categoria;
+        cp.cod_categoria AS codCategoria,
+        ISNULL(icp.categoria, cp.nom_categoria) AS nombre
+    FROM categorias_preferencias cp
+    LEFT JOIN idiomas_categorias_preferencias icp 
+        ON cp.cod_categoria = icp.cod_categoria 
+        AND icp.nro_idioma = @nro_idioma
+    ORDER BY ISNULL(icp.categoria, cp.nom_categoria);
     
-    -- Luego obtener todos los dominios agrupados por categoría
+    -- Luego obtener todos los dominios traducidos agrupados por categoría
     SELECT 
         dcp.cod_categoria AS codCategoria,
         dcp.nro_valor_dominio AS nroValorDominio,
-        dcp.nom_valor_dominio AS nombre
+        ISNULL(idcp.valor_dominio, dcp.nom_valor_dominio) AS nombre
     FROM dominio_categorias_preferencias dcp
+    LEFT JOIN idiomas_dominio_cat_preferencias idcp
+        ON dcp.cod_categoria = idcp.cod_categoria
+        AND dcp.nro_valor_dominio = idcp.nro_valor_dominio
+        AND idcp.nro_idioma = @nro_idioma
     ORDER BY dcp.cod_categoria, dcp.nro_valor_dominio;
 END;
 GO
