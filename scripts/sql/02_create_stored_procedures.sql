@@ -441,7 +441,6 @@ BEGIN
         ISNULL(capacidad, 0) AS capacidad,
         ISNULL(horario_apertura, CAST('08:00:00' AS TIME(0))) AS horario_apertura,
         ISNULL(horario_cierre,  CAST('23:00:00' AS TIME(0))) AS horario_cierre,
-        CAST(NULL AS VARCHAR(500)) AS descripcion,
         CAST(NULL AS VARCHAR(100)) AS categoria,
         CAST(4.0 AS FLOAT) AS calificacion,
         CAST(1 AS BIT) AS activo,
@@ -497,12 +496,6 @@ BEGIN
         ISNULL(e.capacidad, 0) AS capacidad,
         ISNULL(e.horario_apertura, CAST('08:00:00' AS TIME(0))) AS horario_apertura,
         ISNULL(e.horario_cierre,  CAST('23:00:00' AS TIME(0))) AS horario_cierre,
-        -- Descripción desde contenidos_restaurantes (contenido general, no de sucursal específica)
-        (SELECT TOP 1 contenido_a_publicar FROM contenidos_restaurantes 
-         WHERE nro_restaurante = @nroRestaurante 
-           AND nro_sucursal IS NULL 
-           AND contenido_a_publicar IS NOT NULL 
-         ORDER BY fecha_ini_vigencia DESC) AS descripcion,
         -- Categoría/Tipo de cocina (primera preferencia de tipo de comida)
         (SELECT TOP 1 dcp.nom_valor_dominio 
          FROM preferencias_restaurantes pr
@@ -846,11 +839,6 @@ BEGIN
         ISNULL(MAX(s.total_comensales), 0) AS capacidad,
         ISNULL(MIN(t.hora_desde), CAST('08:00:00' AS TIME(0))) AS horario_apertura,
         ISNULL(MAX(t.hora_hasta), CAST('23:00:00' AS TIME(0))) AS horario_cierre,
-        (SELECT TOP 1 contenido_a_publicar FROM contenidos_restaurantes 
-         WHERE nro_restaurante = rf.nro_restaurante 
-           AND nro_sucursal IS NULL 
-           AND contenido_a_publicar IS NOT NULL 
-         ORDER BY fecha_ini_vigencia DESC) AS descripcion,
         (SELECT TOP 1 dcp.nom_valor_dominio 
          FROM preferencias_restaurantes pr
          JOIN categorias_preferencias cp ON pr.cod_categoria = cp.cod_categoria

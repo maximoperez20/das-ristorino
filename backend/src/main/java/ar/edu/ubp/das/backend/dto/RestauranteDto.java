@@ -39,9 +39,6 @@ public class RestauranteDto {
     @NotNull(message = "El horario de cierre es obligatorio")
     private LocalTime horarioCierre;
     
-    @Size(max = 500, message = "La descripción no puede exceder 500 caracteres")
-    private String descripcion;
-    
     @Size(max = 100, message = "La categoría no puede exceder 100 caracteres")
     private String categoria;
     
@@ -60,7 +57,7 @@ public class RestauranteDto {
     
     public RestauranteDto(String nombre, String direccion, String telefono, String email, 
                          Integer capacidad, LocalTime horarioApertura, LocalTime horarioCierre, 
-                         String descripcion, String categoria) {
+                         String categoria) {
         this.nombre = nombre;
         this.direccion = direccion;
         this.telefono = telefono;
@@ -68,7 +65,6 @@ public class RestauranteDto {
         this.capacidad = capacidad;
         this.horarioApertura = horarioApertura;
         this.horarioCierre = horarioCierre;
-        this.descripcion = descripcion;
         this.categoria = categoria;
     }
     
@@ -145,14 +141,6 @@ public class RestauranteDto {
         this.horarioCierre = horarioCierre;
     }
     
-    public String getDescripcion() {
-        return descripcion;
-    }
-    
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-    
     public String getCategoria() {
         return categoria;
     }
@@ -205,7 +193,6 @@ public class RestauranteDto {
                 ", capacidad=" + capacidad +
                 ", horarioApertura=" + horarioApertura +
                 ", horarioCierre=" + horarioCierre +
-                ", descripcion='" + descripcion + '\'' +
                 ", categoria='" + categoria + '\'' +
                 ", calificacion=" + calificacion +
                 ", activo=" + activo +
