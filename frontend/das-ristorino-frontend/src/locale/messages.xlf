@@ -649,6 +649,55 @@
           <context context-type="linenumber">137</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="5901803137426162802" datatype="html">
+        <source>Mi Perfil</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/mi-perfil/mi-perfil.html</context>
+          <context context-type="linenumber">5,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8702539178714723214" datatype="html">
+        <source>Cliente #<x id="INTERPOLATION" equiv-text="{{ usuario.nroCliente.substring(0, 8) }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/mi-perfil/mi-perfil.html</context>
+          <context context-type="linenumber">31,32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="224549199614624623" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-calendar-check me-1&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Ver mis reservas </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/mi-perfil/mi-perfil.html</context>
+          <context context-type="linenumber">37,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1334219335017440739" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-heart-fill text-danger me-2&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Mis Preferencias Gastronómicas </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/mi-perfil/mi-perfil.html</context>
+          <context context-type="linenumber">54,56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="3175104072938456917" datatype="html">
+        <source>Cargando preferencias...</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/mi-perfil/mi-perfil.html</context>
+          <context context-type="linenumber">62,63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9190413753812124221" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-info-circle me-2&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> No has configurado preferencias gastronómicas aún. <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;/preferencias-registro&quot; class=&quot;alert-link ms-2&quot;&gt;"/> Configurar preferencias <x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/mi-perfil/mi-perfil.html</context>
+          <context context-type="linenumber">67,72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6378221769455474622" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-pencil me-1&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Editar preferencias </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/mi-perfil/mi-perfil.html</context>
+          <context context-type="linenumber">93,95</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="3715871949679059190" datatype="html">
         <source>Mis Reservas</source>
         <context-group purpose="location">
