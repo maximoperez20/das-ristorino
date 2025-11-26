@@ -562,6 +562,9 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+    -- Manejar NULL explícitamente usando el valor por defecto
+    DECLARE @idioma INT = ISNULL(@nro_idioma, 0);
+
     SELECT 
         ISNULL(idcp.valor_dominio, dcp.nom_valor_dominio) AS tipo_cocina
     FROM preferencias_restaurantes pr
@@ -571,7 +574,7 @@ BEGIN
     LEFT JOIN idiomas_dominio_cat_preferencias idcp
         ON dcp.cod_categoria = idcp.cod_categoria
         AND dcp.nro_valor_dominio = idcp.nro_valor_dominio
-        AND idcp.nro_idioma = @nro_idioma
+        AND idcp.nro_idioma = @idioma
     WHERE pr.nro_restaurante = @nroRestaurante 
       AND cp.nom_categoria = 'Tipo de comida'
       AND pr.nro_sucursal IS NULL  -- Solo preferencias del restaurante, no de sucursal específica
