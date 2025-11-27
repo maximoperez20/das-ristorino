@@ -105,6 +105,7 @@ CREATE TABLE dbo.restaurantes (
   razon_social    NVARCHAR(150) NOT NULL,
   cuit            VARCHAR(11)   NOT NULL,
   tipo_protocolo  VARCHAR(10)   NOT NULL DEFAULT 'SOAP',  -- 'SOAP' o 'REST'
+  url_servicio    NVARCHAR(500) NULL,  -- URL completa del servicio (ej: http://localhost:8081/ws/restaurantes.wsdl para SOAP, http://localhost:8082/api para REST)
   CONSTRAINT PK_restaurantes PRIMARY KEY (nro_restaurante),
   CONSTRAINT UQ_restaurantes_cuit UNIQUE (cuit),
   CONSTRAINT CK_restaurantes_protocolo CHECK (tipo_protocolo IN ('SOAP', 'REST'))

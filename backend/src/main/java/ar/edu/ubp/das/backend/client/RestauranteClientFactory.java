@@ -43,12 +43,23 @@ public class RestauranteClientFactory {
      */
     public RestauranteClient getClient(String nroRestaurante) {
         String protocolo = obtenerProtocoloDelRestaurante(nroRestaurante);
+        String urlServicio = obtenerUrlServicio(nroRestaurante);
 
         if ("REST".equalsIgnoreCase(protocolo)) {
-            logger.debug("Usando cliente REST para restaurante: {}", nroRestaurante);
+            logger.debug("Usando cliente REST para restaurante: {} con URL: {}", 
+                        nroRestaurante, urlServicio != null ? urlServicio : "default");
+            // Configurar URL si está disponible
+            if (urlServicio != null && !urlServicio.trim().isEmpty()) {
+                restClient.setBaseUrl(urlServicio);
+            }
             return restClient;
         } else {
-            logger.debug("Usando cliente SOAP para restaurante: {}", nroRestaurante);
+            logger.debug("Usando cliente SOAP para restaurante: {} con URL: {}", 
+                        nroRestaurante, urlServicio != null ? urlServicio : "default");
+            // Configurar URL si está disponible
+            if (urlServicio != null && !urlServicio.trim().isEmpty()) {
+                soapClient.setWsdlUrl(urlServicio);
+            }
             return soapClient;
         }
     }
@@ -75,5 +86,24 @@ public class RestauranteClientFactory {
         
         // Fallback al protocolo por defecto
         return defaultProtocol;
+    }
+
+    /**
+     * Obtiene la URL del servicio configurada para un restaurante desde la base de datos.
+     * Si el restaurante no tiene URL configurada, retorna null para usar el default.
+     * 
+     * @param nroRestaurante ID del restaurante
+     * @return URL del servicio o null si no está configurada
+     */
+    public String obtenerUrlServicio(String nroRestaurante) {
+        try {
+            String sql = "SELECT url_servicio FROM restaurantes WHERE nro_restaurante = ?";
+            String url = jdbcTemplate.queryForObject(sql, String.class, nroRestaurante);
+            return url;
+        } catch (Exception e) {
+            logger.debug("No se pudo obtener URL de servicio para restaurante {}: {}. Usando default", 
+                       nroRestaurante, e.getMessage());
+            return null;
+        }
     }
 }
