@@ -155,139 +155,6 @@ END
    - De lujo
 */
 
-/* =========================================
-   3) Configuraciones de ejemplo para restaurantes
-   ========================================= */
-
--- Restaurante 1: Los Aroza SRL (Restaurante general/argentino)
-DECLARE @restaurante_1_uuid VARCHAR(36) = '12345678-1234-1234-1234-123456789abc';
-
--- Tipo de cocina
-IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @restaurante_1_uuid AND cod_atributo = @cod_atributo_tipo_cocina)
-BEGIN
-    INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)
-    VALUES (@restaurante_1_uuid, @cod_atributo_tipo_cocina, N'Argentina, Mediterránea');
-    PRINT 'Configuración "Tipo de cocina" agregada para Los Aroza SRL';
-END
-
--- Estilo
-IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @restaurante_1_uuid AND cod_atributo = @cod_atributo_estilo)
-BEGIN
-    INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)
-    VALUES (@restaurante_1_uuid, @cod_atributo_estilo, N'Fine dining');
-    PRINT 'Configuración "Estilo" agregada para Los Aroza SRL';
-END
-
--- Nivel de precio
-IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @restaurante_1_uuid AND cod_atributo = @cod_atributo_nivel_precio)
-BEGIN
-    INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)
-    VALUES (@restaurante_1_uuid, @cod_atributo_nivel_precio, N'Alto / Premium');
-    PRINT 'Configuración "Nivel de precio" agregada para Los Aroza SRL';
-END
-
--- Estilo de atención (mantener para compatibilidad)
-IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @restaurante_1_uuid AND cod_atributo = @cod_atributo_estilo_atencion)
-BEGIN
-    INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)
-    VALUES (@restaurante_1_uuid, @cod_atributo_estilo_atencion, N'Formal y elegante, con servicio personalizado');
-    PRINT 'Configuración "Estilo de atención" agregada para Los Aroza SRL';
-END
-
--- Platos emblemáticos (mantener para compatibilidad)
-IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @restaurante_1_uuid AND cod_atributo = @cod_atributo_platos_emblematicos)
-BEGIN
-    INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)
-    VALUES (@restaurante_1_uuid, @cod_atributo_platos_emblematicos, N'Bife de chorizo a la parrilla, Risotto de hongos, Tiramisú casero');
-    PRINT 'Configuración "Platos emblemáticos" agregada para Los Aroza SRL';
-END
-
--- Restaurante 2: Parrilla La Esquina SRL (Parrilla argentina)
-DECLARE @restaurante_2_uuid VARCHAR(36) = '22345678-2234-2234-2234-223456789abc';
-
--- Tipo de cocina
-IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @restaurante_2_uuid AND cod_atributo = @cod_atributo_tipo_cocina)
-BEGIN
-    INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)
-    VALUES (@restaurante_2_uuid, @cod_atributo_tipo_cocina, N'Argentina');
-    PRINT 'Configuración "Tipo de cocina" agregada para Parrilla La Esquina SRL';
-END
-
--- Estilo
-IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @restaurante_2_uuid AND cod_atributo = @cod_atributo_estilo)
-BEGIN
-    INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)
-    VALUES (@restaurante_2_uuid, @cod_atributo_estilo, N'Restaurante tradicional');
-    PRINT 'Configuración "Estilo" agregada para Parrilla La Esquina SRL';
-END
-
--- Nivel de precio
-IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @restaurante_2_uuid AND cod_atributo = @cod_atributo_nivel_precio)
-BEGIN
-    INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)
-    VALUES (@restaurante_2_uuid, @cod_atributo_nivel_precio, N'Medio');
-    PRINT 'Configuración "Nivel de precio" agregada para Parrilla La Esquina SRL';
-END
-
--- Estilo de atención (mantener para compatibilidad)
-IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @restaurante_2_uuid AND cod_atributo = @cod_atributo_estilo_atencion)
-BEGIN
-    INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)
-    VALUES (@restaurante_2_uuid, @cod_atributo_estilo_atencion, N'Casual y familiar, ambiente relajado');
-    PRINT 'Configuración "Estilo de atención" agregada para Parrilla La Esquina SRL';
-END
-
--- Platos emblemáticos (mantener para compatibilidad)
-IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @restaurante_2_uuid AND cod_atributo = @cod_atributo_platos_emblematicos)
-BEGIN
-    INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)
-    VALUES (@restaurante_2_uuid, @cod_atributo_platos_emblematicos, N'Asado de tira, Chorizo criollo, Provoleta a la parrilla, Ensalada rusa');
-    PRINT 'Configuración "Platos emblemáticos" agregada para Parrilla La Esquina SRL';
-END
-
--- Restaurante 3: Sushi House S.A. (Cocina japonesa)
-DECLARE @restaurante_3_uuid VARCHAR(36) = '32345678-3234-3234-3234-323456789abc';
-
--- Tipo de cocina
-IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @restaurante_3_uuid AND cod_atributo = @cod_atributo_tipo_cocina)
-BEGIN
-    INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)
-    VALUES (@restaurante_3_uuid, @cod_atributo_tipo_cocina, N'Japonesa');
-    PRINT 'Configuración "Tipo de cocina" agregada para Sushi House S.A.';
-END
-
--- Estilo
-IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @restaurante_3_uuid AND cod_atributo = @cod_atributo_estilo)
-BEGIN
-    INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)
-    VALUES (@restaurante_3_uuid, @cod_atributo_estilo, N'Gourmet');
-    PRINT 'Configuración "Estilo" agregada para Sushi House S.A.';
-END
-
--- Nivel de precio
-IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @restaurante_3_uuid AND cod_atributo = @cod_atributo_nivel_precio)
-BEGIN
-    INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)
-    VALUES (@restaurante_3_uuid, @cod_atributo_nivel_precio, N'Alto / Premium');
-    PRINT 'Configuración "Nivel de precio" agregada para Sushi House S.A.';
-END
-
--- Estilo de atención (mantener para compatibilidad)
-IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @restaurante_3_uuid AND cod_atributo = @cod_atributo_estilo_atencion)
-BEGIN
-    INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)
-    VALUES (@restaurante_3_uuid, @cod_atributo_estilo_atencion, N'Moderno y sofisticado, atención detallista');
-    PRINT 'Configuración "Estilo de atención" agregada para Sushi House S.A.';
-END
-
--- Platos emblemáticos (mantener para compatibilidad)
-IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @restaurante_3_uuid AND cod_atributo = @cod_atributo_platos_emblematicos)
-BEGIN
-    INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)
-    VALUES (@restaurante_3_uuid, @cod_atributo_platos_emblematicos, N'Roll California, Sashimi de salmón, Tempura de verduras, Ramen de cerdo');
-    PRINT 'Configuración "Platos emblemáticos" agregada para Sushi House S.A.';
-END
-
 PRINT '';
 PRINT '========================================';
 PRINT 'Atributos de identidad gastronómica insertados exitosamente';
@@ -300,11 +167,10 @@ PRINT '  - Estilo (11 valores disponibles)';
 PRINT '  - Nivel de precio (4 valores disponibles)';
 PRINT '  - Estilo de atención (mantenido para compatibilidad)';
 PRINT '  - Platos emblemáticos (mantenido para compatibilidad)';
+PRINT '  - Lenguaje preferido (mantenido para compatibilidad)';
 PRINT '';
-PRINT 'Configuraciones agregadas para:';
-PRINT '  - Los Aroza SRL (Restaurante general)';
-PRINT '  - Parrilla La Esquina SRL (Parrilla)';
-PRINT '  - Sushi House S.A. (Cocina japonesa)';
+PRINT 'NOTA: Las configuraciones de identidad para los restaurantes se insertan con:';
+PRINT '  12_insert_restaurantes_examen_final.sql';
 PRINT '';
 PRINT 'NOTA: Los valores específicos para cada atributo están documentados en los comentarios del script.';
 PRINT '      Estos valores pueden usarse al configurar restaurantes en la tabla configuracion_restaurantes.';

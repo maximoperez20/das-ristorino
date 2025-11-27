@@ -1,7 +1,7 @@
 /* =========================================================================================
    INSERT DE DATOS AVANZADOS - das_ristorino
-   Incluye: estados de reservas, zonas, zonas por turno, categorías de preferencias,
-   clientes de prueba, traducciones básicas y 2 PROMOCIONES para el restaurante compartido
+   Incluye SOLO catálogos base: estados de reservas, categorías de preferencias
+   NOTA: Las zonas, zonas por turno y promociones se insertan con 12_insert_restaurantes_examen_final.sql
    ========================================================================================= */
 
 SET NOCOUNT ON;
@@ -63,175 +63,7 @@ END
 PRINT 'Estados de reservas insertados';
 
 /* =========================================
-   2) Zonas para las Sucursales
-   ========================================= */
-
--- Restaurante compartido (Los Aroza) - SINCRONIZADO con das-restaurante-soap
-DECLARE @restaurante_compartido_uuid VARCHAR(36) = '12345678-1234-1234-1234-123456789abc';
-DECLARE @nro_sucursal_1 VARCHAR(36);
-SELECT @nro_sucursal_1 = nro_sucursal FROM sucursales_restaurantes 
-WHERE nro_restaurante = @restaurante_compartido_uuid AND nom_sucursal = N'Los Aroza - Centro';
-
-IF @nro_sucursal_1 IS NOT NULL
-BEGIN
-    -- Zona 1: Salón Principal (SINCRONIZADO con das-restaurante-soap: 80 comensales)
-    IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
-                   WHERE nro_restaurante = @restaurante_compartido_uuid 
-                   AND nro_sucursal = @nro_sucursal_1 
-                   AND desc_zona = N'Salón Principal')
-    BEGIN
-        INSERT INTO zonas_sucursales_restaurantes 
-            (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada)
-        VALUES 
-            (@restaurante_compartido_uuid, @nro_sucursal_1, N'Salón Principal', 80, 1, 1);
-    END
-    
-    -- Zona 2: Terraza (SINCRONIZADO con das-restaurante-soap: 60 comensales)
-    IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
-                   WHERE nro_restaurante = @restaurante_compartido_uuid 
-                   AND nro_sucursal = @nro_sucursal_1 
-                   AND desc_zona = N'Terraza')
-    BEGIN
-        INSERT INTO zonas_sucursales_restaurantes 
-            (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada)
-        VALUES 
-            (@restaurante_compartido_uuid, @nro_sucursal_1, N'Terraza', 60, 1, 1);
-    END
-END
-
--- Restaurante 2 (Parrilla La Esquina)
-DECLARE @restaurante_2_uuid VARCHAR(36) = '22345678-2234-2234-2234-223456789abc';
-DECLARE @nro_sucursal_2 VARCHAR(36);
-SELECT @nro_sucursal_2 = nro_sucursal FROM sucursales_restaurantes 
-WHERE nro_restaurante = @restaurante_2_uuid AND nom_sucursal = N'Parrilla La Esquina - VCP';
-
-IF @nro_sucursal_2 IS NOT NULL
-BEGIN
-    -- Zona 1: Salón Principal
-    IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
-                   WHERE nro_restaurante = @restaurante_2_uuid 
-                   AND nro_sucursal = @nro_sucursal_2 
-                   AND desc_zona = N'Salón Principal')
-    BEGIN
-        INSERT INTO zonas_sucursales_restaurantes 
-            (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada)
-        VALUES 
-            (@restaurante_2_uuid, @nro_sucursal_2, N'Salón Principal', 70, 1, 1);
-    END
-    
-    -- Zona 2: Patio Cubierto
-    IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
-                   WHERE nro_restaurante = @restaurante_2_uuid 
-                   AND nro_sucursal = @nro_sucursal_2 
-                   AND desc_zona = N'Patio Cubierto')
-    BEGIN
-        INSERT INTO zonas_sucursales_restaurantes 
-            (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada)
-        VALUES 
-            (@restaurante_2_uuid, @nro_sucursal_2, N'Patio Cubierto', 30, 1, 1);
-    END
-END
-
--- Restaurante 3 (Sushi House)
-DECLARE @restaurante_3_uuid VARCHAR(36) = '32345678-3234-3234-3234-323456789abc';
-DECLARE @nro_sucursal_3 VARCHAR(36);
-SELECT @nro_sucursal_3 = nro_sucursal FROM sucursales_restaurantes 
-WHERE nro_restaurante = @restaurante_3_uuid AND nom_sucursal = N'Sushi House - Centro';
-
-IF @nro_sucursal_3 IS NOT NULL
-BEGIN
-    -- Zona 1: Salón Principal
-    IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
-                   WHERE nro_restaurante = @restaurante_3_uuid 
-                   AND nro_sucursal = @nro_sucursal_3 
-                   AND desc_zona = N'Salón Principal')
-    BEGIN
-        INSERT INTO zonas_sucursales_restaurantes 
-            (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada)
-        VALUES 
-            (@restaurante_3_uuid, @nro_sucursal_3, N'Salón Principal', 60, 1, 1);
-    END
-    
-    -- Zona 2: Barra
-    IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
-                   WHERE nro_restaurante = @restaurante_3_uuid 
-                   AND nro_sucursal = @nro_sucursal_3 
-                   AND desc_zona = N'Barra')
-    BEGIN
-        INSERT INTO zonas_sucursales_restaurantes 
-            (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada)
-        VALUES 
-            (@restaurante_3_uuid, @nro_sucursal_3, N'Barra', 20, 0, 1);
-    END
-END
-
-PRINT 'Zonas insertadas para todas las sucursales';
-
-/* =========================================
-   3) Zonas por Turno (Habilitar zonas en turnos)
-   ========================================= */
-
--- Para restaurante compartido
-IF @nro_sucursal_1 IS NOT NULL
-BEGIN
-    INSERT INTO zonas_turnos_sucurales_restaurantes
-           (nro_restaurante, nro_sucursal, cod_zona, hora_desde, permite_menores)
-    SELECT t.nro_restaurante, t.nro_sucursal, zsr.cod_zona, t.hora_desde, zsr.permite_menores
-    FROM turnos_sucursales_restaurantes t
-    JOIN zonas_sucursales_restaurantes zsr
-      ON zsr.nro_restaurante = t.nro_restaurante AND zsr.nro_sucursal = t.nro_sucursal
-    LEFT JOIN zonas_turnos_sucurales_restaurantes ztr
-      ON ztr.nro_restaurante = t.nro_restaurante 
-     AND ztr.nro_sucursal = t.nro_sucursal
-     AND ztr.cod_zona = zsr.cod_zona 
-     AND ztr.hora_desde = t.hora_desde
-    WHERE t.nro_restaurante = @restaurante_compartido_uuid 
-      AND t.nro_sucursal = @nro_sucursal_1
-      AND ztr.nro_restaurante IS NULL;
-END
-
--- Para restaurante 2
-IF @nro_sucursal_2 IS NOT NULL
-BEGIN
-    INSERT INTO zonas_turnos_sucurales_restaurantes
-           (nro_restaurante, nro_sucursal, cod_zona, hora_desde, permite_menores)
-    SELECT t.nro_restaurante, t.nro_sucursal, zsr.cod_zona, t.hora_desde, zsr.permite_menores
-    FROM turnos_sucursales_restaurantes t
-    JOIN zonas_sucursales_restaurantes zsr
-      ON zsr.nro_restaurante = t.nro_restaurante AND zsr.nro_sucursal = t.nro_sucursal
-    LEFT JOIN zonas_turnos_sucurales_restaurantes ztr
-      ON ztr.nro_restaurante = t.nro_restaurante 
-     AND ztr.nro_sucursal = t.nro_sucursal
-     AND ztr.cod_zona = zsr.cod_zona 
-     AND ztr.hora_desde = t.hora_desde
-    WHERE t.nro_restaurante = @restaurante_2_uuid 
-      AND t.nro_sucursal = @nro_sucursal_2
-      AND ztr.nro_restaurante IS NULL;
-END
-
--- Para restaurante 3
-IF @nro_sucursal_3 IS NOT NULL
-BEGIN
-    INSERT INTO zonas_turnos_sucurales_restaurantes
-           (nro_restaurante, nro_sucursal, cod_zona, hora_desde, permite_menores)
-    SELECT t.nro_restaurante, t.nro_sucursal, zsr.cod_zona, t.hora_desde, zsr.permite_menores
-    FROM turnos_sucursales_restaurantes t
-    JOIN zonas_sucursales_restaurantes zsr
-      ON zsr.nro_restaurante = t.nro_restaurante AND zsr.nro_sucursal = t.nro_sucursal
-    LEFT JOIN zonas_turnos_sucurales_restaurantes ztr
-      ON ztr.nro_restaurante = t.nro_restaurante 
-     AND ztr.nro_sucursal = t.nro_sucursal
-     AND ztr.cod_zona = zsr.cod_zona 
-     AND ztr.hora_desde = t.hora_desde
-    WHERE t.nro_restaurante = @restaurante_3_uuid 
-      AND t.nro_sucursal = @nro_sucursal_3
-      AND ztr.nro_restaurante IS NULL;
-END
-
-PRINT 'Zonas habilitadas en turnos';
-
-/* =========================================
-   4) Categorías de Preferencias y Dominios
+   2) Categorías de Preferencias y Dominios
    ========================================= */
 
 -- Categorías base
@@ -312,158 +144,24 @@ END
 PRINT 'Categorías y dominios de preferencias insertados';
 
 /* =========================================
-   5) Clientes de Prueba
+   3) Clientes de Prueba (opcional, para testing)
    ========================================= */
 
-DECLARE @cod_cba VARCHAR(36), @cod_ba VARCHAR(36);
+DECLARE @cod_cba VARCHAR(36);
 SELECT @cod_cba = cod_provincia FROM provincias WHERE nom_provincia = N'Córdoba';
-SELECT @cod_ba = cod_provincia FROM provincias WHERE nom_provincia = N'Buenos Aires';
 
-DECLARE @loc_cba VARCHAR(36), @loc_vcp VARCHAR(36), @loc_lpl VARCHAR(36);
-SELECT @loc_cba = nro_localidad FROM localidades WHERE nom_localidad = N'Córdoba' AND cod_provincia = @cod_cba;
-SELECT @loc_vcp = nro_localidad FROM localidades WHERE nom_localidad = N'Villa Carlos Paz' AND cod_provincia = @cod_cba;
-SELECT @loc_lpl = nro_localidad FROM localidades WHERE nom_localidad = N'La Plata' AND cod_provincia = @cod_ba;
+DECLARE @loc_alta_cba VARCHAR(36);
+SELECT @loc_alta_cba = nro_localidad FROM localidades WHERE nom_localidad = N'Alta Córdoba' AND cod_provincia = @cod_cba;
 
--- Cliente 1: Ana Rodríguez
-IF NOT EXISTS (SELECT 1 FROM clientes WHERE correo = N'ana.rodriguez@mail.com')
+-- Cliente de prueba: Ana Rodríguez
+IF @loc_alta_cba IS NOT NULL AND NOT EXISTS (SELECT 1 FROM clientes WHERE correo = N'ana.rodriguez@mail.com')
     INSERT INTO clientes (apellido, nombre, clave, correo, telefonos, nro_localidad, habilitado)
-    VALUES (N'Rodríguez', N'Ana', N'$2y$10$dummyhash1234567890123456789012345678901234567890123456789012', N'ana.rodriguez@mail.com', N'351-555-1111', @loc_cba, 1);
+    VALUES (N'Rodríguez', N'Ana', N'$2y$10$dummyhash1234567890123456789012345678901234567890123456789012', N'ana.rodriguez@mail.com', N'351-555-1111', @loc_alta_cba, 1);
 
--- Cliente 2: Maximiliano Ferreyra
-IF NOT EXISTS (SELECT 1 FROM clientes WHERE correo = N'max.ferreyra@mail.com')
-    INSERT INTO clientes (apellido, nombre, clave, correo, telefonos, nro_localidad, habilitado)
-    VALUES (N'Ferreyra', N'Maximiliano', N'$2y$10$dummyhash1234567890123456789012345678901234567890123456789012', N'max.ferreyra@mail.com', N'351-555-2222', @loc_vcp, 1);
-
--- Cliente 3: Carla Sosa
-IF NOT EXISTS (SELECT 1 FROM clientes WHERE correo = N'carla.sosa@mail.com')
-    INSERT INTO clientes (apellido, nombre, clave, correo, telefonos, nro_localidad, habilitado)
-    VALUES (N'Sosa', N'Carla', N'$2y$10$dummyhash1234567890123456789012345678901234567890123456789012', N'carla.sosa@mail.com', N'221-555-3333', @loc_lpl, 1);
-
-PRINT 'Clientes de prueba insertados';
+PRINT 'Clientes de prueba insertados (opcional)';
 
 /* =========================================
-   6) Traducciones de Zonas (opcional, útil para i18n)
-   ========================================= */
-
-IF @nro_idioma_es IS NOT NULL AND @nro_sucursal_1 IS NOT NULL
-BEGIN
-    -- Traducciones para restaurante compartido
-    DECLARE @cod_zona VARCHAR(36);
-    
-    -- Salón Principal
-    SELECT @cod_zona = cod_zona FROM zonas_sucursales_restaurantes 
-    WHERE nro_restaurante = @restaurante_compartido_uuid AND nro_sucursal = @nro_sucursal_1 AND desc_zona = N'Salón Principal';
-    IF @cod_zona IS NOT NULL AND NOT EXISTS (SELECT 1 FROM idiomas_zonas_suc_restaurantes 
-                                             WHERE nro_restaurante = @restaurante_compartido_uuid 
-                                             AND nro_sucursal = @nro_sucursal_1 
-                                             AND cod_zona = @cod_zona 
-                                             AND nro_idioma = @nro_idioma_es)
-        INSERT INTO idiomas_zonas_suc_restaurantes (nro_restaurante, nro_sucursal, cod_zona, nro_idioma, zona, desc_zona)
-        VALUES (@restaurante_compartido_uuid, @nro_sucursal_1, @cod_zona, @nro_idioma_es, N'Salón Principal', N'Salón principal del restaurante con capacidad para 80 comensales');
-    
-    -- Terraza
-    SELECT @cod_zona = cod_zona FROM zonas_sucursales_restaurantes 
-    WHERE nro_restaurante = @restaurante_compartido_uuid AND nro_sucursal = @nro_sucursal_1 AND desc_zona = N'Terraza';
-    IF @cod_zona IS NOT NULL AND NOT EXISTS (SELECT 1 FROM idiomas_zonas_suc_restaurantes 
-                                             WHERE nro_restaurante = @restaurante_compartido_uuid 
-                                             AND nro_sucursal = @nro_sucursal_1 
-                                             AND cod_zona = @cod_zona 
-                                             AND nro_idioma = @nro_idioma_es)
-        INSERT INTO idiomas_zonas_suc_restaurantes (nro_restaurante, nro_sucursal, cod_zona, nro_idioma, zona, desc_zona)
-        VALUES (@restaurante_compartido_uuid, @nro_sucursal_1, @cod_zona, @nro_idioma_es, N'Terraza', N'Terraza al aire libre con capacidad para 60 comensales');
-END
-
-PRINT 'Traducciones de zonas insertadas';
-
-/* =========================================
-   7) PROMOCIONES para el Restaurante Compartido
-   IMPORTANTE: Estas promociones también deben insertarse en das_restaurante_soap
-   ========================================= */
-
-IF @nro_idioma_es IS NOT NULL AND @nro_sucursal_1 IS NOT NULL
-BEGIN
-    -- Promoción 1: Descuento especial de temporada
-    DECLARE @nro_contenido_1 VARCHAR(36) = NEWID();
-    DECLARE @fecha_ini DATE = CAST(GETDATE() AS DATE);
-    DECLARE @fecha_fin DATE = DATEADD(MONTH, 1, @fecha_ini);
-    
-    IF NOT EXISTS (SELECT 1 FROM contenidos_restaurantes 
-                   WHERE nro_restaurante = @restaurante_compartido_uuid 
-                   AND nro_idioma = @nro_idioma_es 
-                   AND contenido_a_publicar LIKE N'%Descuento especial de temporada%')
-    BEGIN
-        INSERT INTO contenidos_restaurantes (
-            nro_restaurante, nro_idioma, nro_contenido, nro_sucursal,
-            contenido_promocional, contenido_a_publicar,
-            fecha_ini_vigencia, fecha_fin_vigencia, costo_click
-        )
-        VALUES (
-            @restaurante_compartido_uuid, @nro_idioma_es, @nro_contenido_1, @nro_sucursal_1,
-            N'¡Descuento especial de temporada! 20% OFF en todos los platos principales. Válido de lunes a jueves. Reservá tu mesa ahora.',
-            N'¡Descuento especial de temporada! 20% OFF en todos los platos principales. Válido de lunes a jueves. Reservá tu mesa ahora.',
-            @fecha_ini, @fecha_fin, 0.50
-        );
-        PRINT 'Promoción 1 insertada en das_ristorino: ' + @nro_contenido_1;
-    END
-    ELSE
-    BEGIN
-        SELECT @nro_contenido_1 = nro_contenido FROM contenidos_restaurantes 
-        WHERE nro_restaurante = @restaurante_compartido_uuid 
-        AND nro_idioma = @nro_idioma_es 
-        AND contenido_a_publicar LIKE N'%Descuento especial de temporada%';
-        PRINT 'Promoción 1 ya existe en das_ristorino: ' + @nro_contenido_1;
-    END
-    
-    -- Promoción 2: Menú ejecutivo
-    DECLARE @nro_contenido_2 VARCHAR(36) = NEWID();
-    
-    IF NOT EXISTS (SELECT 1 FROM contenidos_restaurantes 
-                   WHERE nro_restaurante = @restaurante_compartido_uuid 
-                   AND nro_idioma = @nro_idioma_es 
-                   AND contenido_a_publicar LIKE N'%Menú ejecutivo%')
-    BEGIN
-        INSERT INTO contenidos_restaurantes (
-            nro_restaurante, nro_idioma, nro_contenido, nro_sucursal,
-            contenido_promocional, contenido_a_publicar,
-            fecha_ini_vigencia, fecha_fin_vigencia, costo_click
-        )
-        VALUES (
-            @restaurante_compartido_uuid, @nro_idioma_es, @nro_contenido_2, @nro_sucursal_1,
-            N'Menú ejecutivo de lunes a viernes. Entrada + plato principal + postre por $3500. Incluye bebida sin alcohol. ¡No te lo pierdas!',
-            N'Menú ejecutivo de lunes a viernes. Entrada + plato principal + postre por $3500. Incluye bebida sin alcohol. ¡No te lo pierdas!',
-            @fecha_ini, @fecha_fin, 0.75
-        );
-        PRINT 'Promoción 2 insertada en das_ristorino: ' + @nro_contenido_2;
-    END
-    ELSE
-    BEGIN
-        SELECT @nro_contenido_2 = nro_contenido FROM contenidos_restaurantes 
-        WHERE nro_restaurante = @restaurante_compartido_uuid 
-        AND nro_idioma = @nro_idioma_es 
-        AND contenido_a_publicar LIKE N'%Menú ejecutivo%';
-        PRINT 'Promoción 2 ya existe en das_ristorino: ' + @nro_contenido_2;
-    END
-    
-    PRINT 'NOTA: Estas promociones también deben insertarse en das_restaurante_soap usando el script 04_insert_datos_avanzados.sql';
-END
-
-/* =========================================
-   Resumen
-   ========================================= */
-
-PRINT '========================================';
-PRINT 'Datos avanzados insertados exitosamente';
-PRINT '========================================';
-PRINT '- Estados de reservas: 5 estados creados';
-PRINT '- Zonas: 2 zonas por sucursal (6 zonas totales)';
-PRINT '  * Restaurante compartido: Salón Principal (80), Terraza (60) - SINCRONIZADO con das-restaurante-soap';
-PRINT '- Zonas por turno: Todas las zonas habilitadas en sus turnos';
-PRINT '- Categorías de preferencias: 3 categorías con 12 dominios';
-PRINT '- Clientes de prueba: 3 clientes creados';
-PRINT '- Traducciones: Zonas traducidas al español';
-PRINT '- Promociones: 2 promociones creadas para el restaurante compartido';
-/* =========================================
-   8) Costos para contenidos
+   4) Costos para contenidos
    ========================================= */
 
 -- Insertar un costo activo por defecto para los contenidos generados con IA
@@ -495,9 +193,15 @@ BEGIN
     PRINT '>> Costo RESERVA insertado: $100.00 por reserva (vigente desde ' + CAST(@fecha_hoy AS VARCHAR(10)) + ')';
 END
 
-GO
-
 PRINT '========================================';
-PRINT 'IMPORTANTE: Ejecutar también 04_insert_datos_avanzados.sql en das_restaurante_soap';
+PRINT 'Datos avanzados insertados exitosamente';
+PRINT '========================================';
+PRINT '- Estados de reservas: 5 estados creados';
+PRINT '- Categorías de preferencias: 3 categorías con dominios';
+PRINT '- Clientes de prueba: 1 cliente creado (opcional)';
+PRINT '- Costos: CLICK y RESERVA configurados';
+PRINT '';
+PRINT 'NOTA: Las zonas, zonas por turno y promociones se insertan con:';
+PRINT '  12_insert_restaurantes_examen_final.sql';
 PRINT '========================================';
 GO
