@@ -68,16 +68,16 @@
                 [attr.data-hora]="horario.horaDesde">
                 <div class="horario-time">
                   <i class="bi bi-clock"></i>
-                  {{ horario.horaDesde }} - {{ horario.horaHasta }}
+                  {{ formatearHora(horario.horaDesde) }} - {{ formatearHora(horario.horaHasta) }}
                 </div>
                 <div class="horario-info">
-                  <span class="disponibilidad" i18n>
+                  <span class="disponibilidad">
                     <i class="bi bi-check-circle"></i>
-                    {{ horario.disponibilidad }} disponibles
+                    {{ obtenerTextoDisponibilidad(horario.disponibilidad) }}
                   </span>
                   @if (horario.yaReservados > 0) {
-                    <span class="reservados" i18n>
-                      ({{ horario.yaReservados }} reservados)
+                    <span class="reservados">
+                      {{ obtenerTextoReservados(horario.yaReservados) }}
                     </span>
                   }
                 </div>
