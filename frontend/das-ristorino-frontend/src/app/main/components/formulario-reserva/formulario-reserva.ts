@@ -153,5 +153,52 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
   getCerrarAriaLabel(): string {
     return $localize`Cerrar`;
   }
+
+  obtenerTextoZona(): string {
+    if (!this.horarioSeleccionado?.nomZona) return '';
+    return $localize`Zona:` + ' ' + this.horarioSeleccionado.nomZona;
+  }
+
+  obtenerTextoFecha(): string {
+    if (!this.horarioSeleccionado?.fecha) return '';
+    const fechaFormateada = this.formatearFechaLegible(this.horarioSeleccionado.fecha);
+    return $localize`Fecha:` + ' ' + fechaFormateada;
+  }
+
+  obtenerTextoHorario(): string {
+    if (!this.horarioSeleccionado?.horaDesde || !this.horarioSeleccionado?.horaHasta) return '';
+    const horaDesde = this.formatearHora(this.horarioSeleccionado.horaDesde);
+    const horaHasta = this.formatearHora(this.horarioSeleccionado.horaHasta);
+    return $localize`Horario:` + ' ' + horaDesde + ' - ' + horaHasta;
+  }
+
+  obtenerTextoDisponibilidad(): string {
+    if (!this.horarioSeleccionado?.disponibilidad) return '';
+    const disponibilidad = this.horarioSeleccionado.disponibilidad;
+    if (disponibilidad === 1) {
+      return $localize`Disponibilidad:` + ' ' + disponibilidad + ' ' + $localize`lugar`;
+    }
+    return $localize`Disponibilidad:` + ' ' + disponibilidad + ' ' + $localize`lugares`;
+  }
+
+  obtenerTextoTotalPersonas(): string {
+    const total = this.totalPersonas;
+    const max = this.maxPersonas;
+    if (max === 1) {
+      return $localize`Total de personas:` + ' ' + total + ' / ' + max + ' ' + $localize`disponible`;
+    }
+    return $localize`Total de personas:` + ' ' + total + ' / ' + max + ' ' + $localize`disponibles`;
+  }
+
+  formatearHora(hora: string | null | undefined): string {
+    if (!hora) return '';
+    try {
+      // Si viene en formato HH:mm:ss, tomar solo HH:mm
+      const horaFormateada = hora.split(':').slice(0, 2).join(':');
+      return horaFormateada;
+    } catch {
+      return hora;
+    }
+  }
 }
 

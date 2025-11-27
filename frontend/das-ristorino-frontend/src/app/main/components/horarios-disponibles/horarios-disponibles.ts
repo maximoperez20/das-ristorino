@@ -182,4 +182,40 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
   limpiarSeleccion(): void {
     this.horarioSeleccionadoActual = null;
   }
+
+  /**
+   * Formatea una hora (string en formato HH:mm:ss o HH:mm) a formato legible (HH:mm)
+   */
+  formatearHora(hora: string | null | undefined): string {
+    if (!hora) return '';
+    try {
+      // Si viene en formato HH:mm:ss, tomar solo HH:mm
+      const horaFormateada = hora.split(':').slice(0, 2).join(':');
+      return horaFormateada;
+    } catch {
+      return hora;
+    }
+  }
+
+  /**
+   * Obtiene el texto formateado para la disponibilidad
+   */
+  obtenerTextoDisponibilidad(disponibilidad: number | null | undefined): string {
+    if (disponibilidad === null || disponibilidad === undefined) return '';
+    if (disponibilidad === 1) {
+      return $localize`:@@horarios.disponible.1:1 disponible`;
+    }
+    return `${disponibilidad} ${$localize`:@@horarios.disponibles:disponibles`}`;
+  }
+
+  /**
+   * Obtiene el texto formateado para los reservados
+   */
+  obtenerTextoReservados(yaReservados: number | null | undefined): string {
+    if (yaReservados === null || yaReservados === undefined || yaReservados === 0) return '';
+    if (yaReservados === 1) {
+      return `(${$localize`1 reservado`})`;
+    }
+    return `(${yaReservados} ${$localize`reservados`})`;
+  }
 }
