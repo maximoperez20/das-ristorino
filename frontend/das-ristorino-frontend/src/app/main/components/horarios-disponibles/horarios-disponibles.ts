@@ -89,7 +89,20 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
     }).subscribe({
       next: (data) => {
         console.log('Horarios cargados:', data);
-        this.horariosData = data;
+        // Si la respuesta es un array (caso legacy), convertir a la estructura esperada
+        if (Array.isArray(data)) {
+          this.horariosData = {
+            fecha: fechaFormateada,
+            totalZonas: 0,
+            zonas: []
+          };
+        } else {
+          // Asegurar que zonas siempre existe
+          if (!data.zonas) {
+            data.zonas = [];
+          }
+          this.horariosData = data;
+        }
         this.loading = false;
       },
       error: (err) => {

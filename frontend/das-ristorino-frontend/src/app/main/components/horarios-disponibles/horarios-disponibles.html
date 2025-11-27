@@ -38,7 +38,7 @@
     <div class="alert alert-danger" role="alert">
       <i class="bi bi-exclamation-triangle"></i> {{ error }}
     </div>
-  } @else if (horariosData && horariosData.zonas.length > 0) {
+  } @else if (horariosData && horariosData.zonas && horariosData.zonas.length > 0) {
     <div class="zonas-container">
       @for (zona of horariosData.zonas; track zona.codZona) {
         <div class="zona-card mb-4">
