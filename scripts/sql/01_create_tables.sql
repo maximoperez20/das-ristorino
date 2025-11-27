@@ -104,8 +104,10 @@ CREATE TABLE dbo.restaurantes (
   nro_restaurante VARCHAR(36)   NOT NULL DEFAULT NEWID(),
   razon_social    NVARCHAR(150) NOT NULL,
   cuit            VARCHAR(11)   NOT NULL,
+  tipo_protocolo  VARCHAR(10)   NOT NULL DEFAULT 'SOAP',  -- 'SOAP' o 'REST'
   CONSTRAINT PK_restaurantes PRIMARY KEY (nro_restaurante),
-  CONSTRAINT UQ_restaurantes_cuit UNIQUE (cuit)
+  CONSTRAINT UQ_restaurantes_cuit UNIQUE (cuit),
+  CONSTRAINT CK_restaurantes_protocolo CHECK (tipo_protocolo IN ('SOAP', 'REST'))
 );
 GO
 
