@@ -23,28 +23,28 @@
       </button>
       <button 
         class="btn"
-        [ngClass]="filtroActivo === 'Confirmada' ? 'btn-success' : 'btn-outline-success'"
+        [ngClass]="esFiltroActivo('Confirmada') ? 'btn-success' : 'btn-outline-success'"
         (click)="filtrarPorEstado('Confirmada')" i18n>
         <i class="bi bi-check-circle me-1"></i>
         Confirmada
       </button>
       <button 
         class="btn"
-        [ngClass]="filtroActivo === 'Cancelada' ? 'btn-danger' : 'btn-outline-danger'"
+        [ngClass]="esFiltroActivo('Cancelada') ? 'btn-danger' : 'btn-outline-danger'"
         (click)="filtrarPorEstado('Cancelada')" i18n>
         <i class="bi bi-x-circle me-1"></i>
         Cancelada
       </button>
       <button 
         class="btn"
-        [ngClass]="filtroActivo === 'Pendiente' ? 'btn-warning' : 'btn-outline-warning'"
+        [ngClass]="esFiltroActivo('Pendiente') ? 'btn-warning' : 'btn-outline-warning'"
         (click)="filtrarPorEstado('Pendiente')" i18n>
         <i class="bi bi-clock-history me-1"></i>
         Pendiente
       </button>
       <button 
         class="btn"
-        [ngClass]="filtroActivo === 'Finalizada' ? 'btn-secondary' : 'btn-outline-secondary'"
+        [ngClass]="esFiltroActivo('Finalizada') ? 'btn-secondary' : 'btn-outline-secondary'"
         (click)="filtrarPorEstado('Finalizada')" i18n>
         <i class="bi bi-check2-all me-1"></i>
         Finalizada
@@ -109,13 +109,7 @@
 
                       <div class="info-item mb-2">
                         <i class="bi bi-people-fill text-primary"></i>
-                        <span class="ms-2">
-                          @if (reserva.cantidad_personas === 1) {
-                            <ng-container i18n="@@reserva.1persona">1 persona</ng-container>
-                          } @else {
-                            <ng-container i18n="@@reserva.personas">{{ reserva.cantidad_personas }} personas</ng-container>
-                          }
-                        </span>
+                        <span class="ms-2">{{ formatearCantidadPersonas(reserva.cantidad_personas) }}</span>
                       </div>
 
                       @if (reserva.telefono) {

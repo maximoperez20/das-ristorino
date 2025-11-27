@@ -137,15 +137,22 @@ export class MisReservasPage implements OnInit {
   }
 
   obtenerBadgeEstado(estado: string): string {
-    const estadoLower = estado?.toLowerCase() || '';
-    if (estadoLower.includes('cancelada')) {
-      return 'bg-danger';
-    } else if (estadoLower.includes('confirmada') || estadoLower.includes('activa')) {
-      return 'bg-success';
-    } else if (estadoLower.includes('pendiente')) {
-      return 'bg-warning';
+    const estadoNormalizado = this.normalizarEstado(estado);
+    
+    switch (estadoNormalizado) {
+      case 'CANCELADA':
+        return 'bg-danger';
+      case 'CONFIRMADA':
+        return 'bg-success';
+      case 'PENDIENTE':
+        return 'bg-warning';
+      case 'FINALIZADA':
+        return 'bg-secondary';
+      case 'EN_CURSO':
+        return 'bg-info';
+      default:
+        return 'bg-secondary';
     }
-    return 'bg-secondary';
   }
 
   esReservaPasada(fecha: string): boolean {
@@ -159,15 +166,81 @@ export class MisReservasPage implements OnInit {
     }
   }
 
+  /**
+   * Normaliza un estado de reserva a un valor canónico para comparación
+   * Mapea estados en español e inglés al mismo valor canónico
+   */
+  private normalizarEstado(estado: string | null | undefined): string {
+    if (!estado) return '';
+    const estadoLower = estado.toLowerCase().trim();
+    
+    // Mapeo de estados en ambos idiomas a valores canónicos
+    if (estadoLower.includes('confirmada') || estadoLower.includes('confirmed')) {
+      return 'CONFIRMADA';
+    }
+    if (estadoLower.includes('cancelada') || estadoLower.includes('cancelled')) {
+      return 'CANCELADA';
+    }
+    if (estadoLower.includes('pendiente') || estadoLower.includes('pending')) {
+      return 'PENDIENTE';
+    }
+    if (estadoLower.includes('finalizada') || estadoLower.includes('completed')) {
+      return 'FINALIZADA';
+    }
+    if (estadoLower.includes('en curso') || estadoLower.includes('in progress')) {
+      return 'EN_CURSO';
+    }
+    
+    return estado.toUpperCase();
+  }
+
+  /**
+   * Verifica si un estado de reserva coincide con el filtro activo
+   */
+  private estadoCoincideConFiltro(estadoReserva: string | null | undefined, filtro: string | undefined): boolean {
+    if (!filtro) return true; // Sin filtro, mostrar todas
+    
+    const estadoNormalizado = this.normalizarEstado(estadoReserva);
+    const filtroNormalizado = this.normalizarEstado(filtro);
+    
+    return estadoNormalizado === filtroNormalizado;
+  }
+
   filtrarPorEstado(estadoFiltrado: string | undefined): void {
     this.filtroActivo = estadoFiltrado;
     
     // Si no hay filtro, mostrar todas las reservas
     const reservasFiltradas: IReserva[] = estadoFiltrado 
-      ? this.reservas.filter((item) => item.estado === estadoFiltrado)
+      ? this.reservas.filter((item) => this.estadoCoincideConFiltro(item.estado, estadoFiltrado))
       : this.reservas;
     
     this.reservasPorDia = this.agruparReservasPorDia(reservasFiltradas);
+  }
+
+  formatearCantidadPersonas(cantidad: number | null | undefined): string {
+    if (!cantidad || cantidad <= 0) return '';
+    if (cantidad === 1) {
+      return $localize`1 persona`;
+    }
+    return `${cantidad} ${$localize`personas`}`;
+  }
+
+  /**
+   * Verifica si un filtro está activo comparando estados normalizados
+   */
+  esFiltroActivo(filtro: string | undefined): boolean {
+    // Si ambos son undefined, el botón "Todas" está activo
+    if (!this.filtroActivo && !filtro) {
+      return true;
+    }
+    // Si uno es undefined y el otro no, no coinciden
+    if (!this.filtroActivo || !filtro) {
+      return false;
+    }
+    // Comparar normalizando ambos estados
+    const filtroActivoNormalizado = this.normalizarEstado(this.filtroActivo);
+    const filtroNormalizado = this.normalizarEstado(filtro);
+    return filtroActivoNormalizado === filtroNormalizado;
   }
 
 }
