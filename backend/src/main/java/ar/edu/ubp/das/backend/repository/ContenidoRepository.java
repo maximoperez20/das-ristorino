@@ -274,7 +274,7 @@ public class ContenidoRepository {
      * @param nroRestaurante UUID del restaurante
      * @param nroIdioma ID del idioma (INT)
      * @param nroContenido UUID del contenido en das_ristorino
-     * @param codContenidoRestaurante UUID del contenido en das_restaurante_soap (nroContenido devuelto por SOAP)
+     * @param codContenidoRestaurante UUID del contenido en das_restaurante (nroContenido devuelto por SOAP)
      * @return true si se actualizó correctamente, false en caso contrario
      */
     public boolean actualizarCodContenidoRestaurante(

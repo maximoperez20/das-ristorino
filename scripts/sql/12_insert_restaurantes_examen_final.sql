@@ -134,7 +134,10 @@ BEGIN
 END
 
 -- Sucursal 1: Alta Córdoba
+-- UUID interno de ristorino (diferente del UUID del sistema del restaurante)
 DECLARE @suc_1_1_uuid VARCHAR(36);
+-- UUID del sistema del restaurante (das_restaurante) - DEBE COINCIDIR
+DECLARE @suc_1_1_uuid_restaurante VARCHAR(36) = 'BELLA-PIZZA-SUC-0001-0001-0001-0001';
 IF NOT EXISTS (SELECT 1 FROM sucursales_restaurantes WHERE nro_restaurante = @rest_1_uuid AND nom_sucursal = N'La Bella Pizza - Alta Córdoba')
 BEGIN
     SET @suc_1_1_uuid = NEWID();
@@ -147,7 +150,7 @@ BEGIN
         @rest_1_uuid, @suc_1_1_uuid, N'La Bella Pizza - Alta Córdoba',
         N'Av. Colón', 2500, N'Alta Córdoba',
         @nro_localidad_alta_cordoba, '5000', '351-555-1001', 80, 15,
-        'BELLA-PIZZA-ALTA-CORDOBA-001'  -- Código para sistema REST
+        @suc_1_1_uuid_restaurante  -- UUID fijo del sistema del restaurante
     );
     PRINT 'Sucursal 1.1 (Alta Córdoba) insertada';
 END
@@ -155,15 +158,16 @@ ELSE
 BEGIN
     SELECT @suc_1_1_uuid = nro_sucursal FROM sucursales_restaurantes 
     WHERE nro_restaurante = @rest_1_uuid AND nom_sucursal = N'La Bella Pizza - Alta Córdoba';
-    -- Actualizar cod_sucursal_restaurante si no existe
+    -- Actualizar cod_sucursal_restaurante si no existe o es diferente
     UPDATE sucursales_restaurantes 
-    SET cod_sucursal_restaurante = 'BELLA-PIZZA-ALTA-CORDOBA-001'
+    SET cod_sucursal_restaurante = @suc_1_1_uuid_restaurante
     WHERE nro_restaurante = @rest_1_uuid AND nro_sucursal = @suc_1_1_uuid 
-      AND (cod_sucursal_restaurante IS NULL OR cod_sucursal_restaurante = '');
+      AND (cod_sucursal_restaurante IS NULL OR cod_sucursal_restaurante != @suc_1_1_uuid_restaurante);
 END
 
 -- Sucursal 2: General Paz
 DECLARE @suc_1_2_uuid VARCHAR(36);
+DECLARE @suc_1_2_uuid_restaurante VARCHAR(36) = 'BELLA-PIZZA-SUC-0002-0002-0002-0002';
 IF NOT EXISTS (SELECT 1 FROM sucursales_restaurantes WHERE nro_restaurante = @rest_1_uuid AND nom_sucursal = N'La Bella Pizza - General Paz')
 BEGIN
     SET @suc_1_2_uuid = NEWID();
@@ -176,7 +180,7 @@ BEGIN
         @rest_1_uuid, @suc_1_2_uuid, N'La Bella Pizza - General Paz',
         N'Av. General Paz', 800, N'General Paz',
         @nro_localidad_general_paz, '5000', '351-555-1002', 60, 15,
-        'BELLA-PIZZA-GENERAL-PAZ-002'  -- Código para sistema REST
+        @suc_1_2_uuid_restaurante  -- UUID fijo del sistema del restaurante
     );
     PRINT 'Sucursal 1.2 (General Paz) insertada';
 END
@@ -184,11 +188,10 @@ ELSE
 BEGIN
     SELECT @suc_1_2_uuid = nro_sucursal FROM sucursales_restaurantes 
     WHERE nro_restaurante = @rest_1_uuid AND nom_sucursal = N'La Bella Pizza - General Paz';
-    -- Actualizar cod_sucursal_restaurante si no existe
     UPDATE sucursales_restaurantes 
-    SET cod_sucursal_restaurante = 'BELLA-PIZZA-GENERAL-PAZ-002'
+    SET cod_sucursal_restaurante = @suc_1_2_uuid_restaurante
     WHERE nro_restaurante = @rest_1_uuid AND nro_sucursal = @suc_1_2_uuid 
-      AND (cod_sucursal_restaurante IS NULL OR cod_sucursal_restaurante = '');
+      AND (cod_sucursal_restaurante IS NULL OR cod_sucursal_restaurante != @suc_1_2_uuid_restaurante);
 END
 
 -- Preferencia: Tipo de comida - Italiana tradicional
@@ -253,6 +256,7 @@ END
 
 -- Sucursal 1: Nueva Córdoba
 DECLARE @suc_2_1_uuid VARCHAR(36);
+DECLARE @suc_2_1_uuid_restaurante VARCHAR(36) = 'PERUKAI-SUC-0001-0001-0001-0001';
 IF NOT EXISTS (SELECT 1 FROM sucursales_restaurantes WHERE nro_restaurante = @rest_2_uuid AND nom_sucursal = N'Perukai - Nueva Córdoba')
 BEGIN
     SET @suc_2_1_uuid = NEWID();
@@ -265,7 +269,7 @@ BEGIN
         @rest_2_uuid, @suc_2_1_uuid, N'Perukai - Nueva Córdoba',
         N'Av. Humberto Primo', 450, N'Nueva Córdoba',
         @nro_localidad_nueva_cordoba, '5000', '351-555-2001', 100, 20,
-        'PERUKAI-NUEVA-CORDOBA-001'  -- Código para sistema SOAP
+        @suc_2_1_uuid_restaurante  -- UUID fijo del sistema del restaurante
     );
     PRINT 'Sucursal 2.1 (Nueva Córdoba) insertada';
 END
@@ -273,15 +277,15 @@ ELSE
 BEGIN
     SELECT @suc_2_1_uuid = nro_sucursal FROM sucursales_restaurantes 
     WHERE nro_restaurante = @rest_2_uuid AND nom_sucursal = N'Perukai - Nueva Córdoba';
-    -- Actualizar cod_sucursal_restaurante si no existe
     UPDATE sucursales_restaurantes 
-    SET cod_sucursal_restaurante = 'PERUKAI-NUEVA-CORDOBA-001'
+    SET cod_sucursal_restaurante = @suc_2_1_uuid_restaurante
     WHERE nro_restaurante = @rest_2_uuid AND nro_sucursal = @suc_2_1_uuid 
-      AND (cod_sucursal_restaurante IS NULL OR cod_sucursal_restaurante = '');
+      AND (cod_sucursal_restaurante IS NULL OR cod_sucursal_restaurante != @suc_2_1_uuid_restaurante);
 END
 
 -- Sucursal 2: Güemes
 DECLARE @suc_2_2_uuid VARCHAR(36);
+DECLARE @suc_2_2_uuid_restaurante VARCHAR(36) = 'PERUKAI-SUC-0002-0002-0002-0002';
 IF NOT EXISTS (SELECT 1 FROM sucursales_restaurantes WHERE nro_restaurante = @rest_2_uuid AND nom_sucursal = N'Perukai - Güemes')
 BEGIN
     SET @suc_2_2_uuid = NEWID();
@@ -294,7 +298,7 @@ BEGIN
         @rest_2_uuid, @suc_2_2_uuid, N'Perukai - Güemes',
         N'Belgrano', 700, N'Güemes',
         @nro_localidad_guemes, '5000', '351-555-2002', 70, 20,
-        'PERUKAI-GUEMES-002'  -- Código para sistema SOAP
+        @suc_2_2_uuid_restaurante  -- UUID fijo del sistema del restaurante
     );
     PRINT 'Sucursal 2.2 (Güemes) insertada';
 END
@@ -302,11 +306,10 @@ ELSE
 BEGIN
     SELECT @suc_2_2_uuid = nro_sucursal FROM sucursales_restaurantes 
     WHERE nro_restaurante = @rest_2_uuid AND nom_sucursal = N'Perukai - Güemes';
-    -- Actualizar cod_sucursal_restaurante si no existe
     UPDATE sucursales_restaurantes 
-    SET cod_sucursal_restaurante = 'PERUKAI-GUEMES-002'
+    SET cod_sucursal_restaurante = @suc_2_2_uuid_restaurante
     WHERE nro_restaurante = @rest_2_uuid AND nro_sucursal = @suc_2_2_uuid 
-      AND (cod_sucursal_restaurante IS NULL OR cod_sucursal_restaurante = '');
+      AND (cod_sucursal_restaurante IS NULL OR cod_sucursal_restaurante != @suc_2_2_uuid_restaurante);
 END
 
 -- Preferencia: Tipo de comida - Fusión japonesa-peruana
@@ -369,6 +372,7 @@ END
 
 -- Sucursal 1: Cerro de las Rosas
 DECLARE @suc_3_1_uuid VARCHAR(36);
+DECLARE @suc_3_1_uuid_restaurante VARCHAR(36) = 'FABRICA-BURGER-SUC-0001-0001-0001-0001';
 IF NOT EXISTS (SELECT 1 FROM sucursales_restaurantes WHERE nro_restaurante = @rest_3_uuid AND nom_sucursal = N'La Fábrica Burger - Cerro de las Rosas')
 BEGIN
     SET @suc_3_1_uuid = NEWID();
@@ -381,7 +385,7 @@ BEGIN
         @rest_3_uuid, @suc_3_1_uuid, N'La Fábrica Burger - Cerro de las Rosas',
         N'Av. Rafael Núñez', 3500, N'Cerro de las Rosas',
         @nro_localidad_cerro, '5009', '351-555-3001', 90, 10,
-        'FABRICA-BURGER-CERRO-001'  -- Código para sistema REST
+        @suc_3_1_uuid_restaurante  -- UUID fijo del sistema del restaurante
     );
     PRINT 'Sucursal 3.1 (Cerro de las Rosas) insertada';
 END
@@ -389,11 +393,10 @@ ELSE
 BEGIN
     SELECT @suc_3_1_uuid = nro_sucursal FROM sucursales_restaurantes 
     WHERE nro_restaurante = @rest_3_uuid AND nom_sucursal = N'La Fábrica Burger - Cerro de las Rosas';
-    -- Actualizar cod_sucursal_restaurante si no existe
     UPDATE sucursales_restaurantes 
-    SET cod_sucursal_restaurante = 'FABRICA-BURGER-CERRO-001'
+    SET cod_sucursal_restaurante = @suc_3_1_uuid_restaurante
     WHERE nro_restaurante = @rest_3_uuid AND nro_sucursal = @suc_3_1_uuid 
-      AND (cod_sucursal_restaurante IS NULL OR cod_sucursal_restaurante = '');
+      AND (cod_sucursal_restaurante IS NULL OR cod_sucursal_restaurante != @suc_3_1_uuid_restaurante);
 END
 
 -- Preferencia: Tipo de comida - Fast food gourmet
@@ -456,6 +459,7 @@ END
 
 -- Sucursal 1: Centro
 DECLARE @suc_4_1_uuid VARCHAR(36);
+DECLARE @suc_4_1_uuid_restaurante VARCHAR(36) = 'SABORES-NORTE-SUC-0001-0001-0001-0001';
 IF NOT EXISTS (SELECT 1 FROM sucursales_restaurantes WHERE nro_restaurante = @rest_4_uuid AND nom_sucursal = N'Sabores del Norte - Centro')
 BEGIN
     SET @suc_4_1_uuid = NEWID();
@@ -468,7 +472,7 @@ BEGIN
         @rest_4_uuid, @suc_4_1_uuid, N'Sabores del Norte - Centro',
         N'Av. Colón', 1200, N'Centro',
         @nro_localidad_centro, '5000', '351-555-4001', 110, 20,
-        'SABORES-NORTE-CENTRO-001'  -- Código para sistema SOAP
+        @suc_4_1_uuid_restaurante  -- UUID fijo del sistema del restaurante
     );
     PRINT 'Sucursal 4.1 (Centro) insertada';
 END
@@ -476,15 +480,15 @@ ELSE
 BEGIN
     SELECT @suc_4_1_uuid = nro_sucursal FROM sucursales_restaurantes 
     WHERE nro_restaurante = @rest_4_uuid AND nom_sucursal = N'Sabores del Norte - Centro';
-    -- Actualizar cod_sucursal_restaurante si no existe
     UPDATE sucursales_restaurantes 
-    SET cod_sucursal_restaurante = 'SABORES-NORTE-CENTRO-001'
+    SET cod_sucursal_restaurante = @suc_4_1_uuid_restaurante
     WHERE nro_restaurante = @rest_4_uuid AND nro_sucursal = @suc_4_1_uuid 
-      AND (cod_sucursal_restaurante IS NULL OR cod_sucursal_restaurante = '');
+      AND (cod_sucursal_restaurante IS NULL OR cod_sucursal_restaurante != @suc_4_1_uuid_restaurante);
 END
 
 -- Sucursal 2: Cerro de las Rosas
 DECLARE @suc_4_2_uuid VARCHAR(36);
+DECLARE @suc_4_2_uuid_restaurante VARCHAR(36) = 'SABORES-NORTE-SUC-0002-0002-0002-0002';
 IF NOT EXISTS (SELECT 1 FROM sucursales_restaurantes WHERE nro_restaurante = @rest_4_uuid AND nom_sucursal = N'Sabores del Norte - Cerro de las Rosas')
 BEGIN
     SET @suc_4_2_uuid = NEWID();
@@ -497,7 +501,7 @@ BEGIN
         @rest_4_uuid, @suc_4_2_uuid, N'Sabores del Norte - Cerro de las Rosas',
         N'Av. Rafael Núñez', 3800, N'Cerro de las Rosas',
         @nro_localidad_cerro, '5009', '351-555-4002', 85, 20,
-        'SABORES-NORTE-CERRO-002'  -- Código para sistema SOAP
+        @suc_4_2_uuid_restaurante  -- UUID fijo del sistema del restaurante
     );
     PRINT 'Sucursal 4.2 (Cerro de las Rosas) insertada';
 END
@@ -505,11 +509,10 @@ ELSE
 BEGIN
     SELECT @suc_4_2_uuid = nro_sucursal FROM sucursales_restaurantes 
     WHERE nro_restaurante = @rest_4_uuid AND nom_sucursal = N'Sabores del Norte - Cerro de las Rosas';
-    -- Actualizar cod_sucursal_restaurante si no existe
     UPDATE sucursales_restaurantes 
-    SET cod_sucursal_restaurante = 'SABORES-NORTE-CERRO-002'
+    SET cod_sucursal_restaurante = @suc_4_2_uuid_restaurante
     WHERE nro_restaurante = @rest_4_uuid AND nro_sucursal = @suc_4_2_uuid 
-      AND (cod_sucursal_restaurante IS NULL OR cod_sucursal_restaurante = '');
+      AND (cod_sucursal_restaurante IS NULL OR cod_sucursal_restaurante != @suc_4_2_uuid_restaurante);
 END
 
 -- Preferencia: Tipo de comida - Regional del NOA
@@ -552,6 +555,11 @@ PRINT 'Restaurante 4 (Sabores del Norte) configurado completamente';
 
 -- Restaurante 1: La Bella Pizza
 -- Sucursal 1.1: Alta Córdoba
+-- UUIDs fijos de zonas del sistema del restaurante (deben coincidir con das_restaurante)
+DECLARE @zona_salon_principal_uuid VARCHAR(36) = 'ZONA-SALON-PRINCIPAL-0001-0001-0001-0001';
+DECLARE @zona_terraza_uuid VARCHAR(36) = 'ZONA-TERRAZA-0001-0001-0001-0001';
+DECLARE @zona_patio_uuid VARCHAR(36) = 'ZONA-PATIO-0001-0001-0001-0001';
+
 IF @suc_1_1_uuid IS NOT NULL
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
@@ -559,16 +567,15 @@ BEGIN
     BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada, cod_zona_restaurante)
-        VALUES (@rest_1_uuid, @suc_1_1_uuid, N'Salón Principal', 50, 1, 1, 'SALON-PRINCIPAL-001');
+        VALUES (@rest_1_uuid, @suc_1_1_uuid, N'Salón Principal', 50, 1, 1, @zona_salon_principal_uuid);
     END
     ELSE
     BEGIN
-        -- Actualizar cod_zona_restaurante si no existe
         UPDATE zonas_sucursales_restaurantes 
-        SET cod_zona_restaurante = 'SALON-PRINCIPAL-001'
+        SET cod_zona_restaurante = @zona_salon_principal_uuid
         WHERE nro_restaurante = @rest_1_uuid AND nro_sucursal = @suc_1_1_uuid 
           AND desc_zona = N'Salón Principal'
-          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante = '');
+          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante != @zona_salon_principal_uuid);
     END
     
     IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
@@ -576,16 +583,15 @@ BEGIN
     BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada, cod_zona_restaurante)
-        VALUES (@rest_1_uuid, @suc_1_1_uuid, N'Terraza', 30, 1, 1, 'TERRAZA-001');
+        VALUES (@rest_1_uuid, @suc_1_1_uuid, N'Terraza', 30, 1, 1, @zona_terraza_uuid);
     END
     ELSE
     BEGIN
-        -- Actualizar cod_zona_restaurante si no existe
         UPDATE zonas_sucursales_restaurantes 
-        SET cod_zona_restaurante = 'TERRAZA-001'
+        SET cod_zona_restaurante = @zona_terraza_uuid
         WHERE nro_restaurante = @rest_1_uuid AND nro_sucursal = @suc_1_1_uuid 
           AND desc_zona = N'Terraza'
-          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante = '');
+          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante != @zona_terraza_uuid);
     END
 END
 
@@ -597,15 +603,15 @@ BEGIN
     BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada, cod_zona_restaurante)
-        VALUES (@rest_1_uuid, @suc_1_2_uuid, N'Salón Principal', 40, 1, 1, 'SALON-PRINCIPAL-002');
+        VALUES (@rest_1_uuid, @suc_1_2_uuid, N'Salón Principal', 40, 1, 1, @zona_salon_principal_uuid);
     END
     ELSE
     BEGIN
         UPDATE zonas_sucursales_restaurantes 
-        SET cod_zona_restaurante = 'SALON-PRINCIPAL-002'
+        SET cod_zona_restaurante = @zona_salon_principal_uuid
         WHERE nro_restaurante = @rest_1_uuid AND nro_sucursal = @suc_1_2_uuid 
           AND desc_zona = N'Salón Principal'
-          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante = '');
+          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante != @zona_salon_principal_uuid);
     END
     
     IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
@@ -613,20 +619,22 @@ BEGIN
     BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada, cod_zona_restaurante)
-        VALUES (@rest_1_uuid, @suc_1_2_uuid, N'Patio', 20, 1, 1, 'PATIO-001');
+        VALUES (@rest_1_uuid, @suc_1_2_uuid, N'Patio', 20, 1, 1, @zona_patio_uuid);
     END
     ELSE
     BEGIN
         UPDATE zonas_sucursales_restaurantes 
-        SET cod_zona_restaurante = 'PATIO-001'
+        SET cod_zona_restaurante = @zona_patio_uuid
         WHERE nro_restaurante = @rest_1_uuid AND nro_sucursal = @suc_1_2_uuid 
           AND desc_zona = N'Patio'
-          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante = '');
+          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante != @zona_patio_uuid);
     END
 END
 
 -- Restaurante 2: Perukai
 -- Sucursal 2.1: Nueva Córdoba
+DECLARE @zona_barra_uuid VARCHAR(36) = 'ZONA-BARRA-0001-0001-0001-0001';
+
 IF @suc_2_1_uuid IS NOT NULL
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
@@ -634,15 +642,15 @@ BEGIN
     BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada, cod_zona_restaurante)
-        VALUES (@rest_2_uuid, @suc_2_1_uuid, N'Salón Principal', 70, 1, 1, 'SALON-PRINCIPAL-003');
+        VALUES (@rest_2_uuid, @suc_2_1_uuid, N'Salón Principal', 70, 1, 1, @zona_salon_principal_uuid);
     END
     ELSE
     BEGIN
         UPDATE zonas_sucursales_restaurantes 
-        SET cod_zona_restaurante = 'SALON-PRINCIPAL-003'
+        SET cod_zona_restaurante = @zona_salon_principal_uuid
         WHERE nro_restaurante = @rest_2_uuid AND nro_sucursal = @suc_2_1_uuid 
           AND desc_zona = N'Salón Principal'
-          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante = '');
+          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante != @zona_salon_principal_uuid);
     END
     
     IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
@@ -650,15 +658,15 @@ BEGIN
     BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada, cod_zona_restaurante)
-        VALUES (@rest_2_uuid, @suc_2_1_uuid, N'Barra', 30, 0, 1, 'BARRA-001');
+        VALUES (@rest_2_uuid, @suc_2_1_uuid, N'Barra', 30, 0, 1, @zona_barra_uuid);
     END
     ELSE
     BEGIN
         UPDATE zonas_sucursales_restaurantes 
-        SET cod_zona_restaurante = 'BARRA-001'
+        SET cod_zona_restaurante = @zona_barra_uuid
         WHERE nro_restaurante = @rest_2_uuid AND nro_sucursal = @suc_2_1_uuid 
           AND desc_zona = N'Barra'
-          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante = '');
+          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante != @zona_barra_uuid);
     END
 END
 
@@ -670,15 +678,15 @@ BEGIN
     BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada, cod_zona_restaurante)
-        VALUES (@rest_2_uuid, @suc_2_2_uuid, N'Salón Principal', 50, 1, 1, 'SALON-PRINCIPAL-004');
+        VALUES (@rest_2_uuid, @suc_2_2_uuid, N'Salón Principal', 50, 1, 1, @zona_salon_principal_uuid);
     END
     ELSE
     BEGIN
         UPDATE zonas_sucursales_restaurantes 
-        SET cod_zona_restaurante = 'SALON-PRINCIPAL-004'
+        SET cod_zona_restaurante = @zona_salon_principal_uuid
         WHERE nro_restaurante = @rest_2_uuid AND nro_sucursal = @suc_2_2_uuid 
           AND desc_zona = N'Salón Principal'
-          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante = '');
+          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante != @zona_salon_principal_uuid);
     END
     
     IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
@@ -686,15 +694,15 @@ BEGIN
     BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada, cod_zona_restaurante)
-        VALUES (@rest_2_uuid, @suc_2_2_uuid, N'Terraza', 20, 1, 1, 'TERRAZA-002');
+        VALUES (@rest_2_uuid, @suc_2_2_uuid, N'Terraza', 20, 1, 1, @zona_terraza_uuid);
     END
     ELSE
     BEGIN
         UPDATE zonas_sucursales_restaurantes 
-        SET cod_zona_restaurante = 'TERRAZA-002'
+        SET cod_zona_restaurante = @zona_terraza_uuid
         WHERE nro_restaurante = @rest_2_uuid AND nro_sucursal = @suc_2_2_uuid 
           AND desc_zona = N'Terraza'
-          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante = '');
+          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante != @zona_terraza_uuid);
     END
 END
 
@@ -707,15 +715,15 @@ BEGIN
     BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada, cod_zona_restaurante)
-        VALUES (@rest_3_uuid, @suc_3_1_uuid, N'Salón Principal', 60, 1, 1, 'SALON-PRINCIPAL-005');
+        VALUES (@rest_3_uuid, @suc_3_1_uuid, N'Salón Principal', 60, 1, 1, @zona_salon_principal_uuid);
     END
     ELSE
     BEGIN
         UPDATE zonas_sucursales_restaurantes 
-        SET cod_zona_restaurante = 'SALON-PRINCIPAL-005'
+        SET cod_zona_restaurante = @zona_salon_principal_uuid
         WHERE nro_restaurante = @rest_3_uuid AND nro_sucursal = @suc_3_1_uuid 
           AND desc_zona = N'Salón Principal'
-          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante = '');
+          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante != @zona_salon_principal_uuid);
     END
     
     IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
@@ -723,20 +731,22 @@ BEGIN
     BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada, cod_zona_restaurante)
-        VALUES (@rest_3_uuid, @suc_3_1_uuid, N'Patio', 30, 1, 1, 'PATIO-002');
+        VALUES (@rest_3_uuid, @suc_3_1_uuid, N'Patio', 30, 1, 1, @zona_patio_uuid);
     END
     ELSE
     BEGIN
         UPDATE zonas_sucursales_restaurantes 
-        SET cod_zona_restaurante = 'PATIO-002'
+        SET cod_zona_restaurante = @zona_patio_uuid
         WHERE nro_restaurante = @rest_3_uuid AND nro_sucursal = @suc_3_1_uuid 
           AND desc_zona = N'Patio'
-          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante = '');
+          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante != @zona_patio_uuid);
     END
 END
 
 -- Restaurante 4: Sabores del Norte
 -- Sucursal 4.1: Centro
+DECLARE @zona_patio_cubierto_uuid VARCHAR(36) = 'ZONA-PATIO-CUBIERTO-0001-0001-0001-0001';
+
 IF @suc_4_1_uuid IS NOT NULL
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
@@ -744,15 +754,15 @@ BEGIN
     BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada, cod_zona_restaurante)
-        VALUES (@rest_4_uuid, @suc_4_1_uuid, N'Salón Principal', 80, 1, 1, 'SALON-PRINCIPAL-006');
+        VALUES (@rest_4_uuid, @suc_4_1_uuid, N'Salón Principal', 80, 1, 1, @zona_salon_principal_uuid);
     END
     ELSE
     BEGIN
         UPDATE zonas_sucursales_restaurantes 
-        SET cod_zona_restaurante = 'SALON-PRINCIPAL-006'
+        SET cod_zona_restaurante = @zona_salon_principal_uuid
         WHERE nro_restaurante = @rest_4_uuid AND nro_sucursal = @suc_4_1_uuid 
           AND desc_zona = N'Salón Principal'
-          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante = '');
+          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante != @zona_salon_principal_uuid);
     END
     
     IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
@@ -760,15 +770,15 @@ BEGIN
     BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada, cod_zona_restaurante)
-        VALUES (@rest_4_uuid, @suc_4_1_uuid, N'Patio Cubierto', 30, 1, 1, 'PATIO-CUBIERTO-001');
+        VALUES (@rest_4_uuid, @suc_4_1_uuid, N'Patio Cubierto', 30, 1, 1, @zona_patio_cubierto_uuid);
     END
     ELSE
     BEGIN
         UPDATE zonas_sucursales_restaurantes 
-        SET cod_zona_restaurante = 'PATIO-CUBIERTO-001'
+        SET cod_zona_restaurante = @zona_patio_cubierto_uuid
         WHERE nro_restaurante = @rest_4_uuid AND nro_sucursal = @suc_4_1_uuid 
           AND desc_zona = N'Patio Cubierto'
-          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante = '');
+          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante != @zona_patio_cubierto_uuid);
     END
 END
 
@@ -780,15 +790,15 @@ BEGIN
     BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada, cod_zona_restaurante)
-        VALUES (@rest_4_uuid, @suc_4_2_uuid, N'Salón Principal', 60, 1, 1, 'SALON-PRINCIPAL-007');
+        VALUES (@rest_4_uuid, @suc_4_2_uuid, N'Salón Principal', 60, 1, 1, @zona_salon_principal_uuid);
     END
     ELSE
     BEGIN
         UPDATE zonas_sucursales_restaurantes 
-        SET cod_zona_restaurante = 'SALON-PRINCIPAL-007'
+        SET cod_zona_restaurante = @zona_salon_principal_uuid
         WHERE nro_restaurante = @rest_4_uuid AND nro_sucursal = @suc_4_2_uuid 
           AND desc_zona = N'Salón Principal'
-          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante = '');
+          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante != @zona_salon_principal_uuid);
     END
     
     IF NOT EXISTS (SELECT 1 FROM zonas_sucursales_restaurantes 
@@ -796,15 +806,15 @@ BEGIN
     BEGIN
         INSERT INTO zonas_sucursales_restaurantes 
             (nro_restaurante, nro_sucursal, desc_zona, cant_comensales, permite_menores, habilitada, cod_zona_restaurante)
-        VALUES (@rest_4_uuid, @suc_4_2_uuid, N'Terraza', 25, 1, 1, 'TERRAZA-003');
+        VALUES (@rest_4_uuid, @suc_4_2_uuid, N'Terraza', 25, 1, 1, @zona_terraza_uuid);
     END
     ELSE
     BEGIN
         UPDATE zonas_sucursales_restaurantes 
-        SET cod_zona_restaurante = 'TERRAZA-003'
+        SET cod_zona_restaurante = @zona_terraza_uuid
         WHERE nro_restaurante = @rest_4_uuid AND nro_sucursal = @suc_4_2_uuid 
           AND desc_zona = N'Terraza'
-          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante = '');
+          AND (cod_zona_restaurante IS NULL OR cod_zona_restaurante != @zona_terraza_uuid);
     END
 END
 
