@@ -147,31 +147,33 @@ public class RestauranteResource {
                     nroRestaurante, nroSucursal, codZona, fecha, cantidad);
             
             // Si codZona es null, agrupar por zona para una mejor respuesta
-            if (codZona == null && horarios != null && !horarios.isEmpty()) {
+            if (codZona == null) {
                 Map<String, Object> response = new HashMap<>();
                 Map<String, Map<String, Object>> zonasMap = new HashMap<>();
                 
-                for (HorarioDisponibleDto horario : horarios) {
-                    String zonaKey = horario.getCodZona();
-                    
-                    if (!zonasMap.containsKey(zonaKey)) {
-                        Map<String, Object> zonaInfo = new HashMap<>();
-                        zonaInfo.put("codZona", horario.getCodZona());
-                        zonaInfo.put("nomZona", horario.getNomZona());
-                        zonaInfo.put("capacidadZona", horario.getCapacidadZona());
-                        zonaInfo.put("permiteMenores", horario.getPermiteMenores());
-                        zonaInfo.put("horarios", new ArrayList<Map<String, Object>>());
-                        zonasMap.put(zonaKey, zonaInfo);
+                if (horarios != null && !horarios.isEmpty()) {
+                    for (HorarioDisponibleDto horario : horarios) {
+                        String zonaKey = horario.getCodZona();
+                        
+                        if (!zonasMap.containsKey(zonaKey)) {
+                            Map<String, Object> zonaInfo = new HashMap<>();
+                            zonaInfo.put("codZona", horario.getCodZona());
+                            zonaInfo.put("nomZona", horario.getNomZona());
+                            zonaInfo.put("capacidadZona", horario.getCapacidadZona());
+                            zonaInfo.put("permiteMenores", horario.getPermiteMenores());
+                            zonaInfo.put("horarios", new ArrayList<Map<String, Object>>());
+                            zonasMap.put(zonaKey, zonaInfo);
+                        }
+                        
+                        @SuppressWarnings("unchecked")
+                        List<Map<String, Object>> horariosList = (List<Map<String, Object>>) zonasMap.get(zonaKey).get("horarios");
+                        Map<String, Object> turno = new HashMap<>();
+                        turno.put("horaDesde", horario.getHoraDesde() != null ? horario.getHoraDesde().toString() : null);
+                        turno.put("horaHasta", horario.getHoraHasta() != null ? horario.getHoraHasta().toString() : null);
+                        turno.put("yaReservados", horario.getYaReservados());
+                        turno.put("disponibilidad", horario.getDisponibilidad());
+                        horariosList.add(turno);
                     }
-                    
-                    @SuppressWarnings("unchecked")
-                    List<Map<String, Object>> horariosList = (List<Map<String, Object>>) zonasMap.get(zonaKey).get("horarios");
-                    Map<String, Object> turno = new HashMap<>();
-                    turno.put("horaDesde", horario.getHoraDesde() != null ? horario.getHoraDesde().toString() : null);
-                    turno.put("horaHasta", horario.getHoraHasta() != null ? horario.getHoraHasta().toString() : null);
-                    turno.put("yaReservados", horario.getYaReservados());
-                    turno.put("disponibilidad", horario.getDisponibilidad());
-                    horariosList.add(turno);
                 }
                 
                 response.put("zonas", new ArrayList<>(zonasMap.values()));
