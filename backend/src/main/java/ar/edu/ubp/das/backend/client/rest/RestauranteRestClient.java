@@ -47,7 +47,30 @@ public class RestauranteRestClient implements RestauranteClient {
     private final Gson gson = new Gson();
 
     @Value("${rest.restaurante.baseUrl:http://localhost:8082/api}")
-    private String baseUrl;
+    private String defaultBaseUrl;
+    
+    // URL dinámica por restaurante (se establece antes de cada llamada)
+    private final ThreadLocal<String> dynamicBaseUrl = new ThreadLocal<>();
+    
+    /**
+     * Establece la URL base dinámica para el restaurante actual.
+     * Si no se establece, se usa la URL por defecto.
+     */
+    public void setBaseUrl(String baseUrl) {
+        if (baseUrl != null && !baseUrl.trim().isEmpty()) {
+            dynamicBaseUrl.set(baseUrl);
+        } else {
+            dynamicBaseUrl.remove();
+        }
+    }
+    
+    /**
+     * Obtiene la URL base a usar (dinámica o por defecto).
+     */
+    private String getBaseUrl() {
+        String url = dynamicBaseUrl.get();
+        return url != null ? url : defaultBaseUrl;
+    }
 
     @Value("${rest.restaurante.apiKey:}")
     private String apiKey;
@@ -65,7 +88,7 @@ public class RestauranteRestClient implements RestauranteClient {
     @Override
     public RegistrarContenidoResponse registrarContenido(RegistrarContenidoRequest request) {
         try {
-            String url = baseUrl + "/restaurantes/" + request.getNroRestaurante() + "/contenidos";
+            String url = getBaseUrl() + "/restaurantes/" + request.getNroRestaurante() + "/contenidos";
 
             // Construir JSON a enviar
             Map<String, Object> jsonData = new HashMap<>();
@@ -112,7 +135,7 @@ public class RestauranteRestClient implements RestauranteClient {
     @Override
     public NotificarClickResponse notificarClick(NotificarClickRequest request) {
         try {
-            String url = baseUrl + "/restaurantes/" + request.getNroRestaurante() + 
+            String url = getBaseUrl() + "/restaurantes/" + request.getNroRestaurante() + 
                         "/contenidos/" + request.getNroContenido() + "/clicks";
 
             // Construir JSON a enviar
@@ -159,7 +182,7 @@ public class RestauranteRestClient implements RestauranteClient {
     @Override
     public NotificarClicksBatchResponse notificarClicksBatch(NotificarClicksBatchRequest request) {
         try {
-            String url = baseUrl + "/restaurantes/" + request.getNroRestaurante() + "/clicks/batch";
+            String url = getBaseUrl() + "/restaurantes/" + request.getNroRestaurante() + "/clicks/batch";
 
             Map<String, Object> jsonData = new HashMap<>();
             jsonData.put("nroRestaurante", request.getNroRestaurante());
@@ -218,7 +241,7 @@ public class RestauranteRestClient implements RestauranteClient {
             LocalDate fecha,
             Integer cantidad) {
         try {
-            String url = baseUrl + "/restaurantes/" + nroRestaurante + 
+            String url = getBaseUrl() + "/restaurantes/" + nroRestaurante + 
                         "/sucursales/" + nroSucursal + "/horarios-disponibles";
             
             // Construir query parameters
@@ -323,7 +346,7 @@ public class RestauranteRestClient implements RestauranteClient {
     @Override
     public java.util.Map<String, Object> obtenerContenidos(String nroRestaurante, String nroSucursal) {
         try {
-            String url = baseUrl + "/restaurantes/" + nroRestaurante + "/contenidos";
+            String url = getBaseUrl() + "/restaurantes/" + nroRestaurante + "/contenidos";
             if (nroSucursal != null && !nroSucursal.trim().isEmpty()) {
                 url += "?nroSucursal=" + nroSucursal;
             }
@@ -360,7 +383,7 @@ public class RestauranteRestClient implements RestauranteClient {
     @Override
     public int marcarPublicado(String nroRestaurante, java.util.List<String> nroContenidos) {
         try {
-            String url = baseUrl + "/restaurantes/" + nroRestaurante + "/contenidos/publish";
+            String url = getBaseUrl() + "/restaurantes/" + nroRestaurante + "/contenidos/publish";
 
             Map<String, Object> jsonData = new HashMap<>();
             jsonData.put("nroContenidos", nroContenidos);
@@ -427,7 +450,7 @@ public class RestauranteRestClient implements RestauranteClient {
             Integer cantAdultos,
             Integer cantMenores) {
         try {
-            String url = baseUrl + "/restaurantes/" + nroRestaurante + "/reservas";
+            String url = getBaseUrl() + "/restaurantes/" + nroRestaurante + "/reservas";
 
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("nroClienteRistorino", nroCliente);

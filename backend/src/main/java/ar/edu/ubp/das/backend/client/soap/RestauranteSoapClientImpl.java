@@ -40,7 +40,7 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
     private static final DateTimeFormatter ISO_DATE_TIME = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @Value("${soap.restaurante.wsdl:http://localhost:8081/ws/restaurantes.wsdl}")
-    private String wsdlUrl;
+    private String defaultWsdlUrl;
 
     @Value("${soap.restaurante.namespace:http://das.ubp.edu.ar/restaurante}")
     private String namespace;
@@ -52,6 +52,29 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
     private String portName;
 
     private final Gson gson = new Gson();
+    
+    // URL dinámica por restaurante (se establece antes de cada llamada)
+    private final ThreadLocal<String> dynamicWsdlUrl = new ThreadLocal<>();
+    
+    /**
+     * Establece la URL WSDL dinámica para el restaurante actual.
+     * Si no se establece, se usa la URL por defecto.
+     */
+    public void setWsdlUrl(String wsdlUrl) {
+        if (wsdlUrl != null && !wsdlUrl.trim().isEmpty()) {
+            dynamicWsdlUrl.set(wsdlUrl);
+        } else {
+            dynamicWsdlUrl.remove();
+        }
+    }
+    
+    /**
+     * Obtiene la URL WSDL a usar (dinámica o por defecto).
+     */
+    private String getWsdlUrl() {
+        String url = dynamicWsdlUrl.get();
+        return url != null ? url : defaultWsdlUrl;
+    }
 
     @Override
     public RegistrarContenidoResponse registrarContenido(RegistrarContenidoRequest request) {
@@ -70,7 +93,7 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
 
             // Crear cliente SOAP y enviar JSON
             SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
-                    .wsdlUrl(wsdlUrl)
+                    .wsdlUrl(getWsdlUrl())
                     .namespace(namespace)
                     .serviceName(serviceName)
                     .portName(portName)
@@ -132,7 +155,7 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
 
             // Crear cliente SOAP y enviar JSON
             SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
-                    .wsdlUrl(wsdlUrl)
+                    .wsdlUrl(getWsdlUrl())
                     .namespace(namespace)
                     .serviceName(serviceName)
                     .portName(portName)
@@ -184,7 +207,7 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             String jsonString = gson.toJson(jsonData);
 
             SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
-                    .wsdlUrl(wsdlUrl)
+                    .wsdlUrl(getWsdlUrl())
                     .namespace(namespace)
                     .serviceName(serviceName)
                     .portName(portName)
@@ -252,7 +275,7 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
 
             // Crear cliente SOAP y enviar JSON
             SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
-                    .wsdlUrl(wsdlUrl)
+                    .wsdlUrl(getWsdlUrl())
                     .namespace(namespace)
                     .serviceName(serviceName)
                     .portName(portName)
@@ -347,7 +370,7 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             Integer cantMenores) {
         try {
             SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
-                    .wsdlUrl(wsdlUrl)
+                    .wsdlUrl(getWsdlUrl())
                     .namespace(namespace)
                     .serviceName(serviceName)
                     .portName(portName)
@@ -423,7 +446,7 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             jsonData.put("nroSucursal", nroSucursal);
 
             SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
-                    .wsdlUrl(wsdlUrl)
+                    .wsdlUrl(getWsdlUrl())
                     .namespace(namespace)
                     .serviceName(serviceName)
                     .portName(portName)
@@ -460,7 +483,7 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             jsonData.put("nroContenidos", nroContenidos);
 
             SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
-                    .wsdlUrl(wsdlUrl)
+                    .wsdlUrl(getWsdlUrl())
                     .namespace(namespace)
                     .serviceName(serviceName)
                     .portName(portName)
