@@ -964,7 +964,6 @@ CREATE OR ALTER PROCEDURE sp_GuardarContenidoGenerado
     @nro_sucursal VARCHAR(36) = NULL,
     @nro_idioma INT,
     @contenido_generado NVARCHAR(MAX),
-    @costo_click DECIMAL(12,2) = NULL,
     @cod_contenido_restaurante VARCHAR(40) = NULL
 AS
 BEGIN
@@ -975,6 +974,15 @@ BEGIN
     DECLARE @fecha_fin DATE = DATEADD(MONTH, 1, @fecha_ini);
     DECLARE @nro_sucursal_validado VARCHAR(36) = NULL;
     DECLARE @cod_contenido_final VARCHAR(40);
+    DECLARE @costo_click_final DECIMAL(12,2) = NULL;
+    
+    -- Obtener el costo de click activo desde la tabla costos (tipo_costo = 'CLICK')
+    SELECT TOP 1 @costo_click_final = monto
+    FROM costos
+    WHERE tipo_costo = 'CLICK'
+      AND fecha_ini_vigencia <= CAST(GETDATE() AS DATE)
+      AND (fecha_fin_vigencia IS NULL OR fecha_fin_vigencia >= CAST(GETDATE() AS DATE))
+    ORDER BY fecha_ini_vigencia DESC;
     
     -- Validar y normalizar nro_sucursal
     -- Si es NULL, cadena vacía o no existe en la base de datos, establecer a NULL
@@ -1032,7 +1040,7 @@ BEGIN
         @contenido_generado,
         @fecha_ini,
         @fecha_fin,
-        @costo_click,
+        @costo_click_final,
         @cod_contenido_final
     );
     
