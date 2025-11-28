@@ -4,6 +4,7 @@ import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.CostoReservaDto;
 import ar.edu.ubp.das.backend.components.SimpleJdbcCallFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.SqlOutParameter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
@@ -153,8 +154,16 @@ public class ReservaRepository {
                 .addValue("costo_reserva", costoReserva)
                 .addValue("notas", notas)
                 .addValue("cod_reserva_sucursal", codReservaSucursal);
-        Map<String, Object> result = jdbcCallFactory.executeWithOutputs("sp_RegistrarReservaRistorino", "dbo", params);
-        return result != null && result.containsKey("nro_reserva") ? result.get("nro_reserva").toString() : null;
+        Map<String, Object> result = jdbcCallFactory.executeWithOutputs(
+                "sp_RegistrarReservaRistorino", 
+                "dbo", 
+                params,
+                new SqlOutParameter("nro_reserva", Types.VARCHAR)
+        );
+        if (result != null && result.containsKey("nro_reserva") && result.get("nro_reserva") != null) {
+            return result.get("nro_reserva").toString();
+        }
+        return null;
     }
     
     public void actualizarCodReservaSucursal(String nroReserva, String codReservaSucursal) {

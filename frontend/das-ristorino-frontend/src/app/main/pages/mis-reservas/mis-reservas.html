@@ -77,13 +77,19 @@
                 <div class="card reserva-card h-100 shadow-sm" [class.reserva-pasada]="esReservaPasada(reserva.fecha_hora)">
                   <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start mb-3">
-                      <h5 class="card-title mb-0">
+                      <div>
                         @if (reserva.nombre_restaurante) {
-                          {{ reserva.nombre_restaurante }}
+                          <h5 class="card-title mb-1">{{ reserva.nombre_restaurante }}</h5>
                         } @else {
-                          <ng-container i18n>Reserva #{{ reserva.id.substring(0, 8) }}</ng-container>
+                          <h5 class="card-title mb-1">
+                            <ng-container i18n>Reserva #{{ reserva.id.substring(0, 8) }}</ng-container>
+                          </h5>
                         }
-                      </h5>
+                        <p class="text-muted small mb-0">
+                          <ng-container i18n>Código:</ng-container> 
+                          <strong>{{ reserva.id }}</strong>
+                        </p>
+                      </div>
                       <span class="badge" [ngClass]="obtenerBadgeEstado(reserva.estado)">
                         {{ reserva.estado }}
                       </span>
@@ -96,7 +102,7 @@
                     }
 
                     @if (reserva.nombre_zona) {
-                      <p class="text-muted small mb-2" i18n>
+                      <p class="text-muted small mb-2">
                         <i class="bi bi-geo-alt"></i> Zona: {{ reserva.nombre_zona }}
                       </p>
                     }
