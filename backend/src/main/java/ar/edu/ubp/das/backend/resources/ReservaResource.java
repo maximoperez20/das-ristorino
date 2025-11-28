@@ -1,13 +1,18 @@
 package ar.edu.ubp.das.backend.resources;
 
-import ar.edu.ubp.das.backend.dto.*;
+import ar.edu.ubp.das.backend.dto.ActualizarReservaDto;
+import ar.edu.ubp.das.backend.dto.CambiarEstadoDto;
+import ar.edu.ubp.das.backend.dto.ConfirmarReservaDto;
+import ar.edu.ubp.das.backend.dto.ConfirmarReservaResponseDto;
+import ar.edu.ubp.das.backend.dto.CrearReservaDto;
+import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
+import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 import ar.edu.ubp.das.backend.service.ReservaService;
 import ar.edu.ubp.das.backend.service.RestauranteService;
 import ar.edu.ubp.das.backend.service.LanguageService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -27,13 +32,12 @@ public class ReservaResource {
     
     private final ReservaService reservaService;
     private final LanguageService languageService;
+    private final RestauranteService restauranteService;
     
-    @Autowired
-    private RestauranteService restauranteService;
-    
-    public ReservaResource(ReservaService reservaService, LanguageService languageService) {
+    public ReservaResource(ReservaService reservaService, LanguageService languageService, RestauranteService restauranteService) {
         this.reservaService = reservaService;
         this.languageService = languageService;
+        this.restauranteService = restauranteService;
     }
 
     @GetMapping

@@ -2,7 +2,6 @@ package ar.edu.ubp.das.backend.service;
 
 import ar.edu.ubp.das.backend.dto.PromocionDto;
 import ar.edu.ubp.das.backend.repository.PromocionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,8 +14,11 @@ import java.util.Optional;
 @Service
 public class PromocionService {
     
-    @Autowired
-    private PromocionRepository promocionRepository;
+    private final PromocionRepository promocionRepository;
+    
+    public PromocionService(PromocionRepository promocionRepository) {
+        this.promocionRepository = promocionRepository;
+    }
     
     /**
      * Obtener todas las promociones

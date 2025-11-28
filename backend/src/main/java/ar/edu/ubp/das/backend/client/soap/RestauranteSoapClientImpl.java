@@ -151,7 +151,6 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             // AGREGAR NUEVOS CAMPOS AQUÍ: jsonData.put("nuevoCampo", valor);
             
             String jsonString = gson.toJson(jsonData);
-            logger.info("JSON a enviar: {}", jsonString);
 
             // Crear cliente SOAP y enviar JSON
             SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()

@@ -10,7 +10,6 @@ import ar.edu.ubp.das.backend.repository.RestauranteRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -26,22 +25,25 @@ public class BusquedaNLPService {
 
     private static final Logger logger = LoggerFactory.getLogger(BusquedaNLPService.class);
 
-    @Autowired
-    private BusquedaRepository busquedaRepository;
-
-    @Autowired
-    private OpenAIService openAIService;
-
-    @Autowired
-    private RestauranteRepository restauranteRepository;
-
-    @Autowired
-    private ClienteRepository clienteRepository;
-
+    private final BusquedaRepository busquedaRepository;
+    private final OpenAIService openAIService;
+    private final RestauranteRepository restauranteRepository;
+    private final ClienteRepository clienteRepository;
+    
     @Value("${openai.prompt.busqueda.id:pmpt_68f9295bc1e48194b2e725a7b5df2b1c0a01e67130022025}")
     private String promptIdBusqueda;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    
+    public BusquedaNLPService(BusquedaRepository busquedaRepository,
+                             OpenAIService openAIService,
+                             RestauranteRepository restauranteRepository,
+                             ClienteRepository clienteRepository) {
+        this.busquedaRepository = busquedaRepository;
+        this.openAIService = openAIService;
+        this.restauranteRepository = restauranteRepository;
+        this.clienteRepository = clienteRepository;
+    }
 
     /**
      * Procesa una consulta en lenguaje natural y devuelve restaurantes relevantes
@@ -51,14 +53,10 @@ public class BusquedaNLPService {
      * @return Lista de restaurantes que coinciden con la intención del usuario
      */
     public List<RestauranteDto> buscarRestaurantesPorNLP(BusquedaNLPRequestDto request, String nroCliente) {
-        logger.info("Iniciando búsqueda NLP para consulta: {}", request.getConsulta());
+        logger.debug("Iniciando búsqueda NLP para consulta: {}", request.getConsulta());
 
         // 1. Obtener catálogos de la BD
         BusquedaContextoDto contexto = construirContexto();
-        logger.info("Contexto construido con {} tipos de comida, {} barrios, {} localidades",
-                    contexto.getContexto().getTiposComida().size(),
-                    contexto.getContexto().getBarrios().size(),
-                    contexto.getContexto().getLocalidades().size());
 
         // 2. Analizar consulta con OpenAI
         String respuestaJson = openAIService.analizarConsultaNLP(
@@ -66,7 +64,6 @@ public class BusquedaNLPService {
             contexto,
             promptIdBusqueda
         );
-        logger.info("Respuesta JSON de OpenAI obtenida");
 
         // 3. Parsear respuesta JSON de OpenAI
         BusquedaNLPResponseDto respuestaNLP = parsearRespuestaOpenAI(respuestaJson);
@@ -92,7 +89,7 @@ public class BusquedaNLPService {
             }
         }
         
-        logger.info("Intención extraída - Tipo: {}, Localidad: {}, Barrio: {}", 
+        logger.debug("Intención extraída - Tipo: {}, Localidad: {}, Barrio: {}", 
                    respuestaNLP.getTipoComida(), respuestaNLP.getLocalidad(), respuestaNLP.getBarrio());
 
         // 4. Buscar restaurantes usando stored procedure
@@ -141,13 +138,11 @@ public class BusquedaNLPService {
      */
     private BusquedaNLPResponseDto parsearRespuestaOpenAI(String jsonResponse) {
         try {
-            logger.info("Respuesta raw de OpenAI (primeros 500 caracteres): {}", 
-                        jsonResponse.length() > 500 ? jsonResponse.substring(0, 500) : jsonResponse);
+            logger.debug("Respuesta raw de OpenAI ({} caracteres)", jsonResponse.length());
             
             // Limpiar JSON: extraer solo la parte JSON del texto
             String jsonLimpio = extraerJSONDeTexto(jsonResponse);
             
-            logger.info("JSON limpio extraído: {}", jsonLimpio);
 
             // Intentar parsear directamente primero
             try {
@@ -287,11 +282,11 @@ public class BusquedaNLPService {
                 
                 if (!tiposComidaEncontrados.isEmpty()) {
                     dto.setTipoComida(tiposComidaEncontrados);
-                    logger.info("Tipos de comida extraídos de palabras clave: {}", tiposComidaEncontrados);
+                    logger.debug("Tipos de comida extraídos de palabras clave: {}", tiposComidaEncontrados);
                 }
             }
             
-            logger.info("Datos extraídos (puede incluir estructura anidada): tipoComida={}, barrio={}, palabrasClave={}", 
+            logger.debug("Datos extraídos: tipoComida={}, barrio={}, palabrasClave={}", 
                        dto.getTipoComida(), dto.getBarrio(), dto.getPalabrasClave());
             
             return dto;
@@ -353,8 +348,6 @@ public class BusquedaNLPService {
         // 4. Extraer solo la parte JSON
         String jsonExtraido = textoLimpio.substring(inicioJson, finJson).trim();
         
-        logger.debug("JSON extraído: inicio={}, fin={}, longitud={}", 
-                    inicioJson, finJson, jsonExtraido.length());
         
         return jsonExtraido;
     }

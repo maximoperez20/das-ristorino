@@ -36,33 +36,18 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
   private _dateUtils = inject(DateUtilsService);
 
   ngOnInit(): void {
-    console.log('=== FormularioReservaComponent ngOnInit ===');
-    console.log('visible:', this.visible);
-    console.log('horarioSeleccionado:', this.horarioSeleccionado);
-    console.log('nroRestaurante:', this.nroRestaurante);
-    console.log('nroSucursal:', this.nroSucursal);
     // La verificación de autenticación ahora se hace en el componente padre
     // antes de abrir el modal, así que aquí solo validamos si el modal está visible
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log('=== FormularioReservaComponent ngOnChanges ===');
-    console.log('visible:', this.visible);
     if (changes['visible']) {
-      console.log('Cambio en visible:', changes['visible'].previousValue, '->', changes['visible'].currentValue);
       // Forzar detección de cambios
       this._cdr.detectChanges();
-      if (changes['visible'].currentValue && !changes['visible'].firstChange) {
-        console.log('Visible cambió a true, el modal debería mostrarse');
-      }
-    }
-    if (changes['horarioSeleccionado']) {
-      console.log('Cambio en horarioSeleccionado:', changes['horarioSeleccionado'].currentValue);
     }
   }
 
   cerrar(): void {
-    console.log('Cerrando formulario de reserva');
     this.visible = false;
     this.visibleChange.emit(false);
     this.error = null;
@@ -128,7 +113,6 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
       error: (err) => {
         this.loading = false;
         this.error = err.error?.error || err.error?.message || $localize`Error al confirmar la reserva`;
-        console.error('Error confirmando reserva:', err);
       }
     });
   }

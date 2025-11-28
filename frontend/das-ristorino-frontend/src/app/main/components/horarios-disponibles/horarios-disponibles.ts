@@ -64,11 +64,6 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
 
   cargarHorarios(): void {
     if (!this.nroRestaurante || !this.nroSucursal || !this.fechaActual) {
-      console.log('Faltan datos para cargar horarios:', {
-        nroRestaurante: this.nroRestaurante,
-        nroSucursal: this.nroSucursal,
-        fechaActual: this.fechaActual
-      });
       return;
     }
 
@@ -76,11 +71,6 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
     this.error = null;
 
     const fechaFormateada = this.formatearFecha(this.fechaActual);
-    console.log('Cargando horarios con:', {
-      nroRestaurante: this.nroRestaurante,
-      nroSucursal: this.nroSucursal,
-      fecha: fechaFormateada
-    });
 
     this._restauranteResource.obtenerHorariosDisponibles({
       nroRestaurante: this.nroRestaurante,
@@ -88,7 +78,6 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
       fecha: fechaFormateada
     }).subscribe({
       next: (data) => {
-        console.log('Horarios cargados:', data);
         // Si la respuesta es un array (caso legacy), convertir a la estructura esperada
         if (Array.isArray(data)) {
           this.horariosData = {
@@ -108,7 +97,6 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
       error: (err) => {
         this.error = $localize`Error al cargar horarios disponibles`;
         this.loading = false;
-        console.error('Error cargando horarios:', err);
       }
     });
   }
@@ -143,24 +131,15 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
   }
 
   onHorarioClick(zona: IZona, horario: IHorario, event: Event): void {
-    console.log('=== CLICK EN HORARIO ===');
-    console.log('Zona:', zona);
-    console.log('Horario:', horario);
-    console.log('Disponibilidad:', horario.disponibilidad);
-    console.log('Event target:', event.target);
-    console.log('Event currentTarget:', event.currentTarget);
     event.stopPropagation();
     this.seleccionarHorario(zona, horario);
   }
 
   seleccionarHorario(zona: IZona, horario: IHorario): void {
-    console.log('=== seleccionarHorario llamado ===');
     if (horario.disponibilidad <= 0) {
-      console.log('Horario sin disponibilidad, no se puede seleccionar');
       return; // No permitir seleccionar horarios sin disponibilidad
     }
 
-    console.log('Seleccionando horario:', { zona, horario });
     this.horarioSeleccionadoActual = { zona, horario };
     
     const horarioSeleccionado: HorarioSeleccionado = {
@@ -173,10 +152,7 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
       fecha: new Date(this.fechaActual)
     };
 
-    console.log('Emitiendo horarioSeleccionado:', horarioSeleccionado);
-    console.log('EventEmitter existe?', !!this.horarioSeleccionado);
     this.horarioSeleccionado.emit(horarioSeleccionado);
-    console.log('Evento emitido');
   }
 
   limpiarSeleccion(): void {

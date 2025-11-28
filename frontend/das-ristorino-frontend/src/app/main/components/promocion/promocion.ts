@@ -33,8 +33,7 @@ export class PromocionComponent {
 
     this._promocionResource.registrarClick(clickData)
       .subscribe({
-        next: () =>{
-          console.log('Click registrado correctamente')
+        next: () => {
           this._router.navigate(['/restaurantes', this.promocion?.nroRestaurante]);
         },
         error: (err) => {console.error('Error registrando click', err)

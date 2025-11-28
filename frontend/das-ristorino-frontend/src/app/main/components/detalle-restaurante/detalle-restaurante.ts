@@ -39,15 +39,12 @@ export class DetalleRestauranteComponent implements OnInit {
         this.restaurante.nroRestaurante = this.nroRestaurante;
       }
       this.seleccionarPrimeraSucursal();
-      console.log('Restaurante cargado:', this.restaurante);
     });
   }
 
   seleccionarPrimeraSucursal(): void {
     if (this.restaurante?.sucursales && this.restaurante.sucursales.length > 0) {
       this.sucursalSeleccionada = this.restaurante.sucursales[0];
-      console.log('Sucursal seleccionada:', this.sucursalSeleccionada);
-      console.log('nroRestaurante:', this.nroRestaurante);
     }
   }
 
@@ -81,14 +78,8 @@ export class DetalleRestauranteComponent implements OnInit {
   }
 
   onHorarioSeleccionado(horario: HorarioSeleccionado): void {
-    console.log('=== onHorarioSeleccionado ===');
-    console.log('Horario seleccionado recibido:', horario);
-    console.log('sucursalSeleccionada:', this.sucursalSeleccionada);
-    console.log('nroRestaurante:', this.nroRestaurante);
-    
     // Verificar autenticación antes de abrir el modal
     if (!this._auth.isAuthenticated()) {
-      console.log('Usuario no autenticado, redirigiendo a login');
       this._router.navigate(['/login'], { 
         queryParams: { returnUrl: this._router.url } 
       });
@@ -97,8 +88,6 @@ export class DetalleRestauranteComponent implements OnInit {
     
     this.horarioSeleccionado = horario;
     this.mostrarFormularioReserva = true;
-    console.log('mostrarFormularioReserva establecido a:', this.mostrarFormularioReserva);
-    console.log('horarioSeleccionado establecido:', this.horarioSeleccionado);
   }
 
   onReservaConfirmada(): void {

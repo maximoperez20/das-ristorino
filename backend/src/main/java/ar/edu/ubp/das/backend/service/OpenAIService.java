@@ -355,9 +355,6 @@ public class OpenAIService {
             // Construir JSON de contexto
             String jsonContexto = construirJSONParaBusquedaNLP(consultaUsuario, contexto);
             
-            // Loggear el JSON construido
-            logger.info("║ {}", jsonContexto.replace("\n", "\n║ "));
-            logger.info("╚════════════════════════════════════════════════════════════════");
 
             // Crear cliente de OpenAI
             OpenAiService service = new OpenAiService(apiKey, Duration.ofSeconds(timeoutSeconds));
@@ -423,11 +420,6 @@ public class OpenAIService {
             messages.add(systemMessage);
             messages.add(userMessage);
             
-            if (promptId != null && !promptId.isEmpty()) {
-                logger.info("║ Usando prompt guardado en OpenAI Platform con ID: {} (referencia)", promptId);
-            } else {
-                logger.info("║ Usando system prompt por defecto");
-            }
 
             // Crear request
             ChatCompletionRequest completionRequest = ChatCompletionRequest.builder()
@@ -442,14 +434,7 @@ public class OpenAIService {
                     .getMessage()
                     .getContent();
 
-            // Loggear la respuesta
-            logger.info("");
-            logger.info("╔════════════════════════════════════════════════════════════════");
-            logger.info("║ RESPUESTA JSON DE OPENAI:");
-            logger.info("╠════════════════════════════════════════════════════════════════");
-            logger.info("║ {}", respuestaJson.replace("\n", "\n║ "));
-            logger.info("╚════════════════════════════════════════════════════════════════");
-            logger.info("✅ Consulta analizada exitosamente");
+            logger.debug("Respuesta de OpenAI recibida ({} caracteres)", respuestaJson.length());
             
             // Cerrar servicio
             service.shutdownExecutor();

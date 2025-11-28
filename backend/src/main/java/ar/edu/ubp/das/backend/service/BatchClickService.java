@@ -9,7 +9,6 @@ import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchResponse;
 import ar.edu.ubp.das.backend.repository.ClickRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -24,11 +23,13 @@ public class BatchClickService {
 
     private static final Logger logger = LoggerFactory.getLogger(BatchClickService.class);
 
-    @Autowired
-    private ClickRepository clickRepository;
-
-    @Autowired
-    private RestauranteClientFactory restauranteClientFactory;
+    private final ClickRepository clickRepository;
+    private final RestauranteClientFactory restauranteClientFactory;
+    
+    public BatchClickService(ClickRepository clickRepository, RestauranteClientFactory restauranteClientFactory) {
+        this.clickRepository = clickRepository;
+        this.restauranteClientFactory = restauranteClientFactory;
+    }
 
     public void procesarClicksNoNotificados() {
         try {

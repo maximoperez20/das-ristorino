@@ -8,7 +8,6 @@ import ar.edu.ubp.das.backend.repository.ContenidoRepository;
 import ar.edu.ubp.das.backend.repository.RestauranteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -21,20 +20,23 @@ public class ContenidoService {
 
     private static final Logger logger = LoggerFactory.getLogger(ContenidoService.class);
 
-    @Autowired
-    private ContenidoRepository contenidoRepository;
-
-    @Autowired
-    private RestauranteRepository restauranteRepository;
-
-    @Autowired
-    private OpenAIService openAIService;
-
-    @Autowired
-    private RestauranteClientFactory restauranteClientFactory;
-
+    private final ContenidoRepository contenidoRepository;
+    private final RestauranteRepository restauranteRepository;
+    private final OpenAIService openAIService;
+    private final RestauranteClientFactory restauranteClientFactory;
+    
     @Value("${openai.prompt.id}")
     private String defaultPromptId;
+    
+    public ContenidoService(ContenidoRepository contenidoRepository,
+                           RestauranteRepository restauranteRepository,
+                           OpenAIService openAIService,
+                           RestauranteClientFactory restauranteClientFactory) {
+        this.contenidoRepository = contenidoRepository;
+        this.restauranteRepository = restauranteRepository;
+        this.openAIService = openAIService;
+        this.restauranteClientFactory = restauranteClientFactory;
+    }
 
     /**
      * Genera contenido publicitario con IA para un restaurante/sucursal.

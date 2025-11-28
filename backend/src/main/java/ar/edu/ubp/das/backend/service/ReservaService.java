@@ -1,15 +1,26 @@
 package ar.edu.ubp.das.backend.service;
 
-import ar.edu.ubp.das.backend.dto.*;
+import ar.edu.ubp.das.backend.dto.ActualizarReservaDto;
+import ar.edu.ubp.das.backend.dto.ConfirmarReservaDto;
+import ar.edu.ubp.das.backend.dto.ConfirmarReservaResponseDto;
+import ar.edu.ubp.das.backend.dto.CrearReservaDto;
+import ar.edu.ubp.das.backend.dto.EstadoReservaDto;
+import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
+import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
+import ar.edu.ubp.das.backend.dto.SucursalDto;
+import ar.edu.ubp.das.backend.dto.UsuarioDto;
 import ar.edu.ubp.das.backend.repository.ReservaRepository;
 import ar.edu.ubp.das.backend.repository.RestauranteRepository;
 import ar.edu.ubp.das.backend.repository.ClienteRepository;
 import ar.edu.ubp.das.backend.client.RestauranteClient;
 import ar.edu.ubp.das.backend.client.RestauranteClientFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,18 +28,18 @@ import java.util.Optional;
 public class ReservaService {
     
     private final ReservaRepository reservaRepository;
+    private final RestauranteRepository restauranteRepository;
+    private final ClienteRepository clienteRepository;
+    private final RestauranteClientFactory restauranteClientFactory;
     
-    @Autowired
-    private RestauranteRepository restauranteRepository;
-    
-    @Autowired
-    private ClienteRepository clienteRepository;
-    
-    @Autowired
-    private RestauranteClientFactory restauranteClientFactory;
-    
-    public ReservaService(ReservaRepository reservaRepository) {
+    public ReservaService(ReservaRepository reservaRepository,
+                         RestauranteRepository restauranteRepository,
+                         ClienteRepository clienteRepository,
+                         RestauranteClientFactory restauranteClientFactory) {
         this.reservaRepository = reservaRepository;
+        this.restauranteRepository = restauranteRepository;
+        this.clienteRepository = clienteRepository;
+        this.restauranteClientFactory = restauranteClientFactory;
     }
     
     public List<ReservaResponseDto> obtenerTodasLasReservas() {
@@ -62,7 +73,6 @@ public class ReservaService {
     public List<ReservaResponseDto> obtenerReservasPorNroCliente(String nroCliente, Integer nroIdioma) {
         return reservaRepository.findByNroCliente(nroCliente, nroIdioma);
     }
-    
     
     public ConfirmarReservaResponseDto confirmarReserva(ConfirmarReservaDto request, String nroCliente) {
         int cantTotal = request.getCantAdultos() + request.getCantMenores();
@@ -169,7 +179,7 @@ public class ReservaService {
                 direccionCompleta += ", " + sucursal.getProvincia();
             }
             urlMapa = "https://www.google.com/maps/search/?api=1&query=" + 
-                     java.net.URLEncoder.encode(direccionCompleta, java.nio.charset.StandardCharsets.UTF_8);
+                     URLEncoder.encode(direccionCompleta, StandardCharsets.UTF_8);
         }
         
         ConfirmarReservaResponseDto response = new ConfirmarReservaResponseDto();
@@ -189,8 +199,7 @@ public class ReservaService {
     }
     
     private String obtenerCodigoEstado(String nomEstado) {
-        org.springframework.jdbc.core.namedparam.MapSqlParameterSource params = 
-            new org.springframework.jdbc.core.namedparam.MapSqlParameterSource()
+        MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("nom_estado", nomEstado);
         List<EstadoReservaDto> results = reservaRepository.getJdbcCallFactory().executeQuery(
                 "sp_ObtenerCodigoEstado", "dbo", params, "estado", EstadoReservaDto.class);

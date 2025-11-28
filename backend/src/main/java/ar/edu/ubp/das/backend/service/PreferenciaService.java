@@ -1,6 +1,8 @@
 package ar.edu.ubp.das.backend.service;
 
-import ar.edu.ubp.das.backend.dto.*;
+import ar.edu.ubp.das.backend.dto.CategoriaConDominiosDto;
+import ar.edu.ubp.das.backend.dto.GuardarPreferenciasDto;
+import ar.edu.ubp.das.backend.dto.PreferenciaClienteDto;
 import ar.edu.ubp.das.backend.repository.PreferenciaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

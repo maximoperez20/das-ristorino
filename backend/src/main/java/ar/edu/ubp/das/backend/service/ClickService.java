@@ -5,7 +5,6 @@ import ar.edu.ubp.das.backend.dto.RegistrarClickDto;
 import ar.edu.ubp.das.backend.repository.ClickRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -16,8 +15,11 @@ public class ClickService {
     
     private static final Logger logger = LoggerFactory.getLogger(ClickService.class);
     
-    @Autowired
-    private ClickRepository clickRepository;
+    private final ClickRepository clickRepository;
+    
+    public ClickService(ClickRepository clickRepository) {
+        this.clickRepository = clickRepository;
+    }
     
     /**
      * Registra un click en una promoción
