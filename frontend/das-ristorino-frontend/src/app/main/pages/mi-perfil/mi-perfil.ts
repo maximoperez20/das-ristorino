@@ -69,5 +69,11 @@ export class MiPerfilPage implements OnInit {
     return this.preferenciasAgrupadas.get(categoria) || [];
   }
 
+  obtenerTextoCliente(): string {
+    if (!this.usuario?.nroCliente) return '';
+    const nroClienteCorto = this.usuario.nroCliente.substring(0, 8);
+    return $localize`:@@mi-perfil.cliente.numero:Cliente #` + nroClienteCorto;
+  }
+
 }
 
