@@ -137,11 +137,6 @@ public class ContenidoService {
 
         String nroSucursalFinal = request.getNroSucursal();
 
-        java.math.BigDecimal costoClick = contenidoRepository.obtenerCostoClickActivo();
-        if (costoClick == null) {
-            logger.warn("No se encontró un costo_click activo en la tabla costos. Se guardará el contenido sin costo.");
-        }
-
         String prompt = construirPromptCompleto(
                 contenidoFuente,
                 contextoRestaurante,
@@ -155,12 +150,12 @@ public class ContenidoService {
         String contenidoGenerado = openAIService.generarContenidoPublicitario(prompt, promptId);
 
         // Guardar en das_ristorino. cod_contenido_restaurante permite notificar clicks al sistema SOAP
+        // El costo de click se obtiene automáticamente en el stored procedure desde la tabla costos
         ContenidoGeneradoDto resultado = contenidoRepository.guardarContenidoGenerado(
                 request.getNroRestaurante(),
                 nroSucursalFinal,
                 request.getNroIdioma(),
                 contenidoGenerado,
-                costoClick,
                 codContenidoRestaurante
         ).orElseThrow(() -> new RuntimeException("Error al guardar el contenido generado en la base de datos"));
 

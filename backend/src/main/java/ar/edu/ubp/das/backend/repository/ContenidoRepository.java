@@ -205,12 +205,12 @@ public class ContenidoRepository {
 
     /**
      * Guarda el contenido generado por IA en la tabla contenidos_restaurantes.
+     * El costo de click se obtiene automáticamente en el stored procedure desde la tabla costos (tipo_costo = 'CLICK').
      *
      * @param nroRestaurante UUID del restaurante
      * @param nroSucursal UUID de la sucursal (puede ser null)
      * @param nroIdioma ID del idioma (INT)
      * @param contenidoGenerado Texto generado por IA
-     * @param costoClick Costo del click (puede ser null)
      * @param codContenidoRestaurante ID del contenido en el sistema SOAP (nro_contenido del SOAP)
      * @return DTO con los datos del contenido guardado
      */
@@ -219,10 +219,9 @@ public class ContenidoRepository {
             String nroSucursal,
             Integer nroIdioma,
             String contenidoGenerado,
-            java.math.BigDecimal costoClick,
             String codContenidoRestaurante) {
 
-        String sql = "EXEC sp_GuardarContenidoGenerado ?, ?, ?, ?, ?, ?";
+        String sql = "EXEC sp_GuardarContenidoGenerado ?, ?, ?, ?, ?";
         
         try {
             List<ContenidoGeneradoDto> result = jdbcTemplate.query(
@@ -256,7 +255,6 @@ public class ContenidoRepository {
                 nroSucursal,
                 nroIdioma,
                 contenidoGenerado,
-                costoClick,
                 codContenidoRestaurante
             );
             
@@ -383,34 +381,6 @@ public class ContenidoRepository {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException("Error al obtener nom_idioma: " + e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Obtiene el costo_click activo desde la tabla costos.
-     * Busca registros con tipo_costo = 'CLICK' que estén vigentes (fecha actual entre fecha_ini_vigencia y fecha_fin_vigencia).
-     * Retorna el monto del registro más reciente (por fecha_ini_vigencia DESC).
-     * 
-     * @return BigDecimal con el costo_click activo, o null si no hay ningún costo activo
-     */
-    public java.math.BigDecimal obtenerCostoClickActivo() {
-        String sql = 
-            "SELECT TOP 1 monto " +
-            "FROM costos " +
-            "WHERE tipo_costo = 'CLICK' " +
-            "  AND fecha_ini_vigencia <= CAST(GETDATE() AS DATE) " +
-            "  AND (fecha_fin_vigencia IS NULL OR fecha_fin_vigencia >= CAST(GETDATE() AS DATE)) " +
-            "ORDER BY fecha_ini_vigencia DESC";
-
-        try {
-            List<java.math.BigDecimal> result = jdbcTemplate.query(
-                sql,
-                (rs, rowNum) -> rs.getBigDecimal("monto")
-            );
-
-            return result.isEmpty() ? null : result.get(0);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al obtener costo_click activo: " + e.getMessage(), e);
         }
     }
 
