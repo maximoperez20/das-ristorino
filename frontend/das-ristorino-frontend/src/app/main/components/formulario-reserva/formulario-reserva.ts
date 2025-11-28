@@ -116,9 +116,8 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
     }).subscribe({
       next: (response) => {
         this.loading = false;
-        this._messageService.showSuccess(
-          $localize`Reserva confirmada exitosamente. Código: ${response.codigoReserva}`
-        );
+        const mensaje = $localize`Reserva confirmada exitosamente. Código:` + ' ' + response.codigoReserva;
+        this._messageService.showSuccess(mensaje);
         this.reservaConfirmada.emit();
         this.cerrar();
         // Redirigir a mis reservas después de un breve delay
