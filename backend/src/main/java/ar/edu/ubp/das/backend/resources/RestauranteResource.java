@@ -72,12 +72,6 @@ public class RestauranteResource {
         return ResponseEntity.ok(sucursales);
     }
 
-    @GetMapping("/buscar")
-    public ResponseEntity<List<RestauranteDto>> buscarRestaurantes(@RequestParam String nombre) {
-        List<RestauranteDto> restaurantes = restauranteService.buscarRestaurantesPorNombre(nombre);
-        return ResponseEntity.ok(restaurantes);
-    }
-
     /**
      * POST /api/restaurantes/buscar-nlp - Buscar restaurantes con lenguaje natural (NLP)
      * Cumple Requerimientos 10 y 35: Búsqueda con lenguaje natural
