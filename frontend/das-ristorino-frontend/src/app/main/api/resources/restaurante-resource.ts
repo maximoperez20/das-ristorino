@@ -4,6 +4,7 @@ import type { IResourceMethodObservable } from '@ngx-resource/core';
 import { IRestaurante } from '../models/i-restaurante';
 import { IHorariosDisponiblesResponse } from '../models/i-horario-disponible';
 import { IBusquedaNLPRequest } from '../models/i-busqueda-nlp-request';
+import { IBusquedaNLPResultado } from '../models/i-busqueda-nlp-resultado';
 import { environment } from '../../../../environments/environment';
 
 @Injectable()
@@ -41,6 +42,6 @@ export class RestauranteResource extends Resource{
     path: '/buscar-nlp',
     method: ResourceRequestMethod.Post,
   })
-  declare buscarRestaurantesPorNLP: IResourceMethodObservable<IBusquedaNLPRequest, IRestaurante[]>;
+  declare buscarRestaurantesPorNLP: IResourceMethodObservable<IBusquedaNLPRequest, IBusquedaNLPResultado>;
 
 }

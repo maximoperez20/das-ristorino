@@ -263,8 +263,45 @@ public class RestauranteRepository {
         String palabrasClaveStr = palabrasClave != null && !palabrasClave.isEmpty() 
             ? String.join(",", palabrasClave) : null;
         
-        return jdbcTemplate.query(sql, restauranteRowMapper, 
+        // Log de parámetros que se envían al SP
+        org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(RestauranteRepository.class);
+        logger.info("🔎 Ejecutando sp_BuscarRestaurantesPorNLP con parámetros:");
+        logger.info("   - @tiposComida: '{}'", tiposComidaStr);
+        logger.info("   - @barrios: '{}'", barrioStr);
+        logger.info("   - @localidades: '{}'", localidadStr);
+        logger.info("   - @ambientes: '{}'", ambienteStr);
+        logger.info("   - @rangosPrecio: '{}'", rangoPrecioStr);
+        logger.info("   - @palabrasClave: '{}'", palabrasClaveStr);
+        logger.info("   - @nroCliente: '{}'", nroCliente);
+        
+        List<RestauranteDto> resultados = jdbcTemplate.query(sql, restauranteRowMapper, 
             tiposComidaStr, barrioStr, localidadStr, ambienteStr, rangoPrecioStr, palabrasClaveStr, nroCliente);
+        
+        logger.info("📊 SP devolvió {} restaurantes", resultados.size());
+        
+        return resultados;
+    }
+    
+    /**
+     * Obtiene sugerencias de restaurantes basadas en preferencias del usuario o restaurantes populares.
+     * 
+     * @param excluirRestaurantes Lista de restaurantes a excluir (los que ya están en resultados exactos)
+     * @param nroCliente UUID del cliente autenticado (opcional, si está presente usa sus preferencias)
+     * @param limite Cantidad máxima de sugerencias a devolver
+     * @return Lista de restaurantes sugeridos
+     */
+    public List<RestauranteDto> obtenerSugerencias(List<RestauranteDto> excluirRestaurantes, String nroCliente, int limite) {
+        // Construir lista de UUIDs a excluir
+        String excluirIds = null;
+        if (excluirRestaurantes != null && !excluirRestaurantes.isEmpty()) {
+            excluirIds = excluirRestaurantes.stream()
+                .map(RestauranteDto::getNroRestaurante)
+                .filter(id -> id != null)
+                .collect(java.util.stream.Collectors.joining(","));
+        }
+        
+        String sql = "EXEC sp_ObtenerSugerenciasRestaurantes ?, ?, ?";
+        return jdbcTemplate.query(sql, restauranteRowMapper, excluirIds, nroCliente, limite);
     }
     
     /**

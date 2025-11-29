@@ -354,7 +354,8 @@ public class OpenAIService {
             
             // Construir JSON de contexto
             String jsonContexto = construirJSONParaBusquedaNLP(consultaUsuario, contexto);
-            
+            logger.info("║ {}", jsonContexto.replace("\n", "\n║ "));
+            logger.info("╚════════════════════════════════════════════════════════════════");
 
             // Crear cliente de OpenAI
             OpenAiService service = new OpenAiService(apiKey, Duration.ofSeconds(timeoutSeconds));
@@ -434,12 +435,25 @@ public class OpenAIService {
                     .getMessage()
                     .getContent();
 
-            logger.debug("Respuesta de OpenAI recibida ({} caracteres)", respuestaJson.length());
+            logger.info("╠════════════════════════════════════════════════════════════════");
+            logger.info("║ RESPUESTA DE OPENAI:");
+            logger.info("╠════════════════════════════════════════════════════════════════");
+            logger.info("║ Longitud: {} caracteres", respuestaJson.length());
+            logger.info("║ Contenido:");
+            // Loggear la respuesta completa, dividida en líneas si es muy larga
+            String respuestaLimpia = respuestaJson.trim();
+            if (respuestaLimpia.length() > 500) {
+                logger.info("║ (primeros 500 caracteres): {}", respuestaLimpia.substring(0, Math.min(500, respuestaLimpia.length())));
+                logger.info("║ ... ({} caracteres más)", respuestaLimpia.length() - 500);
+            } else {
+                logger.info("║ {}", respuestaLimpia.replace("\n", "\n║ "));
+            }
+            logger.info("╚════════════════════════════════════════════════════════════════");
             
             // Cerrar servicio
             service.shutdownExecutor();
             
-            return respuestaJson.trim();
+            return respuestaLimpia;
 
         } catch (Exception e) {
             logger.error("Error al analizar consulta NLP con OpenAI: {}", e.getMessage(), e);

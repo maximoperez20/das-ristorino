@@ -4,13 +4,13 @@
     @if (consulta) {
       <div class="row mb-3">
         <div class="col-12">
-          <h4 class="mb-0">
+          <h4 class="mb-0" i18n>
             Resultados para: 
             <span class="text-primary fst-italic">"{{ consulta }}"</span>
           </h4>
-          @if (!cargando && restaurantes.length > 0) {
-            <p class="text-muted small mb-0">
-              Encontrados {{ restaurantes.length }} restaurante{{ restaurantes.length !== 1 ? 's' : '' }}
+          @if (!cargando && resultadosExactos.length > 0) {
+            <p class="text-muted small mb-0" i18n>
+              Encontrados {{ resultadosExactos.length }} restaurante{{ resultadosExactos.length !== 1 ? 's' : '' }}
             </p>
           }
         </div>
@@ -46,69 +46,138 @@
       </div>
     }
 
-    <!-- Sin resultados -->
-    @if (!cargando && !error && consulta && restaurantes.length === 0) {
-      <div class="row">
+    <!-- Sin resultados exactos -->
+    @if (!cargando && !error && consulta && resultadosExactos.length === 0) {
+      <div class="row mb-4">
         <div class="col-12">
-          <div class="alert alert-info text-center py-5" role="alert">
+          <div class="alert alert-info text-center py-4" role="alert">
             <i class="bi bi-search fs-1 d-block mb-3"></i>
-            <h5>No se encontraron restaurantes</h5>
-            <p class="mb-0">
-              No encontramos restaurantes que coincidan con tu búsqueda.
+            <h5 i18n>No se encontraron restaurantes exactos</h5>
+            <p class="mb-0" i18n>
+              No encontramos restaurantes que coincidan exactamente con tu búsqueda.
               <br>
-              Intenta con diferentes palabras clave o criterios.
+              Pero tenemos algunas sugerencias que te pueden gustar.
             </p>
           </div>
         </div>
       </div>
     }
 
-    <!-- Lista de restaurantes -->
-    @if (!cargando && restaurantes.length > 0) {
-      <div class="row g-4">
-        @for (restaurante of restaurantes; track restaurante.nroRestaurante) {
-          <div class="col-12 col-md-6 col-lg-4">
-            <div class="card restaurante-card h-100 shadow-sm" (click)="navegarADetalle(restaurante.nroRestaurante!)" style="cursor: pointer;">
-              <img 
-                [src]="obtenerImagen(restaurante)" 
-                class="card-img-top restaurante-image" 
-                [alt]="restaurante.nombre || 'Restaurante'"
-                onerror="this.src='https://picsum.photos/seed/food/400/300'">
-              <div class="card-body">
-                <h5 class="card-title fw-bold mb-2">
-                  {{ restaurante.nombre || 'Sin nombre' }}
-                </h5>
-                
-                @if (restaurante.direccion) {
-                  <p class="text-muted small mb-2">
-                    <i class="bi bi-geo-alt"></i>
-                    {{ restaurante.direccion }}
-                  </p>
-                }
+    <!-- Sección: Resultados exactos -->
+    @if (!cargando && resultadosExactos.length > 0) {
+      <div class="row mb-5">
+        <div class="col-12">
+          <h5 class="mb-4 fw-bold" i18n>
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            Resultados de tu búsqueda
+          </h5>
+        </div>
+        <div class="col-12">
+          <div class="row g-4">
+            @for (restaurante of resultadosExactos; track restaurante.nroRestaurante) {
+              <div class="col-12 col-md-6 col-lg-4">
+                <div class="card restaurante-card h-100 shadow-sm" (click)="navegarADetalle(restaurante.nroRestaurante!)" style="cursor: pointer;">
+                  <img 
+                    [src]="obtenerImagen(restaurante)" 
+                    class="card-img-top restaurante-image" 
+                    [alt]="restaurante.nombre || 'Restaurante'"
+                    onerror="this.src='https://picsum.photos/seed/food/400/300'">
+                  <div class="card-body">
+                    <h5 class="card-title fw-bold mb-2">
+                      {{ restaurante.nombre || 'Sin nombre' }}
+                    </h5>
+                    
+                    @if (restaurante.direccion) {
+                      <p class="text-muted small mb-2">
+                        <i class="bi bi-geo-alt"></i>
+                        {{ restaurante.direccion }}
+                      </p>
+                    }
 
-                @if (restaurante.telefono) {
-                  <p class="text-muted small mb-2">
-                    <i class="bi bi-telephone"></i>
-                    {{ restaurante.telefono }}
-                  </p>
-                }
+                    @if (restaurante.telefono) {
+                      <p class="text-muted small mb-2">
+                        <i class="bi bi-telephone"></i>
+                        {{ restaurante.telefono }}
+                      </p>
+                    }
 
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                  @if (restaurante.calificacion) {
-                    <div>
-                      <i class="bi bi-star-fill text-warning"></i>
-                      <span class="ms-1">{{ restaurante.calificacion.toFixed(1) }}</span>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                      @if (restaurante.calificacion) {
+                        <div>
+                          <i class="bi bi-star-fill text-warning"></i>
+                          <span class="ms-1">{{ restaurante.calificacion.toFixed(1) }}</span>
+                        </div>
+                      }
+                      
+                      @if (restaurante.categoria) {
+                        <span class="badge bg-primary">{{ restaurante.categoria }}</span>
+                      }
                     </div>
-                  }
-                  
-                  @if (restaurante.categoria) {
-                    <span class="badge bg-primary">{{ restaurante.categoria }}</span>
-                  }
+                  </div>
                 </div>
               </div>
-            </div>
+            }
           </div>
-        }
+        </div>
+      </div>
+    }
+
+    <!-- Sección: Te puede gustar también -->
+    @if (!cargando && sugerencias.length > 0) {
+      <div class="row">
+        <div class="col-12">
+          <h5 class="mb-4 fw-bold" i18n>
+            <i class="bi bi-heart-fill text-danger me-2"></i>
+            Te puede gustar también
+          </h5>
+        </div>
+        <div class="col-12">
+          <div class="row g-4">
+            @for (restaurante of sugerencias; track restaurante.nroRestaurante) {
+              <div class="col-12 col-md-6 col-lg-4">
+                <div class="card restaurante-card h-100 shadow-sm" (click)="navegarADetalle(restaurante.nroRestaurante!)" style="cursor: pointer;">
+                  <img 
+                    [src]="obtenerImagen(restaurante)" 
+                    class="card-img-top restaurante-image" 
+                    [alt]="restaurante.nombre || 'Restaurante'"
+                    onerror="this.src='https://picsum.photos/seed/food/400/300'">
+                  <div class="card-body">
+                    <h5 class="card-title fw-bold mb-2">
+                      {{ restaurante.nombre || 'Sin nombre' }}
+                    </h5>
+                    
+                    @if (restaurante.direccion) {
+                      <p class="text-muted small mb-2">
+                        <i class="bi bi-geo-alt"></i>
+                        {{ restaurante.direccion }}
+                      </p>
+                    }
+
+                    @if (restaurante.telefono) {
+                      <p class="text-muted small mb-2">
+                        <i class="bi bi-telephone"></i>
+                        {{ restaurante.telefono }}
+                      </p>
+                    }
+
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                      @if (restaurante.calificacion) {
+                        <div>
+                          <i class="bi bi-star-fill text-warning"></i>
+                          <span class="ms-1">{{ restaurante.calificacion.toFixed(1) }}</span>
+                        </div>
+                      }
+                      
+                      @if (restaurante.categoria) {
+                        <span class="badge bg-primary">{{ restaurante.categoria }}</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
       </div>
     }
 

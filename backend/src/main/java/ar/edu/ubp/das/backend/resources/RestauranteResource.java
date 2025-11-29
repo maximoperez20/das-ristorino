@@ -1,6 +1,7 @@
 package ar.edu.ubp.das.backend.resources;
 
 import ar.edu.ubp.das.backend.dto.BusquedaNLPRequestDto;
+import ar.edu.ubp.das.backend.dto.BusquedaNLPResultadoDto;
 import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
 import ar.edu.ubp.das.backend.dto.RestauranteDto;
 import ar.edu.ubp.das.backend.dto.RestauranteDetalleDto;
@@ -104,8 +105,8 @@ public class RestauranteResource {
                 nroCliente = jwt.getClaimAsString("nroCliente");
             }
             
-            List<RestauranteDto> restaurantes = busquedaNLPService.buscarRestaurantesPorNLP(request, nroCliente);
-            return ResponseEntity.ok(restaurantes);
+            BusquedaNLPResultadoDto resultado = busquedaNLPService.buscarRestaurantesPorNLP(request, nroCliente);
+            return ResponseEntity.ok(resultado);
         } catch (RuntimeException e) {
             logger.warn("Error al procesar búsqueda NLP: {}", e.getMessage());
             return ResponseHelper.badRequest(e.getMessage());

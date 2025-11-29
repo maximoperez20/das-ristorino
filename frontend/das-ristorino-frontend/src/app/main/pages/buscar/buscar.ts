@@ -15,7 +15,8 @@ import { BuscadorNLPComponent } from '../../components/buscador-nlp/buscador-nlp
 export class BuscarPage implements OnInit {
 
   consulta: string = '';
-  restaurantes: IRestaurante[] = [];
+  resultadosExactos: IRestaurante[] = [];
+  sugerencias: IRestaurante[] = [];
   cargando = false;
   error: string | null = null;
 
@@ -42,11 +43,13 @@ export class BuscarPage implements OnInit {
 
     this.cargando = true;
     this.error = null;
-    this.restaurantes = [];
+    this.resultadosExactos = [];
+    this.sugerencias = [];
 
     this._restauranteResource.buscarRestaurantesPorNLP({ consulta: consulta.trim() }).subscribe({
-      next: (restaurantes) => {
-        this.restaurantes = restaurantes || [];
+      next: (resultado) => {
+        this.resultadosExactos = resultado?.resultadosExactos || [];
+        this.sugerencias = resultado?.sugerencias || [];
         this.cargando = false;
       },
       error: (err) => {

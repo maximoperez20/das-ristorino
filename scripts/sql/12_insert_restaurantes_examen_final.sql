@@ -209,6 +209,21 @@ BEGIN
     END
 END
 
+-- Preferencia adicional: Tipo de comida - Pizzería (para que aparezca en búsquedas de "pizza")
+DECLARE @nro_valor_pizzeria INT;
+SELECT @nro_valor_pizzeria = nro_valor_dominio FROM dominio_categorias_preferencias 
+WHERE cod_categoria = @cat_tipo AND nom_valor_dominio = N'Pizzería';
+
+IF @nro_valor_pizzeria IS NOT NULL
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM preferencias_restaurantes 
+                   WHERE nro_restaurante = @rest_1_uuid AND cod_categoria = @cat_tipo AND nro_valor_dominio = @nro_valor_pizzeria)
+    BEGIN
+        INSERT INTO preferencias_restaurantes (nro_restaurante, cod_categoria, nro_valor_dominio, nro_preferencia)
+        VALUES (@rest_1_uuid, @cat_tipo, @nro_valor_pizzeria, 2);
+    END
+END
+
 -- Atributos de identidad
 IF NOT EXISTS (SELECT 1 FROM configuracion_restaurantes WHERE nro_restaurante = @rest_1_uuid AND cod_atributo = @cod_atributo_tipo_cocina)
     INSERT INTO configuracion_restaurantes (nro_restaurante, cod_atributo, valor)

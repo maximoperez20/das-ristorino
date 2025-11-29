@@ -87,4 +87,3 @@ public class BusquedaNLPResponseDto {
         this.palabrasClave = palabrasClave;
     }
 }
-

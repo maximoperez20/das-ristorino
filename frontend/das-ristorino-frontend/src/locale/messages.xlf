@@ -578,6 +578,48 @@
           <context context-type="linenumber">53</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="4815444424480731940" datatype="html">
+        <source> Resultados para: <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;text-primary fst-italic&quot;&gt;"/>&quot;<x id="INTERPOLATION" equiv-text="{{ consulta }}"/>&quot;<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/buscar/buscar.html</context>
+          <context context-type="linenumber">8,11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="618586802430847633" datatype="html">
+        <source> Encontrados <x id="INTERPOLATION" equiv-text="{{ resultadosExactos.length }}"/> restaurante<x id="INTERPOLATION_1" equiv-text="{{ resultadosExactos.length !== 1 ? &apos;s&apos; : &apos;&apos; }}"/> </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/buscar/buscar.html</context>
+          <context context-type="linenumber">13,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="2594621805714625807" datatype="html">
+        <source>No se encontraron restaurantes exactos</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/buscar/buscar.html</context>
+          <context context-type="linenumber">55,56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7577158616858801642" datatype="html">
+        <source> No encontramos restaurantes que coincidan exactamente con tu búsqueda. <x id="LINE_BREAK" ctype="lb" equiv-text="&lt;br&gt;"/> Pero tenemos algunas sugerencias que te pueden gustar. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/buscar/buscar.html</context>
+          <context context-type="linenumber">57,60</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6166882044079791055" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-check-circle-fill text-success me-2&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Resultados de tu búsqueda </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/buscar/buscar.html</context>
+          <context context-type="linenumber">71,73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7825453829007531699" datatype="html">
+        <source><x id="START_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;i class=&quot;bi bi-heart-fill text-danger me-2&quot;&gt;"/><x id="CLOSE_ITALIC_TEXT" ctype="x-i" equiv-text="&lt;/i&gt;"/> Te puede gustar también </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/main/pages/buscar/buscar.html</context>
+          <context context-type="linenumber">130,132</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="8024932591315166082" datatype="html">
         <source>Iniciar Sesión</source>
         <context-group purpose="location">
