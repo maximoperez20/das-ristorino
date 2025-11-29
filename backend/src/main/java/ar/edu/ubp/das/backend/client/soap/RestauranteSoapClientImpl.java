@@ -6,13 +6,14 @@ import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchResponse;
+import ar.edu.ubp.das.backend.dto.restaurante.ClienteDto;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
+import ar.edu.ubp.das.backend.dto.restaurante.RegistrarReservaRequest;
+import ar.edu.ubp.das.backend.dto.restaurante.RegistrarReservaResponse;
 import ar.edu.ubp.das.backend.dto.soap.GetHorariosDisponiblesSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.NotificarClickSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.RegistrarContenidoSoapDto;
-import ar.edu.ubp.das.backend.dto.soap.RegistrarReservaSoapDto;
-import ar.edu.ubp.das.backend.dto.soap.ClienteSoapDto;
 import ar.edu.ubp.das.backend.utils.SOAPClient;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
@@ -22,16 +23,12 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 
 @Component
 public class RestauranteSoapClientImpl implements RestauranteClient {
@@ -51,10 +48,14 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
     @Value("${soap.restaurante.port:RestaurantePortSoap11}")
     private String portName;
 
-    private final Gson gson = new Gson();
+    private final Gson gson;
     
     // URL dinámica por restaurante (se establece antes de cada llamada)
     private final ThreadLocal<String> dynamicWsdlUrl = new ThreadLocal<>();
+    
+    public RestauranteSoapClientImpl(Gson gson) {
+        this.gson = gson;
+    }
     
     /**
      * Establece la URL WSDL dinámica para el restaurante actual.
@@ -368,6 +369,23 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             Integer cantAdultos,
             Integer cantMenores) {
         try {
+            // Construir request usando DTO
+            RegistrarReservaRequest request = new RegistrarReservaRequest();
+            request.setNroClienteRistorino(nroCliente);
+            
+            ClienteDto datosCliente = new ClienteDto(apellido, nombre, correo, telefonos);
+            request.setDatosCliente(datosCliente);
+            
+            request.setNroRestaurante(nroRestaurante);
+            request.setNroSucursal(nroSucursal);
+            request.setCodZona(codZona);
+            request.setFechaReserva(fechaReserva);
+            request.setHoraDesde(horaDesde);
+            request.setCantAdultos(cantAdultos);
+            request.setCantMenores(cantMenores);
+            
+            String jsonString = gson.toJson(request);
+
             SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
                     .wsdlUrl(getWsdlUrl())
                     .namespace(namespace)
@@ -376,24 +394,13 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
                     .operationName("registrarReservaRequest")
                     .build();
 
-            ClienteSoapDto datosCliente = new ClienteSoapDto(apellido, nombre, correo, telefonos);
-
             Map<String, Object> parameters = new HashMap<>();
-            parameters.put("nroClienteRistorino", nroCliente);
-            parameters.put("datosCliente", datosCliente);
-            parameters.put("nroRestaurante", nroRestaurante);
-            parameters.put("nroSucursal", nroSucursal);
-            parameters.put("codZona", codZona);
-            parameters.put("fechaReserva", fechaReserva != null ? toXMLGregorianCalendar(fechaReserva) : null);
-            parameters.put("horaDesde", horaDesde != null ? toXMLGregorianCalendar(horaDesde) : null);
-            parameters.put("cantAdultos", cantAdultos);
-            parameters.put("cantMenores", cantMenores);
+            parameters.put("jsonData", jsonString);
 
-            RegistrarReservaSoapDto response = soapClient.callServiceForObject(
-                    RegistrarReservaSoapDto.class,
-                    "registrarReservaResponse",
-                    parameters
-            );
+            String jsonResponseStr = soapClient.extractJsonResponse("registrarReservaResponse", parameters);
+
+            // Parsear respuesta JSON a DTO
+            RegistrarReservaResponse response = gson.fromJson(jsonResponseStr, RegistrarReservaResponse.class);
 
             if (response != null && response.isConfirmada()) {
                 return response.getCodReserva();
@@ -405,35 +412,6 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
         } catch (Exception e) {
             logger.error("Error al registrar reserva vía SOAP: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
-        }
-    }
-    
-    /**
-     * Convierte LocalDate a XMLGregorianCalendar (solo fecha)
-     */
-    private XMLGregorianCalendar toXMLGregorianCalendar(LocalDate localDate) {
-        try {
-            GregorianCalendar gcal = GregorianCalendar.from(localDate.atStartOfDay(ZoneId.systemDefault()));
-            return DatatypeFactory.newInstance().newXMLGregorianCalendar(gcal);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al convertir LocalDate a XMLGregorianCalendar: " + e.getMessage(), e);
-        }
-    }
-    
-    /**
-     * Convierte LocalTime a XMLGregorianCalendar (solo hora)
-     */
-    private XMLGregorianCalendar toXMLGregorianCalendar(LocalTime localTime) {
-        try {
-            return DatatypeFactory.newInstance().newXMLGregorianCalendarTime(
-                    localTime.getHour(),
-                    localTime.getMinute(),
-                    localTime.getSecond(),
-                    localTime.getNano() / 1000000,
-                    0
-            );
-        } catch (Exception e) {
-            throw new RuntimeException("Error al convertir LocalTime a XMLGregorianCalendar: " + e.getMessage(), e);
         }
     }
 

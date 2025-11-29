@@ -2,6 +2,7 @@ package ar.edu.ubp.das.backend.repository;
 
 import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.CostoReservaDto;
+import ar.edu.ubp.das.backend.dto.EstadoReservaDto;
 import ar.edu.ubp.das.backend.components.SimpleJdbcCallFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.SqlOutParameter;
@@ -19,10 +20,6 @@ public class ReservaRepository {
     
     @Autowired
     private SimpleJdbcCallFactory jdbcCallFactory;
-    
-    public SimpleJdbcCallFactory getJdbcCallFactory() {
-        return jdbcCallFactory;
-    }
     
     // Obtener todas las reservas
     public List<ReservaResponseDto> findAll() {
@@ -171,5 +168,19 @@ public class ReservaRepository {
                 .addValue("nro_reserva", nroReserva)
                 .addValue("cod_reserva_sucursal", codReservaSucursal);
         jdbcCallFactory.execute("sp_ActualizarCodReservaSucursal", "dbo", params);
+    }
+    
+    /**
+     * Obtener código de estado por nombre de estado
+     */
+    public String obtenerCodigoEstado(String nomEstado) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("nom_estado", nomEstado);
+        List<EstadoReservaDto> results = jdbcCallFactory.executeQuery(
+                "sp_ObtenerCodigoEstado", "dbo", params, "estado", EstadoReservaDto.class);
+        if (results != null && !results.isEmpty()) {
+            return results.get(0).getCodEstado();
+        }
+        return null;
     }
 }

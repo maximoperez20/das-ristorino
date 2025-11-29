@@ -5,10 +5,10 @@ import ar.edu.ubp.das.backend.dto.RestauranteDto;
 import ar.edu.ubp.das.backend.dto.RestauranteDetalleDto;
 import ar.edu.ubp.das.backend.dto.SucursalDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.CallableStatementCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -117,11 +117,21 @@ public class RestauranteRepository {
     
     /**
      * Obtener restaurante por UUID (nroRestaurante)
+     * @param nroRestaurante UUID del restaurante
+     * @param nroIdioma Número de idioma (0=es-AR, 1=en-US). Si es null, usa 0 por defecto.
+     */
+    public Optional<RestauranteDto> findById(String nroRestaurante, Integer nroIdioma) {
+        String sql = "EXEC sp_ObtenerRestaurantePorId ?, ?";
+        int idioma = nroIdioma != null ? nroIdioma : 0;
+        List<RestauranteDto> restaurantes = jdbcTemplate.query(sql, restauranteRowMapper, nroRestaurante, idioma);
+        return restaurantes.isEmpty() ? Optional.empty() : Optional.of(restaurantes.get(0));
+    }
+    
+    /**
+     * Obtener restaurante por UUID (nroRestaurante) - versión sin idioma (usa default 0)
      */
     public Optional<RestauranteDto> findById(String nroRestaurante) {
-        String sql = "EXEC sp_ObtenerRestaurantePorId ?";
-        List<RestauranteDto> restaurantes = jdbcTemplate.query(sql, restauranteRowMapper, nroRestaurante);
-        return restaurantes.isEmpty() ? Optional.empty() : Optional.of(restaurantes.get(0));
+        return findById(nroRestaurante, 0);
     }
     
     /**
@@ -130,44 +140,73 @@ public class RestauranteRepository {
      * @param nroIdioma Número de idioma (0=es-AR, 1=en-US)
      */
     public Optional<RestauranteDetalleDto> findDetalleById(String nroRestaurante, Integer nroIdioma) {
-        // Obtener datos básicos
-        RestauranteDto restaurante = findById(nroRestaurante)
-                .orElse(null);
+        String sql = "{call sp_ObtenerRestaurantePorId(?, ?)}";
         
-        if (restaurante == null) {
-            return Optional.empty();
-        }
-        RestauranteDetalleDto detalle = new RestauranteDetalleDto();
-        
-        // Mapear datos básicos
-        detalle.setId(restaurante.getId());
-        detalle.setNombre(restaurante.getNombre());
-        detalle.setDireccion(restaurante.getDireccion());
-        detalle.setTelefono(restaurante.getTelefono());
-        detalle.setEmail(restaurante.getEmail());
-        detalle.setCapacidad(restaurante.getCapacidad());
-        detalle.setHorarioApertura(restaurante.getHorarioApertura());
-        detalle.setHorarioCierre(restaurante.getHorarioCierre());
-        detalle.setCalificacion(restaurante.getCalificacion());
-        detalle.setActivo(restaurante.getActivo());
-        detalle.setDiasAtencion(restaurante.getDiasAtencion());
-        
-        // Obtener tipos de cocina
-        List<String> tiposCocina = obtenerTiposCocina(nroRestaurante, nroIdioma);
-        detalle.setTipoCocina(tiposCocina);
-        
-        // Obtener sucursales
-        List<SucursalDto> sucursales = obtenerSucursales(nroRestaurante);
-        detalle.setSucursales(sucursales);
-        
-        // Obtener promociones vigentes
-        List<PromocionDto> promociones = obtenerPromociones(nroRestaurante, nroIdioma);
-        detalle.setPromociones(promociones);
-        
-        // Imágenes (por ahora vacío, se puede implementar después)
-        detalle.setImagenes(new ArrayList<>());
-        
-        return Optional.of(detalle);
+        return jdbcTemplate.execute(sql, (CallableStatementCallback<Optional<RestauranteDetalleDto>>) cs -> {
+            cs.setString(1, nroRestaurante);
+            cs.setInt(2, nroIdioma != null ? nroIdioma : 0);
+            
+            boolean hasResults = cs.execute();
+            
+            RestauranteDetalleDto detalle = new RestauranteDetalleDto();
+            List<PromocionDto> promociones = new ArrayList<>();
+            
+            // Leer primer result set: datos del restaurante
+            if (hasResults) {
+                try (ResultSet rs = cs.getResultSet()) {
+                    if (rs.next()) {
+                        RestauranteDto restaurante = restauranteRowMapper.mapRow(rs, 1);
+                        
+                        // Mapear datos básicos
+                        detalle.setId(restaurante.getId());
+                        detalle.setNombre(restaurante.getNombre());
+                        detalle.setDireccion(restaurante.getDireccion());
+                        detalle.setTelefono(restaurante.getTelefono());
+                        detalle.setEmail(restaurante.getEmail());
+                        detalle.setCapacidad(restaurante.getCapacidad());
+                        detalle.setHorarioApertura(restaurante.getHorarioApertura());
+                        detalle.setHorarioCierre(restaurante.getHorarioCierre());
+                        detalle.setCalificacion(restaurante.getCalificacion());
+                        detalle.setActivo(restaurante.getActivo());
+                        detalle.setDiasAtencion(restaurante.getDiasAtencion());
+                    } else {
+                        // No se encontró el restaurante
+                        return Optional.empty();
+                    }
+                }
+            }
+            
+            // Leer segundo result set: promociones
+            if (cs.getMoreResults()) {
+                try (ResultSet rs = cs.getResultSet()) {
+                    int rowNum = 0;
+                    while (rs.next()) {
+                        promociones.add(promocionRowMapper.mapRow(rs, rowNum++));
+                    }
+                }
+            }
+            
+            // Si no se encontró el restaurante, retornar empty
+            if (detalle.getNombre() == null) {
+                return Optional.empty();
+            }
+            
+            // Obtener tipos de cocina
+            List<String> tiposCocina = obtenerTiposCocina(nroRestaurante, nroIdioma);
+            detalle.setTipoCocina(tiposCocina);
+            
+            // Obtener sucursales
+            List<SucursalDto> sucursales = obtenerSucursales(nroRestaurante);
+            detalle.setSucursales(sucursales);
+            
+            // Asignar promociones obtenidas del stored procedure
+            detalle.setPromociones(promociones);
+            
+            // Imágenes (por ahora vacío, se puede implementar después)
+            detalle.setImagenes(new ArrayList<>());
+            
+            return Optional.of(detalle);
+        });
     }
     
     /**
@@ -186,16 +225,6 @@ public class RestauranteRepository {
     public List<SucursalDto> obtenerSucursales(String nroRestaurante) {
         String sql = "EXEC sp_ObtenerSucursalesPorRestaurante ?";
         return jdbcTemplate.query(sql, sucursalRowMapper, nroRestaurante);
-    }
-    
-    /**
-     * Obtener promociones vigentes de un restaurante
-     * @param nroRestaurante UUID del restaurante
-     * @param nroIdioma Número de idioma (0=es-AR, 1=en-US)
-     */
-    private List<PromocionDto> obtenerPromociones(String nroRestaurante, Integer nroIdioma) {
-        String sql = "EXEC sp_ObtenerPromocionesPorRestaurante ?, ?";
-        return jdbcTemplate.query(sql, promocionRowMapper, nroRestaurante, nroIdioma);
     }
     
     /**

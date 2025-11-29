@@ -2,12 +2,14 @@ package ar.edu.ubp.das.backend.client.rest;
 
 import ar.edu.ubp.das.backend.client.RestauranteClient;
 import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
+import ar.edu.ubp.das.backend.dto.restaurante.ClienteDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
+import ar.edu.ubp.das.backend.dto.restaurante.RegistrarReservaRequest;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +46,7 @@ public class RestauranteRestClient implements RestauranteClient {
     private static final DateTimeFormatter ISO_DATE_TIME = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     private final RestTemplate restTemplate;
-    private final Gson gson = new Gson();
+    private final Gson gson;
 
     @Value("${rest.restaurante.baseUrl:http://localhost:8082/api}")
     private String defaultBaseUrl;
@@ -81,8 +83,9 @@ public class RestauranteRestClient implements RestauranteClient {
     @Value("${rest.restaurante.password:}")
     private String password;
 
-    public RestauranteRestClient(RestTemplate restTemplate) {
+    public RestauranteRestClient(RestTemplate restTemplate, Gson gson) {
         this.restTemplate = restTemplate;
+        this.gson = gson;
     }
 
     @Override
@@ -452,23 +455,22 @@ public class RestauranteRestClient implements RestauranteClient {
         try {
             String url = getBaseUrl() + "/restaurantes/" + nroRestaurante + "/reservas";
 
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("nroClienteRistorino", nroCliente);
-            Map<String, Object> datosCliente = new HashMap<>();
-            datosCliente.put("apellido", apellido);
-            datosCliente.put("nombre", nombre);
-            datosCliente.put("correo", correo);
-            datosCliente.put("telefonos", telefonos != null ? telefonos : "");
-            requestBody.put("datosCliente", datosCliente);
-            requestBody.put("nroRestaurante", nroRestaurante);
-            requestBody.put("nroSucursal", nroSucursal);
-            requestBody.put("codZona", codZona);
-            requestBody.put("fechaReserva", fechaReserva.format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE));
-            requestBody.put("horaDesde", horaDesde.format(java.time.format.DateTimeFormatter.ISO_LOCAL_TIME));
-            requestBody.put("cantAdultos", cantAdultos);
-            requestBody.put("cantMenores", cantMenores);
+            // Construir request usando DTO (consistente con SOAP)
+            RegistrarReservaRequest request = new RegistrarReservaRequest();
+            request.setNroClienteRistorino(nroCliente);
+            
+            ClienteDto datosCliente = new ClienteDto(apellido, nombre, correo, telefonos);
+            request.setDatosCliente(datosCliente);
+            
+            request.setNroRestaurante(nroRestaurante);
+            request.setNroSucursal(nroSucursal);
+            request.setCodZona(codZona);
+            request.setFechaReserva(fechaReserva);
+            request.setHoraDesde(horaDesde);
+            request.setCantAdultos(cantAdultos);
+            request.setCantMenores(cantMenores);
 
-            String jsonBody = gson.toJson(requestBody);
+            String jsonBody = gson.toJson(request);
 
             HttpHeaders headers = createHeaders();
             HttpEntity<String> entity = new HttpEntity<>(jsonBody, headers);

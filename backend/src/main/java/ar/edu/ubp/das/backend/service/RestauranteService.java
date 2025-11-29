@@ -44,10 +44,6 @@ public class RestauranteService {
         return restauranteRepository.obtenerSucursales(nroRestaurante);
     }
     
-    public List<RestauranteDto> buscarRestaurantesPorNombre(String nombre) {
-        return restauranteRepository.findByNombreContaining(nombre);
-    }
-    
     /**
      * Obtener horarios disponibles para una sucursal, zona y fecha específica
      * 
