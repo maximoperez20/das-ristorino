@@ -62,10 +62,11 @@ public class ValidacionCatalogoService {
         logger.info("   - Rangos precio: {}", rangosPrecioCatalogo);
         
         // Validar y mapear tipoComida (lista)
+        // Para tipos de comida, usamos una validación más inteligente que maneja sinónimos
         if (respuestaIA.getTipoComida() != null && !respuestaIA.getTipoComida().isEmpty()) {
             List<String> tiposComidaValidos = new ArrayList<>();
             for (String tipoIA : respuestaIA.getTipoComida()) {
-                String tipoValidado = buscarValorExacto(tipoIA, tiposComidaCatalogo);
+                String tipoValidado = buscarValorExactoTipoComida(tipoIA, tiposComidaCatalogo);
                 if (tipoValidado != null && !tiposComidaValidos.contains(tipoValidado)) {
                     tiposComidaValidos.add(tipoValidado);
                     logger.info("   ✅ Tipo comida '{}' -> mapeado a '{}'", tipoIA, tipoValidado);
@@ -203,6 +204,68 @@ public class ValidacionCatalogoService {
         // 3. Si no hay coincidencia, retornar null (NO mapear)
         logger.debug("No se encontró coincidencia para localidad '{}'", valorIALimpio);
         return null;
+    }
+    
+    /**
+     * Busca un tipo de comida en el catálogo usando estrategias inteligentes con sinónimos.
+     * Maneja casos especiales como "japonesa" → "Fusión japonesa-peruana", "Sushi" o "Asiática"
+     * 
+     * @param valorIA Valor devuelto por la IA (ej: "japonesa", "comida japonesa")
+     * @param catalogo Lista de tipos de comida válidos del catálogo
+     * @return Tipo de comida del catálogo o null si no hay coincidencia razonable
+     */
+    private String buscarValorExactoTipoComida(String valorIA, List<String> catalogo) {
+        if (valorIA == null || valorIA.trim().isEmpty() || catalogo == null || catalogo.isEmpty()) {
+            return null;
+        }
+        
+        String valorIALimpio = valorIA.trim().toLowerCase();
+        
+        // Mapeo de sinónimos específicos para tipos de comida
+        // Caso especial: "japonesa" o variaciones
+        if (valorIALimpio.contains("japon") || valorIALimpio.contains("nikkei") || valorIALimpio.contains("peruano-japon")) {
+            // Prioridad: 1) Fusión japonesa-peruana, 2) Sushi, 3) Asiática
+            for (String tipo : catalogo) {
+                String tipoLower = tipo.toLowerCase();
+                if (tipoLower.contains("fusión") && (tipoLower.contains("japon") || tipoLower.contains("peru"))) {
+                    logger.debug("Mapeo por sinónimo (japonesa): '{}' → '{}'", valorIA, tipo);
+                    return tipo;
+                }
+            }
+            for (String tipo : catalogo) {
+                if (tipo.equalsIgnoreCase("Sushi")) {
+                    logger.debug("Mapeo por sinónimo (japonesa): '{}' → '{}'", valorIA, tipo);
+                    return tipo;
+                }
+            }
+            for (String tipo : catalogo) {
+                if (tipo.equalsIgnoreCase("Asiática")) {
+                    logger.debug("Mapeo por sinónimo (japonesa): '{}' → '{}'", valorIA, tipo);
+                    return tipo;
+                }
+            }
+        }
+        
+        // Caso especial: "italiana" o variaciones
+        if (valorIALimpio.contains("italian")) {
+            // Prioridad: 1) Italiana tradicional, 2) Italiana
+            for (String tipo : catalogo) {
+                String tipoLower = tipo.toLowerCase();
+                if (tipoLower.contains("italian") && tipoLower.contains("tradicional")) {
+                    logger.debug("Mapeo por sinónimo (italiana): '{}' → '{}'", valorIA, tipo);
+                    return tipo;
+                }
+            }
+            for (String tipo : catalogo) {
+                if (tipo.equalsIgnoreCase("Italiana")) {
+                    logger.debug("Mapeo por sinónimo (italiana): '{}' → '{}'", valorIA, tipo);
+                    return tipo;
+                }
+            }
+        }
+        
+        // Para otros casos, usar la búsqueda normal
+        return buscarValorExacto(valorIA, catalogo);
     }
     
     /**

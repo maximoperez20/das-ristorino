@@ -389,11 +389,13 @@ public class OpenAIService {
                     "\n\nINSTRUCCIONES ESPECÍFICAS:" +
                     "\n1. TIPO DE COMIDA: SIEMPRE intenta asociar la consulta a uno o más tipos de comida del catálogo 'tiposComida' proporcionado." +
                     "\n   - Usa sinónimos: 'parrillada', 'asado', 'parrilla' → 'Parrilla'" +
-                    "\n   - 'sushi', 'japonesa' → 'Sushi' o 'Asiática'" +
+                    "\n   - 'sushi', 'japonesa', 'comida japonesa', 'nikkei', 'peruano-japonés' → 'Sushi', 'Fusión japonesa-peruana' o 'Asiática'" +
                     "\n   - 'pizza', 'pizzería' → 'Pizzería'" +
-                    "\n   - 'italiana', 'pasta', 'risotto' → 'Italiana'" +
+                    "\n   - 'italiana', 'pasta', 'risotto' → 'Italiana' o 'Italiana tradicional'" +
                     "\n   - 'mexicana', 'tacos', 'burritos' → 'Mexicana'" +
                     "\n   - 'vegana', 'vegetariana' → 'Vegano'" +
+                    "\n   - IMPORTANTE: Si el catálogo tiene 'Fusión japonesa-peruana', 'Sushi' o 'Asiática', y la consulta menciona 'japonesa', " +
+                    "\n     DEBES incluir al menos uno de estos valores (prioriza 'Fusión japonesa-peruana' si existe en el catálogo)." +
                     "\n   - Si la consulta menciona un tipo de comida (aunque sea indirectamente), DEBES incluir el tipo correspondiente del catálogo." +
                     "\n   - Solo usa null si la consulta NO menciona NADA relacionado con tipos de comida." +
                     "\n2. PALABRAS CLAVE: Incluye palabras relevantes de la consulta que no se mapearon a otros campos." +

@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "extract-i18n": "ng extract-i18n --output-path=src/locale && node update-translations.js",
+    "extract-i18n": "ng extract-i18n --output-path=src/locale",
     "start": "ng serve --open --configuration=development-es",
     "start-en": "ng serve --open --port 4201 --configuration=development-en",
     "build": "ng build",
