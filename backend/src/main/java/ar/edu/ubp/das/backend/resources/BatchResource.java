@@ -1,14 +1,23 @@
 package ar.edu.ubp.das.backend.resources;
 
+import ar.edu.ubp.das.backend.dto.response.BatchResponse;
+import ar.edu.ubp.das.backend.resources.util.ResponseHelper;
 import ar.edu.ubp.das.backend.service.BatchClickService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.Map;
 
+/**
+ * Controlador REST para operaciones batch.
+ * 
+ * Principios aplicados:
+ * - Encapsulación: Usa DTOs tipados en lugar de Maps genéricos
+ * - DRY: Usa ResponseHelper para construcción de respuestas
+ */
 @RestController
 @RequestMapping("/api/batch")
 public class BatchResource {
@@ -22,27 +31,30 @@ public class BatchResource {
     }
 
     @PostMapping("/procesar-clicks")
-    public ResponseEntity<Map<String, String>> ejecutarBatchClicks() {
+    public ResponseEntity<BatchResponse> ejecutarBatchClicks() {
         logger.info("Ejecutando batch de clicks manualmente...");
         
         try {
             batchClickService.procesarClicksNoNotificados();
-            return ResponseEntity.ok(Map.of(
-                "mensaje", "Batch de clicks ejecutado exitosamente",
-                "estado", "completado"
-            ));
+            return ResponseHelper.batchResponse(
+                "Batch de clicks ejecutado exitosamente",
+                "completado",
+                HttpStatus.OK
+            );
         } catch (RuntimeException e) {
             logger.warn("Error al ejecutar batch de clicks: {}", e.getMessage());
-            return ResponseEntity.status(400).body(Map.of(
-                "mensaje", e.getMessage(),
-                "estado", "error"
-            ));
+            return ResponseHelper.batchResponse(
+                e.getMessage(),
+                "error",
+                HttpStatus.BAD_REQUEST
+            );
         } catch (Exception e) {
             logger.error("Error inesperado al ejecutar batch de clicks", e);
-            return ResponseEntity.status(500).body(Map.of(
-                "mensaje", "Error al ejecutar batch de clicks: " + e.getMessage(),
-                "estado", "error"
-            ));
+            return ResponseHelper.batchResponse(
+                "Error al ejecutar batch de clicks: " + e.getMessage(),
+                "error",
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
     }
 }

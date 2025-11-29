@@ -4,7 +4,6 @@ import ar.edu.ubp.das.backend.dto.ActualizarReservaDto;
 import ar.edu.ubp.das.backend.dto.ConfirmarReservaDto;
 import ar.edu.ubp.das.backend.dto.ConfirmarReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.CrearReservaDto;
-import ar.edu.ubp.das.backend.dto.EstadoReservaDto;
 import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
 import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.SucursalDto;
@@ -16,7 +15,6 @@ import ar.edu.ubp.das.backend.client.RestauranteClient;
 import ar.edu.ubp.das.backend.client.RestauranteClientFactory;
 import org.springframework.stereotype.Service;
 
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 
 import java.math.BigDecimal;
 import java.net.URLEncoder;
@@ -95,6 +93,9 @@ public class ReservaService {
         );
         
         RestauranteClient client = restauranteClientFactory.getClient(request.getNroRestaurante());
+
+
+        // MOVER ESTA LOGICA AL RESTAURANTE
         List<HorarioDisponibleDto> horarios = client.getHorariosDisponibles(
                 request.getNroRestaurante(),
                 codSucursalRestaurante,
@@ -199,13 +200,6 @@ public class ReservaService {
     }
     
     private String obtenerCodigoEstado(String nomEstado) {
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("nom_estado", nomEstado);
-        List<EstadoReservaDto> results = reservaRepository.getJdbcCallFactory().executeQuery(
-                "sp_ObtenerCodigoEstado", "dbo", params, "estado", EstadoReservaDto.class);
-        if (results != null && !results.isEmpty()) {
-            return results.get(0).getCodEstado();
-        }
-        return null;
+        return reservaRepository.obtenerCodigoEstado(nomEstado);
     }
 }

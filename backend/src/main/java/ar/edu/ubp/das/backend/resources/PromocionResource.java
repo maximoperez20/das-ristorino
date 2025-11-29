@@ -3,6 +3,7 @@ package ar.edu.ubp.das.backend.resources;
 import ar.edu.ubp.das.backend.dto.ClickResponseDto;
 import ar.edu.ubp.das.backend.dto.PromocionDto;
 import ar.edu.ubp.das.backend.dto.RegistrarClickDto;
+import ar.edu.ubp.das.backend.resources.util.ResponseHelper;
 import ar.edu.ubp.das.backend.service.ClickService;
 import ar.edu.ubp.das.backend.service.PromocionService;
 import ar.edu.ubp.das.backend.service.LanguageService;
@@ -14,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -61,17 +61,14 @@ public class PromocionResource {
                 return ResponseEntity.status(HttpStatus.CREATED).body(click);
             } else {
                 logger.warn("No se pudo registrar el click para promoción: {}", registrarClickDto.getNroContenido());
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(Map.of("error", "No se pudo registrar el click"));
+                return ResponseHelper.internalServerError("No se pudo registrar el click");
             }
         } catch (RuntimeException e) {
             logger.warn("Error al registrar click: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseHelper.badRequest(e.getMessage());
         } catch (Exception e) {
             logger.error("Error inesperado al registrar click", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al registrar click: " + e.getMessage()));
+            return ResponseHelper.internalServerError("Error al registrar click: " + e.getMessage());
         }
     }
 }

@@ -3,6 +3,8 @@ package ar.edu.ubp.das.backend.resources;
 import ar.edu.ubp.das.backend.dto.CategoriaConDominiosDto;
 import ar.edu.ubp.das.backend.dto.GuardarPreferenciasDto;
 import ar.edu.ubp.das.backend.dto.PreferenciaClienteDto;
+import ar.edu.ubp.das.backend.dto.response.PreferenciasGuardadasResponse;
+import ar.edu.ubp.das.backend.resources.util.ResponseHelper;
 import ar.edu.ubp.das.backend.service.PreferenciaService;
 import ar.edu.ubp.das.backend.service.LanguageService;
 import jakarta.validation.Valid;
@@ -15,7 +17,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Controlador REST para gestión de preferencias gastronómicas
@@ -64,16 +65,14 @@ public class PreferenciaResource {
         try {
             // Obtener nroCliente del JWT
             if (authentication == null || !(authentication.getPrincipal() instanceof Jwt)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "No autenticado"));
+                return ResponseHelper.unauthorized("No autenticado");
             }
             
             Jwt jwt = (Jwt) authentication.getPrincipal();
             String nroCliente = jwt.getClaimAsString("nroCliente");
             
             if (nroCliente == null || nroCliente.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Token inválido: falta nroCliente"));
+                return ResponseHelper.unauthorized("Token inválido: falta nroCliente");
             }
             
             int guardadas = preferenciaService.guardarPreferenciasCliente(
@@ -81,14 +80,14 @@ public class PreferenciaResource {
                     guardarPreferenciasDto.getPreferencias()
             );
             
-            return ResponseEntity.ok(Map.of(
-                    "mensaje", "Preferencias guardadas exitosamente",
-                    "preferenciasGuardadas", guardadas
-            ));
+            PreferenciasGuardadasResponse response = new PreferenciasGuardadasResponse(
+                    "Preferencias guardadas exitosamente",
+                    guardadas
+            );
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Error al guardar preferencias", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al guardar preferencias: " + e.getMessage()));
+            return ResponseHelper.internalServerError("Error al guardar preferencias: " + e.getMessage());
         }
     }
     

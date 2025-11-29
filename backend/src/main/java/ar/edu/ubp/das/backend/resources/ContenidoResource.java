@@ -2,6 +2,7 @@ package ar.edu.ubp.das.backend.resources;
 
 import ar.edu.ubp.das.backend.dto.ContenidoGeneradoDto;
 import ar.edu.ubp.das.backend.dto.GenerarContenidoRequestDto;
+import ar.edu.ubp.das.backend.resources.util.ResponseHelper;
 import ar.edu.ubp.das.backend.service.ContenidoService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -9,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 /**
  * Controlador REST para generación de contenido publicitario con IA.
@@ -36,12 +35,10 @@ public class ContenidoResource {
             return ResponseEntity.status(HttpStatus.CREATED).body(contenido);
         } catch (RuntimeException e) {
             logger.warn("Error al generar contenido: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseHelper.badRequest(e.getMessage());
         } catch (Exception e) {
             logger.error("Error inesperado al generar contenido", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al generar contenido: " + e.getMessage()));
+            return ResponseHelper.internalServerError("Error al generar contenido: " + e.getMessage());
         }
     }
 }

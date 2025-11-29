@@ -5,6 +5,8 @@ import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
 import ar.edu.ubp.das.backend.dto.RestauranteDto;
 import ar.edu.ubp.das.backend.dto.RestauranteDetalleDto;
 import ar.edu.ubp.das.backend.dto.SucursalDto;
+import ar.edu.ubp.das.backend.dto.response.HorariosDisponiblesResponse;
+import ar.edu.ubp.das.backend.resources.util.ResponseHelper;
 import ar.edu.ubp.das.backend.service.BusquedaNLPService;
 import ar.edu.ubp.das.backend.service.RestauranteService;
 import ar.edu.ubp.das.backend.service.LanguageService;
@@ -12,16 +14,14 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -108,12 +108,10 @@ public class RestauranteResource {
             return ResponseEntity.ok(restaurantes);
         } catch (RuntimeException e) {
             logger.warn("Error al procesar búsqueda NLP: {}", e.getMessage());
-            return ResponseEntity.status(400)
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseHelper.badRequest(e.getMessage());
         } catch (Exception e) {
             logger.error("Error inesperado al procesar búsqueda NLP", e);
-            return ResponseEntity.status(500)
-                    .body(Map.of("error", "Error al procesar la búsqueda: " + e.getMessage()));
+            return ResponseHelper.internalServerError("Error al procesar la búsqueda: " + e.getMessage());
         }
     }
 
@@ -142,38 +140,7 @@ public class RestauranteResource {
             
             // Si codZona es null, agrupar por zona para una mejor respuesta
             if (codZona == null) {
-                Map<String, Object> response = new HashMap<>();
-                Map<String, Map<String, Object>> zonasMap = new HashMap<>();
-                
-                if (horarios != null && !horarios.isEmpty()) {
-                    for (HorarioDisponibleDto horario : horarios) {
-                        String zonaKey = horario.getCodZona();
-                        
-                        if (!zonasMap.containsKey(zonaKey)) {
-                            Map<String, Object> zonaInfo = new HashMap<>();
-                            zonaInfo.put("codZona", horario.getCodZona());
-                            zonaInfo.put("nomZona", horario.getNomZona());
-                            zonaInfo.put("capacidadZona", horario.getCapacidadZona());
-                            zonaInfo.put("permiteMenores", horario.getPermiteMenores());
-                            zonaInfo.put("horarios", new ArrayList<Map<String, Object>>());
-                            zonasMap.put(zonaKey, zonaInfo);
-                        }
-                        
-                        @SuppressWarnings("unchecked")
-                        List<Map<String, Object>> horariosList = (List<Map<String, Object>>) zonasMap.get(zonaKey).get("horarios");
-                        Map<String, Object> turno = new HashMap<>();
-                        turno.put("horaDesde", horario.getHoraDesde() != null ? horario.getHoraDesde().toString() : null);
-                        turno.put("horaHasta", horario.getHoraHasta() != null ? horario.getHoraHasta().toString() : null);
-                        turno.put("yaReservados", horario.getYaReservados());
-                        turno.put("disponibilidad", horario.getDisponibilidad());
-                        horariosList.add(turno);
-                    }
-                }
-                
-                response.put("zonas", new ArrayList<>(zonasMap.values()));
-                response.put("totalZonas", zonasMap.size());
-                response.put("fecha", fecha.toString());
-                
+                HorariosDisponiblesResponse response = ResponseHelper.agruparHorariosPorZona(horarios, fecha);
                 return ResponseEntity.ok(response);
             }
             
@@ -183,22 +150,11 @@ public class RestauranteResource {
             String errorMessage = e.getMessage();
             logger.warn("Error al consultar horarios disponibles: {}", errorMessage);
             
-            // Determinar el código de estado HTTP según el tipo de error
-            int statusCode = 400; // Bad Request por defecto
-            if (errorMessage != null) {
-                if (errorMessage.contains("no encontrado") || errorMessage.contains("no encontrada")) {
-                    statusCode = 404; // Not Found
-                } else if (errorMessage.contains("Error en comunicación")) {
-                    statusCode = 502; // Bad Gateway (error en comunicación con SOAP/REST)
-                }
-            }
-            
-            return ResponseEntity.status(statusCode)
-                    .body(Map.of("error", errorMessage));
+            HttpStatus status = ResponseHelper.determinarStatusDesdeError(errorMessage);
+            return ResponseHelper.error(errorMessage, status);
         } catch (Exception e) {
             logger.error("Error inesperado al consultar horarios disponibles", e);
-            return ResponseEntity.status(500)
-                    .body(Map.of("error", "Error al consultar horarios disponibles: " + e.getMessage()));
+            return ResponseHelper.internalServerError("Error al consultar horarios disponibles: " + e.getMessage());
         }
     }
 }

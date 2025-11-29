@@ -45,6 +45,8 @@ public class RestauranteClientFactory {
         String protocolo = obtenerProtocoloDelRestaurante(nroRestaurante);
         String urlServicio = obtenerUrlServicio(nroRestaurante);
 
+
+        // MODIFICAR ESTA LOGICA, 
         if ("REST".equalsIgnoreCase(protocolo)) {
             logger.debug("Usando cliente REST para restaurante: {} con URL: {}", 
                         nroRestaurante, urlServicio != null ? urlServicio : "default");
