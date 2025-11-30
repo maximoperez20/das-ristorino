@@ -32,7 +32,7 @@ BEGIN
 
     SELECT pr.cod_categoria as codCategoria,
       iddcp.valor_dominio as nombre,
-      iddcp.valor_dominio as nroValorDominio
+      iddcp.nro_valor_dominio as nroValorDominio
     FROM preferencias_restaurantes pr
     JOIN idiomas_categorias_preferencias idcp ON pr.cod_categoria = idcp.cod_categoria
     JOIN idiomas_dominio_cat_preferencias iddcp ON pr.cod_categoria = iddcp.cod_categoria AND pr.nro_valor_dominio = iddcp.nro_valor_dominio
