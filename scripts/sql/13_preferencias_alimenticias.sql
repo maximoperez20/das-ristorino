@@ -30,3 +30,11 @@ INSERT INTO idiomas_dominio_cat_preferencias (cod_categoria, nro_valor_dominio, 
 INSERT INTO idiomas_dominio_cat_preferencias (cod_categoria, nro_valor_dominio, nro_idioma, valor_dominio) VALUES (@cat_alimentacion, 5, 1, 'Low calorie');
 INSERT INTO idiomas_dominio_cat_preferencias (cod_categoria, nro_valor_dominio, nro_idioma, valor_dominio) VALUES (@cat_alimentacion, 6, 1, 'Organic');
 INSERT INTO idiomas_dominio_cat_preferencias (cod_categoria, nro_valor_dominio, nro_idioma, valor_dominio) VALUES (@cat_alimentacion, 7, 1, 'Diabetic');
+
+INSERT INTO idiomas_dominio_cat_preferencias (cod_categoria, nro_valor_dominio, nro_idioma, valor_dominio) VALUES (@cat_alimentacion, 1, 0, 'Vegetariano');
+INSERT INTO idiomas_dominio_cat_preferencias (cod_categoria, nro_valor_dominio, nro_idioma, valor_dominio) VALUES (@cat_alimentacion, 2, 0, 'Vegano');
+INSERT INTO idiomas_dominio_cat_preferencias (cod_categoria, nro_valor_dominio, nro_idioma, valor_dominio) VALUES (@cat_alimentacion, 3, 0, 'Sin gluten');
+INSERT INTO idiomas_dominio_cat_preferencias (cod_categoria, nro_valor_dominio, nro_idioma, valor_dominio) VALUES (@cat_alimentacion, 4, 0, 'Sin lactosa');
+INSERT INTO idiomas_dominio_cat_preferencias (cod_categoria, nro_valor_dominio, nro_idioma, valor_dominio) VALUES (@cat_alimentacion, 5, 0, 'Baja en calorías');
+INSERT INTO idiomas_dominio_cat_preferencias (cod_categoria, nro_valor_dominio, nro_idioma, valor_dominio) VALUES (@cat_alimentacion, 6, 0, 'Orgánico');
+INSERT INTO idiomas_dominio_cat_preferencias (cod_categoria, nro_valor_dominio, nro_idioma, valor_dominio) VALUES (@cat_alimentacion, 7, 0, 'Diabético');
