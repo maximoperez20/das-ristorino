@@ -8,6 +8,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -15,6 +17,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import jakarta.servlet.http.HttpServletResponse;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -25,6 +28,8 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Value("${security.jwt.secret}")
     private String jwtSecret;
@@ -43,6 +48,7 @@ public class SecurityConfig {
                            "/api/promociones/**",      // Consulta de promociones - PÚBLICO
                            "/api/localidades/**",      // Consulta de localidades - PÚBLICO
                            "/api/preferencias/categorias",  // Consulta de categorías de preferencias - PÚBLICO
+                           "/api/preferencias/*/especialidades-alimentarias",  // Especialidades por restaurante - PÚBLICO
                            "/api/clientes/register",   // Registro de cliente - PÚBLICO
                            "/api/clientes/login",      // Login de cliente - PÚBLICO
                            // Swagger UI (documentación API)
@@ -62,7 +68,59 @@ public class SecurityConfig {
                 // Por defecto, cualquier otro endpoint requiere autenticación
                 .anyRequest().authenticated()
             )
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())));
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt.decoder(jwtDecoder()))
+                .bearerTokenResolver(request -> {
+                    // Para endpoints públicos, no intentar resolver el token
+                    String path = request.getRequestURI();
+                    if (path.contains("/especialidades-alimentarias") || 
+                        path.contains("/categorias") ||
+                        path.contains("/api/restaurantes") ||
+                        path.contains("/api/promociones") ||
+                        path.contains("/api/localidades") ||
+                        path.contains("/api/clientes/register") ||
+                        path.contains("/api/clientes/login")) {
+                        logger.debug("Endpoint público detectado: {}, no se validará JWT", path);
+                        return null; // No validar token para endpoints públicos
+                    }
+                    // Para otros endpoints, resolver el token normalmente
+                    String authHeader = request.getHeader("Authorization");
+                    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                        return authHeader.substring(7);
+                    }
+                    return null;
+                })
+                .authenticationEntryPoint((request, response, authException) -> {
+                    String path = request.getRequestURI();
+                    logger.error("=== JWT AUTHENTICATION ERROR ===");
+                    logger.error("Path: {}", path);
+                    logger.error("Exception: {}", authException.getClass().getSimpleName());
+                    logger.error("Message: {}", authException.getMessage());
+                    logger.error("Cause: {}", authException.getCause() != null ? authException.getCause().getMessage() : "N/A");
+                    
+                    // Si es un endpoint público, no debería llegar aquí, pero loggeamos de todas formas
+                    if (path.contains("/especialidades-alimentarias") || path.contains("/categorias")) {
+                        logger.error("ERROR: Endpoint público rechazado por autenticación!");
+                        logger.error("Esto no debería pasar - el endpoint debería estar en permitAll()");
+                        // Permitir acceso sin autenticación para endpoints públicos
+                        response.setStatus(HttpServletResponse.SC_OK);
+                        return;
+                    }
+                    
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"" + authException.getMessage() + "\"}");
+                })
+            )
+            .exceptionHandling(ex -> ex
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    String path = request.getRequestURI();
+                    logger.error("=== ACCESS DENIED ===");
+                    logger.error("Path: {}", path);
+                    logger.error("Exception: {}", accessDeniedException.getMessage());
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                })
+            );
         return http.build();
     }
 
@@ -90,9 +148,11 @@ public class SecurityConfig {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hashedKey = digest.digest(jwtSecret.getBytes(StandardCharsets.UTF_8));
             SecretKeySpec key = new SecretKeySpec(hashedKey, "HmacSHA256");
+            
             return NimbusJwtDecoder.withSecretKey(key)
                     .build();
         } catch (NoSuchAlgorithmException e) {
+            logger.error("Error al crear JwtDecoder con SHA-256, usando fallback", e);
             // Fallback: usar la clave directamente si SHA-256 no está disponible
             byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
             // Asegurar mínimo 32 bytes para HS256

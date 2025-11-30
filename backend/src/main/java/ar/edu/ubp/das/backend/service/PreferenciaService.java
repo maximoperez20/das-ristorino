@@ -1,6 +1,7 @@
 package ar.edu.ubp.das.backend.service;
 
 import ar.edu.ubp.das.backend.dto.CategoriaConDominiosDto;
+import ar.edu.ubp.das.backend.dto.DominioPreferenciaDto;
 import ar.edu.ubp.das.backend.dto.GuardarPreferenciasDto;
 import ar.edu.ubp.das.backend.dto.PreferenciaClienteDto;
 import ar.edu.ubp.das.backend.repository.PreferenciaRepository;
@@ -31,6 +32,10 @@ public class PreferenciaService {
     public List<CategoriaConDominiosDto> obtenerTodasLasCategoriasConDominios(Integer nroIdioma) {
         logger.info("Obteniendo todas las categorías con sus dominios para nro_idioma: {}", nroIdioma);
         return preferenciaRepository.obtenerTodasLasCategoriasConDominios(nroIdioma);
+    }
+
+    public List<DominioPreferenciaDto> obtenerEspecialidadesAlimentariasPorRestaurante(String nroRestaurante, Integer nroIdioma) {
+        return preferenciaRepository.obtenerEspecialidadesAlimentariasPorRestaurante(nroRestaurante, nroIdioma);
     }
     
     /**

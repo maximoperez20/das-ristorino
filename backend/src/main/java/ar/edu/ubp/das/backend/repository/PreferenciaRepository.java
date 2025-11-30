@@ -10,6 +10,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Types;
 import java.util.*;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
  */
 @Repository
 public class PreferenciaRepository {
+    
+    private static final Logger logger = LoggerFactory.getLogger(PreferenciaRepository.class);
     
     @Autowired
     private SimpleJdbcCallFactory jdbcCallFactory;
@@ -73,6 +77,60 @@ public class PreferenciaRepository {
         return resultado;
     }
     
+//     public List<DominioPreferenciaDto> obtenerEspecialidadesAlimentariasPorRestaurante(String nroRestaurante, Integer nroIdioma) {
+//         // Ejecutar el stored procedure que retorna dos result sets
+//         SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+//                 .withProcedureName("sp_ObtenerPreferenciasDeRestaurantePorId")
+//                 .withSchemaName("dbo")
+//                 .returningResultSet("dominios", BeanPropertyRowMapper.newInstance(DominioPreferenciaDto.class));
+        
+//         SqlParameterSource params = new MapSqlParameterSource()
+//                 .addValue("nro_restaurante", nroRestaurante)
+//                 .addValue("nro_idioma", nroIdioma);
+        
+//         Map<String, Object> result = jdbcCall.execute(params);
+        
+//         logger.info("Result: {}", result);
+//         logger.info("Dominios: {}", result.get("dominios"));
+//         logger.info("Nro Idioma: {}", nroIdioma);
+//         logger.info("Nro Restaurante: {}", nroRestaurante);
+        
+//         @SuppressWarnings("unchecked")
+//         List<DominioPreferenciaDto> dominios = (List<DominioPreferenciaDto>) result.get("dominios");
+
+//         return dominios;
+//     }
+
+    public List<DominioPreferenciaDto> obtenerEspecialidadesAlimentariasPorRestaurante(String nroRestaurante, Integer nroIdioma) {
+
+      nroIdioma = nroIdioma == null ? 0 : nroIdioma;
+
+      logger.info("Nro Idioma: {}", nroIdioma);
+      logger.info("Nro Restaurante: {}", nroRestaurante);
+      
+      // Ejecutar el stored procedure que retorna dos result sets
+      SimpleJdbcCall jdbcCall = new SimpleJdbcCall(jdbcTemplate)
+              .withProcedureName("sp_ObtenerPreferenciasDeRestaurantePorId")
+              .withSchemaName("dbo")
+              .returningResultSet("dominios", BeanPropertyRowMapper.newInstance(DominioPreferenciaDto.class));
+
+
+      SqlParameterSource params = new MapSqlParameterSource()
+              .addValue("nro_restaurante", nroRestaurante)
+              .addValue("nro_idioma", nroIdioma);
+          
+      Map<String, Object> result = jdbcCall.execute(params);
+
+      logger.info("Result: {}", result);
+      logger.info("Dominios: {}", result.get("dominios"));
+
+
+      @SuppressWarnings("unchecked")
+      List<DominioPreferenciaDto> dominios = (List<DominioPreferenciaDto>) result.get("dominios");
+
+      // return dominios;
+      return dominios;
+    }
     /**
      * Guardar preferencias de un cliente
      */

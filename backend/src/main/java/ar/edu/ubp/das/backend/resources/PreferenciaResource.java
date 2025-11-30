@@ -1,6 +1,7 @@
 package ar.edu.ubp.das.backend.resources;
 
 import ar.edu.ubp.das.backend.dto.CategoriaConDominiosDto;
+import ar.edu.ubp.das.backend.dto.DominioPreferenciaDto;
 import ar.edu.ubp.das.backend.dto.GuardarPreferenciasDto;
 import ar.edu.ubp.das.backend.dto.PreferenciaClienteDto;
 import ar.edu.ubp.das.backend.dto.response.PreferenciasGuardadasResponse;
@@ -116,6 +117,21 @@ public class PreferenciaResource {
             List<PreferenciaClienteDto> preferencias = preferenciaService.obtenerPreferenciasCliente(nroCliente, nroIdioma);
             return ResponseEntity.ok(preferencias);
         } catch (Exception e) {
+            logger.error("Error al obtener preferencias del cliente", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/{nroRestaurante}/especialidades-alimentarias")
+    public ResponseEntity<List<DominioPreferenciaDto>> obtenerEspecialidadesAlimentariasPorRestaurante(
+        @PathVariable String nroRestaurante,
+        @RequestHeader(value = "X-Nro-Idioma", required = false) Integer nroIdiomaHeader)
+    {
+        try {
+            List<DominioPreferenciaDto> resultados = preferenciaService.obtenerEspecialidadesAlimentariasPorRestaurante(nroRestaurante, nroIdiomaHeader);   
+            return ResponseEntity.ok(resultados);
+        } catch (Exception e) {
+            // TODO: handle exception
             logger.error("Error al obtener preferencias del cliente", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

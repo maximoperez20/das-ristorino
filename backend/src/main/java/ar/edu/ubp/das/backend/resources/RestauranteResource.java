@@ -72,7 +72,7 @@ public class RestauranteResource {
         List<SucursalDto> sucursales = restauranteService.obtenerSucursales(nroRestaurante);
         return ResponseEntity.ok(sucursales);
     }
-
+    
     /**
      * POST /api/restaurantes/buscar-nlp - Buscar restaurantes con lenguaje natural (NLP)
      * Cumple Requerimientos 10 y 35: Búsqueda con lenguaje natural
