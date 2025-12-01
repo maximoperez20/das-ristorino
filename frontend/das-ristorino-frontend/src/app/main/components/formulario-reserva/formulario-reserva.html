@@ -80,6 +80,24 @@
               </div>
             </div>
 
+            <div class="mb-3">
+              <label for="especialidadesAlimentarias" class="form-label" i18n>
+                Especialidades alimentarias
+              </label>        
+              @for (especialidad of especialidadesAlimentarias; track especialidad.nroValorDominio) {
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" 
+                    name="especialidadesAlimentarias" 
+                    id="especialidadesAlimentarias{{ especialidad.nroValorDominio }}" 
+                    [value]="especialidad.nroValorDominio"
+                    [checked]="especialidadesAlimentariasSeleccionadas.includes(especialidad.nroValorDominio)"
+                    (change)="onCambioEspecialidadAlimentaria($event, especialidad.nroValorDominio)"
+                  >
+                  <label class="form-check-label" for="especialidadesAlimentarias{{ especialidad.nroValorDominio }}">{{ especialidad.nombre }}</label>
+                </div>
+              }
+            </div>
+
             @if (error) {
               <div class="alert alert-danger" role="alert">
                 <i class="bi bi-exclamation-triangle"></i> {{ error }}

@@ -189,7 +189,9 @@
                     [nroSucursal]="sucursalSeleccionada.nroSucursal"
                     [visible]="mostrarFormularioReserva"
                     (visibleChange)="onModalVisibleChange($event)"
-                    (reservaConfirmada)="onReservaConfirmada()">
+                    (reservaConfirmada)="onReservaConfirmada()"
+                    [especialidadesAlimentarias]="especialidadesAlimentarias"
+                >    
                 </app-formulario-reserva>
             }
         }

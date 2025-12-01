@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
 import { AppMessageService } from '../../../core/services/app-message-service';
 import { DateUtilsService } from '../../../core/services/date-utils.service';
 import type { HorarioSeleccionado } from '../horarios-disponibles/horarios-disponibles';
-
+import type { IDominioPreferencia } from '../../api/models/i-dominio-preferencia';
 @Component({
   selector: 'app-formulario-reserva',
   standalone: true,
@@ -19,14 +19,16 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
   @Input() horarioSeleccionado!: HorarioSeleccionado;
   @Input() nroRestaurante!: string;
   @Input() nroSucursal!: string;
+  @Input() especialidadesAlimentarias: IDominioPreferencia[] = [];
   @Input() visible: boolean = false;
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() reservaConfirmada = new EventEmitter<void>();
-
+  
   cantAdultos: number = 1;
   cantMenores: number = 0;
   loading = false;
   error: string | null = null;
+  especialidadesAlimentariasSeleccionadas: number[] = [];
 
   private _reservaResource = inject(ReservaResource);
   private _auth = inject(AuthService);
@@ -36,6 +38,7 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
   private _dateUtils = inject(DateUtilsService);
 
   ngOnInit(): void {
+    console.log('especialidadesAlimentarias', this.especialidadesAlimentarias);
     // La verificación de autenticación ahora se hace en el componente padre
     // antes de abrir el modal, así que aquí solo validamos si el modal está visible
   }
@@ -97,7 +100,10 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
       fechaReserva: fechaFormateada,
       horaDesde: horaDesde,
       cantAdultos: this.cantAdultos,
-      cantMenores: this.cantMenores
+      cantMenores: this.cantMenores,
+      preferenciasReserva: Array.isArray(this.especialidadesAlimentariasSeleccionadas) 
+        ? this.especialidadesAlimentariasSeleccionadas 
+        : []
     }).subscribe({
       next: (response) => {
         this.loading = false;
@@ -182,6 +188,21 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
     } catch {
       return hora;
     }
+  }
+
+  onCambioEspecialidadAlimentaria(event: Event, especialidad: number): void {
+    // Asegurar que siempre sea un array
+    if (!Array.isArray(this.especialidadesAlimentariasSeleccionadas)) {
+      this.especialidadesAlimentariasSeleccionadas = [];
+    }
+    
+    const checkbox = event.target as HTMLInputElement;
+    if (checkbox.checked) {
+      this.especialidadesAlimentariasSeleccionadas.push(especialidad);
+    } else {
+      this.especialidadesAlimentariasSeleccionadas = this.especialidadesAlimentariasSeleccionadas.filter(e => e !== especialidad);
+    }
+    console.log('especialidadesAlimentariasSeleccionadas', this.especialidadesAlimentariasSeleccionadas);
   }
 }
 

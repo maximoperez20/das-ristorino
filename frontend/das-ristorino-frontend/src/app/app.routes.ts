@@ -9,6 +9,7 @@ import { misReservasResolver } from './main/resolvers/mis-reservas.resolver';
 import { localidadesResolver } from './main/resolvers/localidades.resolver';
 import { preferenciasResolver } from './main/resolvers/preferencias.resolver';
 import { misPreferenciasResolver } from './main/resolvers/mis-preferencias.resolver';
+import { especialidadesAlimentariasResolver } from './main/resolvers/especialidades-alimentarias.resolver';
 import { RestaurantesPage } from './main/pages/restaurantes/restaurantes';
 import { PromocionResource } from './main/api/resources/promocion-resource';
 import { RestauranteResource } from './main/api/resources/restaurante-resource';
@@ -41,8 +42,8 @@ export const routes: Routes = [
                 import('./main/components/detalle-restaurante/detalle-restaurante').then(
                     m => m.DetalleRestauranteComponent
                 ),
-                resolve: { restaurante: restauranteResolver },
-                providers: [RestauranteResource, PromocionResource, ReservaResource]
+                resolve: { restaurante: restauranteResolver, especialidadesAlimentarias: especialidadesAlimentariasResolver },
+                providers: [RestauranteResource, PromocionResource, ReservaResource, PreferenciaResource]
             },
             {
                 path: 'login',

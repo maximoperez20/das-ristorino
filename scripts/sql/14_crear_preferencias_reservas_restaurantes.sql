@@ -40,5 +40,97 @@ BEGIN
 END;
 
 -- Stored procedure para insertar preferencias de reservas de restaurantes
+CREATE OR ALTER PROCEDURE sp_InsertarPreferenciasReserva
+    @nro_reserva VARCHAR(36),
+    @nro_cliente VARCHAR(36),
+    @nro_restaurante VARCHAR(36),
+    @preferencias NVARCHAR(MAX) -- JSON array de nro_valor_dominio: [1, 2, 3]
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRANSACTION;
+    
+    BEGIN TRY
+        -- Obtener el cod_categoria de "Especialidades alimentarias"
+        DECLARE @cod_categoria VARCHAR(36);
+        SELECT @cod_categoria = cod_categoria 
+        FROM categorias_preferencias 
+        WHERE nom_categoria = 'Especialidades alimentarias';
+        
+        IF @cod_categoria IS NULL
+        BEGIN
+            RAISERROR('Categoría "Especialidades alimentarias" no encontrada', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+        
+        -- Parsear JSON y insertar preferencias
+        -- El JSON debe tener formato: [1, 2, 3] (array de nro_valor_dominio)
+        INSERT INTO preferencias_reservas_restaurantes (
+            nro_reserva,
+            nro_cliente,
+            nro_restaurante,
+            cod_categoria,
+            nro_valor_dominio,
+            nro_preferencia,
+            observaciones
+        )
+        SELECT 
+            @nro_reserva,
+            @nro_cliente,
+            @nro_restaurante,
+            @cod_categoria,
+            CAST(oj.value AS INT) AS nro_valor_dominio,
+            MIN(pr.nro_preferencia) AS nro_preferencia, -- Usar el primer nro_preferencia si hay múltiples
+            NULL AS observaciones
+        FROM OPENJSON(@preferencias) oj
+        INNER JOIN preferencias_restaurantes pr
+            ON pr.nro_restaurante = @nro_restaurante
+            AND pr.cod_categoria = @cod_categoria
+            AND pr.nro_valor_dominio = CAST(oj.value AS INT)
+            AND pr.nro_sucursal IS NULL -- Solo preferencias del restaurante, no de sucursal específica
+        GROUP BY CAST(oj.value AS INT)
+        
+        COMMIT TRANSACTION;
+        
+        SELECT @@ROWCOUNT AS preferencias_insertadas;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
+END;
+GO
 
 -- Stored procedure para obtener preferencias de reservas de restaurantes
+CREATE OR ALTER PROCEDURE sp_ObtenerPreferenciasReserva
+    @nro_reserva VARCHAR(36),
+    @nro_idioma INT = 0
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        prr.cod_categoria AS codCategoria,
+        ISNULL(icp.categoria, cp.nom_categoria) AS nombreCategoria,
+        prr.nro_valor_dominio AS nroValorDominio,
+        ISNULL(idcp.valor_dominio, dcp.nom_valor_dominio) AS nombreDominio,
+        prr.nro_preferencia AS nroPreferencia,
+        prr.observaciones
+    FROM preferencias_reservas_restaurantes prr
+    INNER JOIN categorias_preferencias cp ON prr.cod_categoria = cp.cod_categoria
+    LEFT JOIN idiomas_categorias_preferencias icp 
+        ON cp.cod_categoria = icp.cod_categoria 
+        AND icp.nro_idioma = @nro_idioma
+    INNER JOIN dominio_categorias_preferencias dcp 
+        ON prr.cod_categoria = dcp.cod_categoria 
+        AND prr.nro_valor_dominio = dcp.nro_valor_dominio
+    LEFT JOIN idiomas_dominio_cat_preferencias idcp
+        ON dcp.cod_categoria = idcp.cod_categoria
+        AND dcp.nro_valor_dominio = idcp.nro_valor_dominio
+        AND idcp.nro_idioma = @nro_idioma
+    WHERE prr.nro_reserva = @nro_reserva
+    ORDER BY ISNULL(icp.categoria, cp.nom_categoria), ISNULL(idcp.valor_dominio, dcp.nom_valor_dominio);
+END;
+GO

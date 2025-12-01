@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 public class ConfirmarReservaDto {
     
@@ -29,6 +30,9 @@ public class ConfirmarReservaDto {
     @NotNull(message = "La cantidad de menores es obligatoria")
     @Min(value = 0, message = "La cantidad de menores no puede ser negativa")
     private Integer cantMenores;
+
+    @NotNull(message = "Las preferencias de reserva son obligatorias")
+    private List<Integer> preferenciasReserva;
 
     public ConfirmarReservaDto() {}
 
@@ -86,6 +90,14 @@ public class ConfirmarReservaDto {
 
     public void setCantMenores(Integer cantMenores) {
         this.cantMenores = cantMenores;
+    }
+
+    public List<Integer> getPreferenciasReserva() {
+        return preferenciasReserva;
+    }
+
+    public void setPreferenciasReserva(List<Integer> preferenciasReserva) {
+        this.preferenciasReserva = preferenciasReserva;
     }
 }
 

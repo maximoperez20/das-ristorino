@@ -6,6 +6,7 @@ import { IGuardarPreferencias } from '../models/i-guardar-preferencias';
 import { IGuardarPreferenciasResponse } from '../models/i-guardar-preferencias-response';
 import { IPreferenciaCliente } from '../models/i-preferencia-cliente';
 import { environment } from '../../../../environments/environment';
+import { IDominioPreferencia } from '../models/i-dominio-preferencia';
 
 @Injectable()
 @ResourceParams({
@@ -35,5 +36,9 @@ export class PreferenciaResource extends Resource {
   })
   declare obtenerMisPreferencias: IResourceMethodObservable<void, IPreferenciaCliente[]>;
 
+  @ResourceAction({
+    path: '/{nroRestaurante}/especialidades-alimentarias',
+    method: ResourceRequestMethod.Get,
+  })
+  declare obtenerEspecialidadesAlimentariasPorRestaurante: IResourceMethodObservable<{nroRestaurante: string}, IDominioPreferencia[]>;
 }
-

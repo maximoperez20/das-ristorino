@@ -7,6 +7,7 @@ import { HorariosDisponiblesComponent, HorarioSeleccionado } from '../horarios-d
 import { PromocionComponent } from "../promocion/promocion";
 import { FormularioReservaComponent } from '../formulario-reserva/formulario-reserva';
 import { AuthService } from '../../../core/services/auth-service';
+import { IDominioPreferencia } from '../../api/models/i-dominio-preferencia';
 
 @Component({
   selector: 'app-detalle-restaurante',
@@ -20,6 +21,7 @@ export class DetalleRestauranteComponent implements OnInit {
   @ViewChild('horariosComponent') horariosComponent?: HorariosDisponiblesComponent;
 
   restaurante?: IRestaurante | undefined;
+  especialidadesAlimentarias: IDominioPreferencia[] = [];
   sucursalSeleccionada?: ISucursal;
   fechaSeleccionada: Date = new Date();
   nroRestaurante: string = '';
@@ -38,6 +40,7 @@ export class DetalleRestauranteComponent implements OnInit {
       if (this.restaurante && !this.restaurante.nroRestaurante) {
         this.restaurante.nroRestaurante = this.nroRestaurante;
       }
+      this.especialidadesAlimentarias = data?.['especialidadesAlimentarias'] || [];
       this.seleccionarPrimeraSucursal();
     });
   }
@@ -105,5 +108,4 @@ export class DetalleRestauranteComponent implements OnInit {
       }
     }
   }
-
 }

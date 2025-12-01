@@ -6,5 +6,6 @@ export interface IConfirmarReservaRequest {
   horaDesde: string; // Time format: HH:mm
   cantAdultos: number;
   cantMenores: number;
+  preferenciasReserva: number[];
 }
 

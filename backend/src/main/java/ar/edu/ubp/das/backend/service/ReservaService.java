@@ -143,6 +143,7 @@ public class ReservaService {
                 request.getCantMenores(),
                 codEstadoConfirmada,
                 costoReserva,
+                request.getPreferenciasReserva(),
                 null,
                 null
         );

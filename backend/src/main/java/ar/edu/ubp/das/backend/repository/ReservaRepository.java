@@ -4,6 +4,7 @@ import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.CostoReservaDto;
 import ar.edu.ubp.das.backend.dto.EstadoReservaDto;
 import ar.edu.ubp.das.backend.components.SimpleJdbcCallFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.SqlOutParameter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -20,6 +21,9 @@ public class ReservaRepository {
     
     @Autowired
     private SimpleJdbcCallFactory jdbcCallFactory;
+    
+    @Autowired
+    private ObjectMapper objectMapper;
     
     // Obtener todas las reservas
     public List<ReservaResponseDto> findAll() {
@@ -135,6 +139,7 @@ public class ReservaRepository {
             Integer cantMenores,
             String codEstado,
             java.math.BigDecimal costoReserva,
+            List<Integer> preferenciasReserva,
             String notas,
             String codReservaSucursal) {
         SqlParameterSource params = new MapSqlParameterSource()
@@ -158,9 +163,44 @@ public class ReservaRepository {
                 new SqlOutParameter("nro_reserva", Types.VARCHAR)
         );
         if (result != null && result.containsKey("nro_reserva") && result.get("nro_reserva") != null) {
-            return result.get("nro_reserva").toString();
+            String nroReserva = result.get("nro_reserva").toString();
+            
+            // Insertar preferencias si existen
+            if (preferenciasReserva != null && !preferenciasReserva.isEmpty()) {
+                insertarPreferenciasReserva(nroReserva, nroCliente, nroRestaurante, preferenciasReserva);
+            }
+            
+            return nroReserva;
         }
         return null;
+    }
+    
+    /**
+     * Insertar preferencias de una reserva
+     * @param nroReserva Número de reserva
+     * @param nroCliente Número de cliente
+     * @param nroRestaurante Número de restaurante
+     * @param preferencias Lista de nro_valor_dominio seleccionados
+     */
+    public void insertarPreferenciasReserva(
+            String nroReserva,
+            String nroCliente,
+            String nroRestaurante,
+            List<Integer> preferencias) {
+        try {
+            // Convertir la lista a JSON array: [1, 2, 3]
+            String preferenciasJson = objectMapper.writeValueAsString(preferencias);
+            
+            SqlParameterSource params = new MapSqlParameterSource()
+                    .addValue("nro_reserva", nroReserva)
+                    .addValue("nro_cliente", nroCliente)
+                    .addValue("nro_restaurante", nroRestaurante)
+                    .addValue("preferencias", preferenciasJson, Types.NVARCHAR);
+            
+            jdbcCallFactory.execute("sp_InsertarPreferenciasReserva", "dbo", params);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al insertar preferencias de reserva: " + e.getMessage(), e);
+        }
     }
     
     public void actualizarCodReservaSucursal(String nroReserva, String codReservaSucursal) {
