@@ -7,7 +7,8 @@ export interface IReserva {
   email: string;
   telefono: string;
   fecha_hora: string; // ISO 8601 format
-  cantidad_personas: number;
+  cant_adultos?: number | null;
+  cant_menores?: number | null;
   estado: string;
   observaciones: string | null;
   fecha_creacion: string | null;
@@ -15,4 +16,5 @@ export interface IReserva {
   nombre_restaurante?: string | null;
   nombre_sucursal?: string | null;
   nombre_zona?: string | null;
+  preferencias?: string | null;
 }

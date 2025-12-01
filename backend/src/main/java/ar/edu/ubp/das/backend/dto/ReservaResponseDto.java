@@ -44,6 +44,15 @@ public class ReservaResponseDto {
     @JsonProperty("nombre_zona")
     private String nombreZona;
     
+    @JsonProperty("cant_adultos")
+    private Integer cantAdultos;
+    
+    @JsonProperty("cant_menores")
+    private Integer cantMenores;
+    
+    @JsonProperty("preferencias")
+    private String preferencias;
+    
     // Constructores
     public ReservaResponseDto() {}
     
@@ -165,6 +174,30 @@ public class ReservaResponseDto {
     
     public void setNombreZona(String nombreZona) {
         this.nombreZona = nombreZona;
+    }
+    
+    public Integer getCantAdultos() {
+        return cantAdultos;
+    }
+    
+    public void setCantAdultos(Integer cantAdultos) {
+        this.cantAdultos = cantAdultos;
+    }
+    
+    public Integer getCantMenores() {
+        return cantMenores;
+    }
+    
+    public void setCantMenores(Integer cantMenores) {
+        this.cantMenores = cantMenores;
+    }
+    
+    public String getPreferencias() {
+        return preferencias;
+    }
+    
+    public void setPreferencias(String preferencias) {
+        this.preferencias = preferencias;
     }
     
     @Override

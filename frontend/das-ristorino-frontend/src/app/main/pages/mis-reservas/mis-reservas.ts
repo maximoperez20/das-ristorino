@@ -217,7 +217,35 @@ export class MisReservasPage implements OnInit {
     this.reservasPorDia = this.agruparReservasPorDia(reservasFiltradas);
   }
 
-  formatearCantidadPersonas(cantidad: number | null | undefined): string {
+  formatearCantidadPersonas(reserva: IReserva): string {
+    // Si tenemos información detallada de adultos y menores, mostrarla
+    if (reserva.cant_adultos !== null && reserva.cant_adultos !== undefined &&
+        reserva.cant_menores !== null && reserva.cant_menores !== undefined) {
+      const partes: string[] = [];
+      
+      if (reserva.cant_adultos > 0) {
+        if (reserva.cant_adultos === 1) {
+          partes.push($localize`1 adulto`);
+        } else {
+          partes.push(`${reserva.cant_adultos} ${$localize`adultos`}`);
+        }
+      }
+      
+      if (reserva.cant_menores > 0) {
+        if (reserva.cant_menores === 1) {
+          partes.push($localize`1 menor`);
+        } else {
+          partes.push(`${reserva.cant_menores} ${$localize`menores`}`);
+        }
+      }
+      
+      if (partes.length > 0) {
+        return partes.join(', ');
+      }
+    }
+    
+    // Fallback: mostrar total si no hay información detallada
+    const cantidad = reserva.cantidad_personas;
     if (!cantidad || cantidad <= 0) return '';
     if (cantidad === 1) {
       return $localize`1 persona`;

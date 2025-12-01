@@ -309,6 +309,8 @@ BEGIN
         c.telefonos as telefono,
         CAST(CAST(rr.fecha_reserva AS VARCHAR(10)) + ' ' + CAST(rr.hora_desde AS VARCHAR(8)) AS DATETIME2) as fecha_hora,
         (rr.cant_adultos + rr.cant_menores) as cantidad_personas,
+        rr.cant_adultos as cant_adultos,
+        rr.cant_menores as cant_menores,
         CASE 
             WHEN rr.cancelada = 1 THEN ISNULL(ier.estado, 'CANCELADA')
             WHEN er.nom_estado IS NOT NULL THEN ISNULL(ier.estado, er.nom_estado)
@@ -319,7 +321,20 @@ BEGIN
         rr.fecha_hora_cancelacion as fecha_actualizacion,
         r.razon_social as nombre_restaurante,
         s.nom_sucursal as nombre_sucursal,
-        ISNULL(iz.zona, 'Zona') as nombre_zona
+        ISNULL(iz.zona, 'Zona') as nombre_zona,
+        ISNULL(
+            (SELECT STRING_AGG(ISNULL(idcp.valor_dominio, dcp.nom_valor_dominio), ', ')
+             FROM preferencias_reservas_restaurantes prr
+             INNER JOIN dominio_categorias_preferencias dcp 
+                 ON prr.cod_categoria = dcp.cod_categoria 
+                 AND prr.nro_valor_dominio = dcp.nro_valor_dominio
+             LEFT JOIN idiomas_dominio_cat_preferencias idcp
+                 ON dcp.cod_categoria = idcp.cod_categoria
+                 AND dcp.nro_valor_dominio = idcp.nro_valor_dominio
+                 AND idcp.nro_idioma = @nro_idioma
+             WHERE prr.nro_reserva = rr.nro_reserva),
+            ''
+        ) as preferencias
     FROM reservas_restaurantes rr
     LEFT JOIN clientes c ON c.nro_cliente = rr.nro_cliente
     LEFT JOIN estados_reservas er ON er.cod_estado = rr.cod_estado
