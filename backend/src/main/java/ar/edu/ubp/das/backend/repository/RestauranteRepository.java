@@ -322,8 +322,8 @@ public class RestauranteRepository {
      * @return true si existe y pertenece al restaurante, false en caso contrario
      */
     public boolean existeSucursal(String nroRestaurante, String nroSucursal) {
-        String sql = "SELECT COUNT(*) FROM sucursales_restaurantes " +
-                     "WHERE nro_restaurante = ? AND nro_sucursal = ?";
+            String sql = "SELECT COUNT(*) FROM sucursales_restaurantes " +
+                        "WHERE nro_restaurante = ? AND nro_sucursal = ?";
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class, nroRestaurante, nroSucursal);
         return count != null && count > 0;
     }
