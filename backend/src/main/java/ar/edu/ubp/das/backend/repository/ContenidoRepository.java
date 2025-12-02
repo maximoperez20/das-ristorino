@@ -1,5 +1,7 @@
 package ar.edu.ubp.das.backend.repository;
 
+import ar.edu.ubp.das.backend.dto.AtributosRestauranteDto;
+
 import ar.edu.ubp.das.backend.dto.ContenidoGeneradoDto;
 import ar.edu.ubp.das.backend.dto.RestauranteContextoDto;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -189,18 +191,18 @@ public class ContenidoRepository {
             "    AND cr.valor != '' " +
             "ORDER BY a.nom_atributo";
 
-        java.util.Map<String, String> atributos = new java.util.HashMap<>();
+        AtributosRestauranteDto atributosDto = new AtributosRestauranteDto();
         
         jdbcTemplate.query(sql, rs -> {
             String nomAtributo = rs.getString("nom_atributo");
             String valor = rs.getString("valor");
             
             if (nomAtributo != null && valor != null && !valor.trim().isEmpty()) {
-                atributos.put(nomAtributo, valor.trim());
+                atributosDto.agregarAtributo(nomAtributo, valor);
             }
         }, nroRestaurante);
         
-        return atributos;
+        return atributosDto.getAtributos();
     }
 
     /**

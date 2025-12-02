@@ -1,5 +1,7 @@
 package ar.edu.ubp.das.backend.service;
 
+import ar.edu.ubp.das.backend.dto.RegistrarReservaRistorinoDto;
+
 import ar.edu.ubp.das.backend.dto.ActualizarReservaDto;
 import ar.edu.ubp.das.backend.dto.ConfirmarReservaDto;
 import ar.edu.ubp.das.backend.dto.ConfirmarReservaResponseDto;
@@ -132,7 +134,9 @@ public class ReservaService {
         }
         
         String codEstadoConfirmada = obtenerCodigoEstado("Confirmada");
-        String codigoReserva = reservaRepository.registrarReservaRistorino(
+        
+        // Crear DTO tipado en lugar de pasar 13 parámetros sueltos
+        RegistrarReservaRistorinoDto reservaDto = new RegistrarReservaRistorinoDto(
                 request.getNroRestaurante(),
                 request.getNroSucursal(),
                 request.getCodZona(),  // Usamos el cod_zona interno directamente
@@ -144,9 +148,11 @@ public class ReservaService {
                 codEstadoConfirmada,
                 costoReserva,
                 request.getPreferenciasReserva(),
-                null,
-                null
+                null,  // notas
+                null   // codReservaSucursal
         );
+        
+        String codigoReserva = reservaRepository.registrarReservaRistorino(reservaDto);
         
         String codReservaRestaurante = client.registrarReserva(
                 nroCliente,

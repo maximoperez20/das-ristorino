@@ -27,9 +27,12 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
+import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoJsonDto;
+import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickJsonDto;
+import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchJsonDto;
+import ar.edu.ubp.das.backend.dto.restaurante.MarcarPublicadoJsonDto;
 import java.util.List;
-import java.util.Map;
+import java.util.Map; // Necesario para parsear respuestas dinámicas
 
 /**
  * Implementación REST de RestauranteClient.
@@ -93,17 +96,9 @@ public class RestauranteRestClient implements RestauranteClient {
         try {
             String url = getBaseUrl() + "/restaurantes/" + request.getNroRestaurante() + "/contenidos";
 
-            // Construir JSON a enviar
-            Map<String, Object> jsonData = new HashMap<>();
-            jsonData.put("nroRestaurante", request.getNroRestaurante());
-            jsonData.put("nroSucursal", request.getNroSucursal());
-            jsonData.put("contenidoAPublicar", request.getContenidoAPublicar());
-            if (request.getImagenAPublicar() != null) {
-                jsonData.put("imagenAPublicar", Base64.getEncoder().encodeToString(request.getImagenAPublicar()));
-            }
-            jsonData.put("costoClick", request.getCostoClick());
-            
-            String jsonString = gson.toJson(jsonData);
+            // Usar DTO tipado en lugar de HashMap
+            RegistrarContenidoJsonDto jsonDto = new RegistrarContenidoJsonDto(request);
+            String jsonString = gson.toJson(jsonDto);
 
             HttpHeaders headers = createHeaders();
             HttpEntity<String> entity = new HttpEntity<>(jsonString, headers);
@@ -141,16 +136,9 @@ public class RestauranteRestClient implements RestauranteClient {
             String url = getBaseUrl() + "/restaurantes/" + request.getNroRestaurante() + 
                         "/contenidos/" + request.getNroContenido() + "/clicks";
 
-            // Construir JSON a enviar
-            Map<String, Object> jsonData = new HashMap<>();
-            jsonData.put("nroRestaurante", request.getNroRestaurante());
-            jsonData.put("nroContenido", request.getNroContenido());
-            jsonData.put("nroClick", request.getNroClick());
-            jsonData.put("fechaHoraRegistro", request.getFechaHoraRegistro().format(ISO_DATE_TIME));
-            jsonData.put("nroCliente", request.getNroCliente());
-            jsonData.put("costoClick", request.getCostoClick());
-            
-            String jsonString = gson.toJson(jsonData);
+            // Usar DTO tipado en lugar de HashMap
+            NotificarClickJsonDto jsonDto = new NotificarClickJsonDto(request);
+            String jsonString = gson.toJson(jsonDto);
 
             HttpHeaders headers = createHeaders();
             HttpEntity<String> entity = new HttpEntity<>(jsonString, headers);
@@ -187,24 +175,9 @@ public class RestauranteRestClient implements RestauranteClient {
         try {
             String url = getBaseUrl() + "/restaurantes/" + request.getNroRestaurante() + "/clicks/batch";
 
-            Map<String, Object> jsonData = new HashMap<>();
-            jsonData.put("nroRestaurante", request.getNroRestaurante());
-            
-            List<Map<String, Object>> clicksJson = new ArrayList<>();
-            if (request.getClicks() != null) {
-                for (NotificarClickRequest click : request.getClicks()) {
-                    Map<String, Object> clickJson = new HashMap<>();
-                    clickJson.put("nroContenido", click.getNroContenido());
-                    clickJson.put("nroClick", click.getNroClick());
-                    clickJson.put("fechaHoraRegistro", click.getFechaHoraRegistro().format(ISO_DATE_TIME));
-                    clickJson.put("nroCliente", click.getNroCliente());
-                    clickJson.put("costoClick", click.getCostoClick());
-                    clicksJson.add(clickJson);
-                }
-            }
-            jsonData.put("clicks", clicksJson);
-            
-            String jsonString = gson.toJson(jsonData);
+            // Usar DTO tipado en lugar de HashMap
+            NotificarClicksBatchJsonDto jsonDto = new NotificarClicksBatchJsonDto(request);
+            String jsonString = gson.toJson(jsonDto);
 
             HttpHeaders headers = createHeaders();
             HttpEntity<String> entity = new HttpEntity<>(jsonString, headers);
@@ -388,10 +361,9 @@ public class RestauranteRestClient implements RestauranteClient {
         try {
             String url = getBaseUrl() + "/restaurantes/" + nroRestaurante + "/contenidos/publish";
 
-            Map<String, Object> jsonData = new HashMap<>();
-            jsonData.put("nroContenidos", nroContenidos);
-
-            String jsonString = gson.toJson(jsonData);
+            // Usar DTO tipado en lugar de HashMap
+            MarcarPublicadoJsonDto jsonDto = new MarcarPublicadoJsonDto(nroContenidos);
+            String jsonString = gson.toJson(jsonDto);
 
             HttpHeaders headers = createHeaders();
             HttpEntity<String> entity = new HttpEntity<>(jsonString, headers);

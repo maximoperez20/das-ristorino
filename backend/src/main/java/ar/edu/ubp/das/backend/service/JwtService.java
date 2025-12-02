@@ -1,5 +1,6 @@
 package ar.edu.ubp.das.backend.service;
 
+import ar.edu.ubp.das.backend.dto.TokenRequest;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,11 @@ public class JwtService {
      * Genera un token JWT para un cliente
      * Usa la misma forma de crear la clave que SecurityConfig para compatibilidad
      */
+    public String generateToken(TokenRequest tokenRequest) {
+        return generateToken(tokenRequest.getNroCliente(), tokenRequest.getCorreo(), 
+                           tokenRequest.getNombre(), tokenRequest.getApellido());
+    }
+    
     public String generateToken(String nroCliente, String correo, String nombre, String apellido) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpiration);

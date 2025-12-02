@@ -26,9 +26,13 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
+import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoJsonDto;
+import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickJsonDto;
+import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchJsonDto;
+import ar.edu.ubp.das.backend.dto.restaurante.MarcarPublicadoJsonDto;
+import java.util.HashMap; // Necesario para parámetros SOAP
 import java.util.List;
-import java.util.Map;
+import java.util.Map; // Necesario para parsear respuestas dinámicas
 
 @Component
 public class RestauranteSoapClientImpl implements RestauranteClient {
@@ -80,17 +84,9 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
     @Override
     public RegistrarContenidoResponse registrarContenido(RegistrarContenidoRequest request) {
         try {
-            // Construir JSON a enviar
-            Map<String, Object> jsonData = new HashMap<>();
-            jsonData.put("nroRestaurante", request.getNroRestaurante());
-            jsonData.put("nroSucursal", request.getNroSucursal());
-            jsonData.put("contenidoAPublicar", request.getContenidoAPublicar());
-            if (request.getImagenAPublicar() != null) {
-                jsonData.put("imagenAPublicar", Base64.getEncoder().encodeToString(request.getImagenAPublicar()));
-            }
-            jsonData.put("costoClick", request.getCostoClick());
-            
-            String jsonString = gson.toJson(jsonData);
+            // Usar DTO tipado en lugar de HashMap
+            RegistrarContenidoJsonDto jsonDto = new RegistrarContenidoJsonDto(request);
+            String jsonString = gson.toJson(jsonDto);
 
             // Crear cliente SOAP y enviar JSON
             SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
@@ -142,16 +138,9 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             // - costoClick (BigDecimal, opcional)
             // ============================================
             
-            Map<String, Object> jsonData = new HashMap<>();
-            jsonData.put("nroRestaurante", request.getNroRestaurante());
-            jsonData.put("nroContenido", request.getNroContenido());
-            jsonData.put("nroClick", request.getNroClick());
-            jsonData.put("fechaHoraRegistro", request.getFechaHoraRegistro().format(ISO_DATE_TIME));
-            jsonData.put("nroCliente", request.getNroCliente());
-            jsonData.put("costoClick", request.getCostoClick());
-            // AGREGAR NUEVOS CAMPOS AQUÍ: jsonData.put("nuevoCampo", valor);
-            
-            String jsonString = gson.toJson(jsonData);
+            // Usar DTO tipado en lugar de HashMap
+            NotificarClickJsonDto jsonDto = new NotificarClickJsonDto(request);
+            String jsonString = gson.toJson(jsonDto);
 
             // Crear cliente SOAP y enviar JSON
             SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
@@ -187,24 +176,9 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
     @Override
     public NotificarClicksBatchResponse notificarClicksBatch(NotificarClicksBatchRequest request) {
         try {
-            Map<String, Object> jsonData = new HashMap<>();
-            jsonData.put("nroRestaurante", request.getNroRestaurante());
-            
-            List<Map<String, Object>> clicksJson = new ArrayList<>();
-            if (request.getClicks() != null) {
-                for (NotificarClickRequest click : request.getClicks()) {
-                    Map<String, Object> clickJson = new HashMap<>();
-                    clickJson.put("nroContenido", click.getNroContenido());
-                    clickJson.put("nroClick", click.getNroClick());
-                    clickJson.put("fechaHoraRegistro", click.getFechaHoraRegistro().format(ISO_DATE_TIME));
-                    clickJson.put("nroCliente", click.getNroCliente());
-                    clickJson.put("costoClick", click.getCostoClick());
-                    clicksJson.add(clickJson);
-                }
-            }
-            jsonData.put("clicks", clicksJson);
-            
-            String jsonString = gson.toJson(jsonData);
+            // Usar DTO tipado en lugar de HashMap
+            NotificarClicksBatchJsonDto jsonDto = new NotificarClicksBatchJsonDto(request);
+            String jsonString = gson.toJson(jsonDto);
 
             SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
                     .wsdlUrl(getWsdlUrl())
@@ -455,10 +429,10 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
     @Override
     public int marcarPublicado(String nroRestaurante, java.util.List<String> nroContenidos) {
         try {
-            java.util.Map<String, Object> jsonData = new java.util.HashMap<>();
-            jsonData.put("nroRestaurante", nroRestaurante);
-            jsonData.put("nroContenidos", nroContenidos);
-
+            // Usar DTO tipado en lugar de HashMap
+            MarcarPublicadoJsonDto jsonDto = new MarcarPublicadoJsonDto(nroContenidos);
+            String jsonString = gson.toJson(jsonDto);
+            
             SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
                     .wsdlUrl(getWsdlUrl())
                     .namespace(namespace)
@@ -467,8 +441,9 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
                     .operationName("marcarPublicadoRequest")
                     .build();
 
-            java.util.Map<String, Object> parameters = new java.util.HashMap<>();
-            parameters.put("jsonData", gson.toJson(jsonData));
+            // Los parámetros SOAP deben ser Map para el cliente SOAP
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("jsonData", jsonString);
 
             String jsonResponseStr = soapClient.extractJsonResponse("marcarPublicadoResponse", parameters);
 

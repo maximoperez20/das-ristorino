@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import ar.edu.ubp.das.backend.dto.ClicksPorRestauranteDto;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +42,7 @@ public class BatchClickService {
 
             logger.info("Iniciando procesamiento en bloque de {} clicks", clicksNoNotificados.size());
 
-            Map<String, List<ClickNoNotificadoDto>> clicksPorRestaurante = new HashMap<>();
+            Map<String, ClicksPorRestauranteDto> clicksPorRestaurante = new HashMap<>();
             int clicksSinCodRestaurante = 0;
 
             for (ClickNoNotificadoDto click : clicksNoNotificados) {
@@ -49,7 +50,10 @@ public class BatchClickService {
                     clicksSinCodRestaurante++;
                     continue;
                 }
-                clicksPorRestaurante.computeIfAbsent(click.getNroRestaurante(), k -> new ArrayList<>()).add(click);
+                clicksPorRestaurante.computeIfAbsent(
+                    click.getNroRestaurante(), 
+                    k -> new ClicksPorRestauranteDto(click.getNroRestaurante())
+                ).agregarClick(click);
             }
 
             if (clicksPorRestaurante.isEmpty()) {
@@ -60,9 +64,9 @@ public class BatchClickService {
             int totalExitosos = 0;
             int totalFallidos = clicksSinCodRestaurante;
 
-            for (Map.Entry<String, List<ClickNoNotificadoDto>> entry : clicksPorRestaurante.entrySet()) {
-                String nroRestaurante = entry.getKey();
-                List<ClickNoNotificadoDto> clicksRestaurante = entry.getValue();
+            for (ClicksPorRestauranteDto clicksDto : clicksPorRestaurante.values()) {
+                String nroRestaurante = clicksDto.getNroRestaurante();
+                List<ClickNoNotificadoDto> clicksRestaurante = clicksDto.getClicks();
 
                 try {
                     Map<String, ClickNoNotificadoDto> clicksMap = clicksRestaurante.stream()

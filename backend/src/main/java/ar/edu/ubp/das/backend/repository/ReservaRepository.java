@@ -3,6 +3,7 @@ package ar.edu.ubp.das.backend.repository;
 import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.CostoReservaDto;
 import ar.edu.ubp.das.backend.dto.EstadoReservaDto;
+import ar.edu.ubp.das.backend.dto.RegistrarReservaRistorinoDto;
 import ar.edu.ubp.das.backend.components.SimpleJdbcCallFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -128,34 +129,15 @@ public class ReservaRepository {
         return java.math.BigDecimal.ZERO;
     }
     
-    public String registrarReservaRistorino(
-            String nroRestaurante,
-            String nroSucursal,
-            String codZona,
-            java.time.LocalDate fechaReserva,
-            java.time.LocalTime horaDesde,
-            String nroCliente,
-            Integer cantAdultos,
-            Integer cantMenores,
-            String codEstado,
-            java.math.BigDecimal costoReserva,
-            List<Integer> preferenciasReserva,
-            String notas,
-            String codReservaSucursal) {
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("nro_reserva", null, Types.VARCHAR)
-                .addValue("nro_restaurante", nroRestaurante)
-                .addValue("nro_sucursal", nroSucursal)
-                .addValue("cod_zona", codZona)
-                .addValue("fecha_reserva", java.sql.Date.valueOf(fechaReserva))
-                .addValue("hora_desde", java.sql.Time.valueOf(horaDesde))
-                .addValue("nro_cliente", nroCliente)
-                .addValue("cant_adultos", cantAdultos)
-                .addValue("cant_menores", cantMenores)
-                .addValue("cod_estado", codEstado)
-                .addValue("costo_reserva", costoReserva)
-                .addValue("notas", notas)
-                .addValue("cod_reserva_sucursal", codReservaSucursal);
+    /**
+     * Registra una reserva en Ristorino usando un DTO tipado.
+     * 
+     * @param request DTO con todos los parámetros de la reserva
+     * @return Código de la reserva generada
+     */
+    public String registrarReservaRistorino(RegistrarReservaRistorinoDto request) {
+        // Usar el método helper del DTO para convertir a SqlParameterSource
+        SqlParameterSource params = request.toSqlParameterSource();
         Map<String, Object> result = jdbcCallFactory.executeWithOutputs(
                 "sp_RegistrarReservaRistorino", 
                 "dbo", 
@@ -166,8 +148,8 @@ public class ReservaRepository {
             String nroReserva = result.get("nro_reserva").toString();
             
             // Insertar preferencias si existen
-            if (preferenciasReserva != null && !preferenciasReserva.isEmpty()) {
-                insertarPreferenciasReserva(nroReserva, nroCliente, nroRestaurante, preferenciasReserva);
+            if (request.getPreferenciasReserva() != null && !request.getPreferenciasReserva().isEmpty()) {
+                insertarPreferenciasReserva(nroReserva, request.getNroCliente(), request.getNroRestaurante(), request.getPreferenciasReserva());
             }
             
             return nroReserva;
