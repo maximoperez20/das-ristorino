@@ -245,7 +245,7 @@ export class MisReservasPage implements OnInit {
     }
     
     // Fallback: mostrar total si no hay información detallada
-    const cantidad = reserva.cantidad_personas;
+    const cantidad = (reserva.cant_adultos ?? 0) + (reserva.cant_menores ?? 0);
     if (!cantidad || cantidad <= 0) return '';
     if (cantidad === 1) {
       return $localize`1 persona`;

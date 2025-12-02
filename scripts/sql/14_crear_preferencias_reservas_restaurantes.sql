@@ -1,6 +1,5 @@
 USE das_ristorino;
 GO
-
 -- Crear tabla de preferencias de reservas de restaurantes
 CREATE TABLE dbo.preferencias_reservas_restaurantes (
   nro_reserva VARCHAR(36) NOT NULL,
@@ -18,6 +17,8 @@ CREATE TABLE dbo.preferencias_reservas_restaurantes (
   CONSTRAINT FK_preferencias_reservas_restaurantes_valor_dominio FOREIGN KEY (cod_categoria, nro_valor_dominio) REFERENCES dbo.dominio_categorias_preferencias(cod_categoria, nro_valor_dominio),
   CONSTRAINT FK_preferencias_reservas_restaurantes_preferencia FOREIGN KEY (nro_restaurante, cod_categoria, nro_valor_dominio, nro_preferencia) REFERENCES dbo.preferencias_restaurantes(nro_restaurante, cod_categoria, nro_valor_dominio, nro_preferencia)
 );
+
+GO
 
 -- Stored procedure para obtener las preferencias de un restaurante para una reserva por restaurante
 CREATE OR ALTER PROCEDURE sp_ObtenerPreferenciasDeRestaurantePorId
@@ -39,6 +40,7 @@ BEGIN
     WHERE nro_restaurante = @nro_restaurante AND pr.cod_categoria = @nro_categoria AND idcp.nro_idioma = @nro_idioma AND iddcp.nro_idioma = @nro_idioma
 END;
 
+GO
 -- Stored procedure para insertar preferencias de reservas de restaurantes
 CREATE OR ALTER PROCEDURE sp_InsertarPreferenciasReserva
     @nro_reserva VARCHAR(36),
