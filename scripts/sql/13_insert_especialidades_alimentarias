@@ -1,0 +1,42 @@
+
+
+insert into categorias_preferencias (nom_categoria) VALUES ('Especialidades Alimentarias')
+declare @cod_categoria VARCHAR(36)
+select @cod_categoria = cod_categoria from categorias_preferencias where nom_categoria = 'Especialidades Alimentarias'
+
+insert into idiomas_categorias_preferencias (cod_idioma, cod_categoria, nom_categoria)
+values  (0, @cod_categoria, 'Especialidades Alimentarias'),
+        (1, @cod_categoria, 'Food Specialties');
+
+insert into dominio_categorias_preferencias (cod_categoria, nro_valor_dominio, nom_valor_dominio)
+values (@cod_categoria, 1, 'Vegetariana'),
+       (@cod_categoria, 2, 'Vegana'),
+       (@cod_categoria, 3, 'Sin gluten'),
+       (@cod_categoria, 4, 'Sin lactosa'),
+       (@cod_categoria, 5, 'Baja en calorias'),
+       (@cod_categoria, 6, 'Orgánica'),
+       (@cod_categoria, 7, 'Diabéticos');
+
+insert into idiomas_dominio_cat_preferencias(cod_categoria, nro_valor_dominio, cod_idioma, nom_valor_dominio)
+values 
+(@cod_categoria, 1, 0, 'Vegetariana'),
+(@cod_categoria, 1, 1, 'Vegetarian'),
+(@cod_categoria, 2, 0, 'Vegana'),
+(@cod_categoria, 2, 1, 'Vegan'),
+(@cod_categoria, 3, 0, 'Sin gluten'),
+(@cod_categoria, 3, 1, 'Gluten-free'),
+(@cod_categoria, 4, 0, 'Sin lactosa'),
+(@cod_categoria, 4, 1, 'Lactose-free'),
+(@cod_categoria, 5, 0, 'Baja en calorias'),
+(@cod_categoria, 5, 1, 'Low-calorie'),
+(@cod_categoria, 6, 0, 'Orgánica'),
+(@cod_categoria, 6, 1, 'Organic'),
+(@cod_categoria, 7, 0, 'Diabéticos'),
+(@cod_categoria, 7, 1, 'Diabetic-friendly');
+
+
+insert into preferencias_restaurantes (nro_restaurante, cod_categoria, nro_valor_dominio, nro_preferencia)
+values ('BELLA-PIZZA-1111-1111-1111-111111111', @cod_categoria, 1, 2),
+       ('FABRICA-BURGER-3333-3333-3333-333333', @cod_categoria, 3, 2),
+       ('PERUKAI-2222-2222-2222-222222222222', @cod_categoria, 2, 2),
+       ('SABORES-NORTE-4444-4444-4444-4444444', @cod_categoria, 4, 2);

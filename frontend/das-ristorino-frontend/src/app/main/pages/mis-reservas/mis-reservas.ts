@@ -2,15 +2,9 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { IReserva } from '../../api/models/i-reserva';
+import { IReservaPorDia } from '../../api/models/i-reserva-por-dia';
 import { AuthService } from '../../../core/services/auth-service';
 import { DateUtilsService } from '../../../core/services/date-utils.service';
-
-interface ReservaPorDia {
-  fecha: Date;
-  fechaKey: string; // YYYY-MM-DD para agrupar
-  titulo: string; // "Hoy" o fecha formateada
-  reservas: IReserva[];
-}
 
 @Component({
   selector: 'app-mis-reservas',
@@ -22,7 +16,7 @@ interface ReservaPorDia {
 export class MisReservasPage implements OnInit {
 
   reservas: IReserva[] = [];
-  reservasPorDia: ReservaPorDia[] = [];
+  reservasPorDia: IReservaPorDia[] = [];
   filtroActivo: string | undefined = undefined;
 
   private _auth = inject(AuthService);
@@ -49,7 +43,7 @@ export class MisReservasPage implements OnInit {
     this.reservasPorDia = this.agruparReservasPorDia(this.reservas);
   }
 
-  agruparReservasPorDia(reservas: IReserva[]): ReservaPorDia[] {
+  agruparReservasPorDia(reservas: IReserva[]): IReservaPorDia[] {
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
 
@@ -61,7 +55,7 @@ export class MisReservasPage implements OnInit {
     });
 
     // Agrupar por día
-    const gruposMap = new Map<string, ReservaPorDia>();
+    const gruposMap = new Map<string, IReservaPorDia>();
 
     reservasOrdenadas.forEach(reserva => {
       if (!reserva.fecha_hora) return;
