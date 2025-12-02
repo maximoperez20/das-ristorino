@@ -236,50 +236,48 @@ public class RestauranteRepository {
     }
 
     /**
-     * Buscar restaurantes usando análisis NLP
+     * Buscar restaurantes usando análisis NLP.
      * 
-     * @param tiposComida Lista de tipos de comida (puede ser null)
-     * @param barrio Barrio (puede ser null)
-     * @param localidad Localidad (puede ser null)
-     * @param ambiente Ambiente (puede ser null)
-     * @param rangoPrecio Rango de precio (puede ser null)
-     * @param palabrasClave Lista de palabras clave para búsqueda en nombre/descripción (puede ser null)
-     * @param nroCliente UUID del cliente autenticado (opcional, puede ser null)
+     * @param parametros DTO con todos los parámetros de búsqueda
      * @return Lista de restaurantes que coinciden con los criterios
      */
-    public List<RestauranteDto> buscarPorNLP(List<String> tiposComida, String barrio, 
-                                            String localidad, String ambiente, 
-                                            String rangoPrecio, List<String> palabrasClave,
-                                            String nroCliente) {
+    public List<RestauranteDto> buscarPorNLP(ar.edu.ubp.das.backend.dto.BusquedaNLPParametrosDto parametros) {
         String sql = "EXEC sp_BuscarRestaurantesPorNLP ?, ?, ?, ?, ?, ?, ?";
         
-        // Convertir listas a strings separados por comas
-        String tiposComidaStr = tiposComida != null && !tiposComida.isEmpty() 
-            ? String.join(",", tiposComida) : null;
-        String barrioStr = barrio != null && !barrio.isEmpty() ? barrio : null;
-        String localidadStr = localidad != null && !localidad.isEmpty() ? localidad : null;
-        String ambienteStr = ambiente != null && !ambiente.isEmpty() ? ambiente : null;
-        String rangoPrecioStr = rangoPrecio != null && !rangoPrecio.isEmpty() ? rangoPrecio : null;
-        String palabrasClaveStr = palabrasClave != null && !palabrasClave.isEmpty() 
-            ? String.join(",", palabrasClave) : null;
+        // Usar el método helper del DTO para convertir a formato del SP
+        Object[] params = parametros.toStoredProcedureParameters();
         
         // Log de parámetros que se envían al SP
         org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(RestauranteRepository.class);
         logger.info("🔎 Ejecutando sp_BuscarRestaurantesPorNLP con parámetros:");
-        logger.info("   - @tiposComida: '{}'", tiposComidaStr);
-        logger.info("   - @barrios: '{}'", barrioStr);
-        logger.info("   - @localidades: '{}'", localidadStr);
-        logger.info("   - @ambientes: '{}'", ambienteStr);
-        logger.info("   - @rangosPrecio: '{}'", rangoPrecioStr);
-        logger.info("   - @palabrasClave: '{}'", palabrasClaveStr);
-        logger.info("   - @nroCliente: '{}'", nroCliente);
+        logger.info("   - @tiposComida: '{}'", params[0]);
+        logger.info("   - @barrios: '{}'", params[1]);
+        logger.info("   - @localidades: '{}'", params[2]);
+        logger.info("   - @ambientes: '{}'", params[3]);
+        logger.info("   - @rangosPrecio: '{}'", params[4]);
+        logger.info("   - @palabrasClave: '{}'", params[5]);
+        logger.info("   - @nroCliente: '{}'", params[6]);
         
-        List<RestauranteDto> resultados = jdbcTemplate.query(sql, restauranteRowMapper, 
-            tiposComidaStr, barrioStr, localidadStr, ambienteStr, rangoPrecioStr, palabrasClaveStr, nroCliente);
+        List<RestauranteDto> resultados = jdbcTemplate.query(sql, restauranteRowMapper, params);
         
         logger.info("📊 SP devolvió {} restaurantes", resultados.size());
         
         return resultados;
+    }
+    
+    /**
+     * Método sobrecargado para mantener compatibilidad con código existente.
+     * @deprecated Usar buscarPorNLP(BusquedaNLPParametrosDto) en su lugar
+     */
+    @Deprecated
+    public List<RestauranteDto> buscarPorNLP(List<String> tiposComida, String barrio, 
+                                            String localidad, String ambiente, 
+                                            String rangoPrecio, List<String> palabrasClave,
+                                            String nroCliente) {
+        ar.edu.ubp.das.backend.dto.BusquedaNLPParametrosDto parametros = 
+            new ar.edu.ubp.das.backend.dto.BusquedaNLPParametrosDto(
+                tiposComida, barrio, localidad, ambiente, rangoPrecio, palabrasClave, nroCliente);
+        return buscarPorNLP(parametros);
     }
     
     /**

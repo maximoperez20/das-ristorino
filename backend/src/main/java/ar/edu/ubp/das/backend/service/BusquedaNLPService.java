@@ -4,6 +4,7 @@ import ar.edu.ubp.das.backend.dto.BusquedaContextoDto;
 import ar.edu.ubp.das.backend.dto.BusquedaNLPRequestDto;
 import ar.edu.ubp.das.backend.dto.BusquedaNLPResponseDto;
 import ar.edu.ubp.das.backend.dto.BusquedaNLPResultadoDto;
+import ar.edu.ubp.das.backend.dto.BusquedaNLPParametrosDto;
 import ar.edu.ubp.das.backend.dto.RestauranteDto;
 import ar.edu.ubp.das.backend.repository.BusquedaRepository;
 import ar.edu.ubp.das.backend.repository.ClienteRepository;
@@ -145,7 +146,8 @@ public class BusquedaNLPService {
         logger.info("   - palabrasClave: {}", respuestaNLP.getPalabrasClave());
         logger.info("   - nroCliente: null (NO usar preferencias del cliente en resultados exactos)");
         
-        List<RestauranteDto> resultadosExactos = restauranteRepository.buscarPorNLP(
+        // Crear DTO tipado con los parámetros de búsqueda
+        BusquedaNLPParametrosDto parametrosBusqueda = new BusquedaNLPParametrosDto(
             respuestaNLP.getTipoComida(),
             respuestaNLP.getBarrio(),
             respuestaNLP.getLocalidad(),
@@ -154,6 +156,8 @@ public class BusquedaNLPService {
             respuestaNLP.getPalabrasClave(),
             null // NO usar preferencias del cliente en resultados exactos
         );
+        
+        List<RestauranteDto> resultadosExactos = restauranteRepository.buscarPorNLP(parametrosBusqueda);
         
         logger.info("📊 Resultados del SP (ANTES de eliminar duplicados): {} restaurantes", resultadosExactos.size());
         if (!resultadosExactos.isEmpty()) {
@@ -200,7 +204,6 @@ public class BusquedaNLPService {
         logger.info("📊 Sugerencias del SP (ANTES de eliminar duplicados): {} restaurantes", sugerencias.size());
         
         // Eliminar duplicados de sugerencias (por nro_restaurante)
-        int cantidadSugerenciasAntes = sugerencias.size();
         sugerencias = sugerencias.stream()
             .filter(r -> r.getNroRestaurante() != null)
             .collect(Collectors.toMap(
