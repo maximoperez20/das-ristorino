@@ -396,10 +396,6 @@ public class RestauranteRestClient implements RestauranteClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        if (apiKey != null && !apiKey.trim().isEmpty()) {
-            headers.set("X-API-Key", apiKey);
-        }
-
         if (username != null && !username.trim().isEmpty() && 
             password != null && !password.trim().isEmpty()) {
             String auth = username + ":" + password;

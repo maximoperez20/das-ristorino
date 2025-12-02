@@ -7,6 +7,7 @@ import ar.edu.ubp.das.backend.dto.ConfirmarReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.CrearReservaDto;
 import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
 import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
+import ar.edu.ubp.das.backend.exception.HorarioNoDisponibleException;
 import ar.edu.ubp.das.backend.resources.util.ResponseHelper;
 import ar.edu.ubp.das.backend.service.ReservaService;
 import ar.edu.ubp.das.backend.service.RestauranteService;
@@ -191,21 +192,37 @@ public class ReservaResource {
             ConfirmarReservaResponseDto response = reservaService.confirmarReserva(request, nroCliente);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
             
+        } catch (HorarioNoDisponibleException e) {
+            // Excepción específica que incluye horarios disponibles actualizados
+            logger.warn("Horario no disponible al confirmar reserva: {}", e.getMessage());
+            List<HorarioDisponibleDto> horarios = e.getHorariosDisponibles();
+            
+            // Mapear cod_zona_restaurante a cod_zona interno si es necesario
+            // (esto ya debería estar hecho en el servicio, pero por si acaso)
+            return ResponseHelper.errorWithHorarios(e.getMessage(), horarios);
+            
         } catch (RuntimeException e) {
             logger.warn("Error al confirmar reserva: {}", e.getMessage());
             
-            if (e.getMessage().contains("disponibilidad") || e.getMessage().contains("No hay")) {
+            // Para otros errores de disponibilidad, intentar obtener horarios
+            String mensajeError = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+            if (mensajeError.contains("disponibilidad") || 
+                mensajeError.contains("capacidad") ||
+                mensajeError.contains("no está disponible") ||
+                mensajeError.contains("no hay")) {
                 try {
+                    // Obtener TODOS los horarios (sin filtrar por codZona) para mostrar todas las opciones
                     List<HorarioDisponibleDto> horarios = restauranteService.obtenerHorariosDisponibles(
                             request.getNroRestaurante(),
                             request.getNroSucursal(),
-                            request.getCodZona(),
+                            null, // null para obtener todas las zonas
                             request.getFechaReserva(),
                             null
                     );
                     
                     return ResponseHelper.errorWithHorarios(e.getMessage(), horarios);
                 } catch (Exception ex) {
+                    logger.error("Error al obtener horarios después de error de disponibilidad", ex);
                     return ResponseHelper.badRequest(e.getMessage());
                 }
             }

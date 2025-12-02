@@ -8,6 +8,7 @@ import { AppMessageService } from '../../../core/services/app-message-service';
 import { DateUtilsService } from '../../../core/services/date-utils.service';
 import type { HorarioSeleccionado } from '../horarios-disponibles/horarios-disponibles';
 import type { IDominioPreferencia } from '../../api/models/i-dominio-preferencia';
+import type { IHorariosDisponiblesResponse } from '../../api/models/i-horario-disponible';
 @Component({
   selector: 'app-formulario-reserva',
   standalone: true,
@@ -23,6 +24,7 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
   @Input() visible: boolean = false;
   @Output() visibleChange = new EventEmitter<boolean>();
   @Output() reservaConfirmada = new EventEmitter<void>();
+  @Output() actualizarHorariosDisponibles = new EventEmitter<IHorariosDisponiblesResponse>();
   
   cantAdultos: number = 1;
   cantMenores: number = 0;
@@ -38,9 +40,6 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
   private _dateUtils = inject(DateUtilsService);
 
   ngOnInit(): void {
-    console.log('especialidadesAlimentarias', this.especialidadesAlimentarias);
-    // La verificación de autenticación ahora se hace en el componente padre
-    // antes de abrir el modal, así que aquí solo validamos si el modal está visible
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -91,12 +90,10 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
     const fechaFormateada = this.formatearFecha(this.horarioSeleccionado.fecha);
     const horaDesde = this.horarioSeleccionado.horaDesde;
 
-    // codZona es el código interno de Ristorino (no el cod_zona_restaurante externo del SOAP)
-    // El backend ya mapea el cod_zona_restaurante al cod_zona interno antes de devolverlo al frontend
     this._reservaResource.confirmarReserva({
       nroRestaurante: this.nroRestaurante,
       nroSucursal: this.nroSucursal,
-      codZona: this.horarioSeleccionado.codZona, // Código interno de Ristorino
+      codZona: this.horarioSeleccionado.codZona,
       fechaReserva: fechaFormateada,
       horaDesde: horaDesde,
       cantAdultos: this.cantAdultos,
@@ -111,14 +108,36 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
         this._messageService.showSuccess(mensaje);
         this.reservaConfirmada.emit();
         this.cerrar();
-        // Redirigir a mis reservas después de un breve delay
         setTimeout(() => {
           this._router.navigate(['/mis-reservas']);
         }, 2000);
       },
       error: (err) => {
         this.loading = false;
-        this.error = err.error?.error || err.error?.message || $localize`Error al confirmar la reserva`;
+        
+        const errorResponse = err.body || err.error || err;
+        const horarios = errorResponse?.horarios;
+        const tieneHorarios = horarios && (
+          (horarios.zonas && Array.isArray(horarios.zonas) && horarios.zonas.length > 0) ||
+          Array.isArray(horarios)
+        );
+        
+        if (tieneHorarios) {
+          const mensajeError = errorResponse.error || errorResponse.message || $localize`El horario seleccionado ya no está disponible. Por favor, seleccione otro horario.`;
+          
+          this.actualizarHorariosDisponibles.emit(horarios);
+          this.cerrar();
+          
+          setTimeout(() => {
+            this._messageService.showMessage({
+              text: mensajeError,
+              title: $localize`Horario no disponible`,
+              type: 'warning'
+            });
+          }, 100);
+        } else {
+          this.error = errorResponse?.error || errorResponse?.message || $localize`Error al confirmar la reserva`;
+        }
       }
     });
   }
@@ -182,7 +201,6 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
   formatearHora(hora: string | null | undefined): string {
     if (!hora) return '';
     try {
-      // Si viene en formato HH:mm:ss, tomar solo HH:mm
       const horaFormateada = hora.split(':').slice(0, 2).join(':');
       return horaFormateada;
     } catch {
@@ -191,7 +209,6 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
   }
 
   onCambioEspecialidadAlimentaria(event: Event, especialidad: number): void {
-    // Asegurar que siempre sea un array
     if (!Array.isArray(this.especialidadesAlimentariasSeleccionadas)) {
       this.especialidadesAlimentariasSeleccionadas = [];
     }
@@ -202,7 +219,6 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
     } else {
       this.especialidadesAlimentariasSeleccionadas = this.especialidadesAlimentariasSeleccionadas.filter(e => e !== especialidad);
     }
-    console.log('especialidadesAlimentariasSeleccionadas', this.especialidadesAlimentariasSeleccionadas);
   }
 }
 

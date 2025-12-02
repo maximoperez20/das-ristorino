@@ -1,18 +1,16 @@
 package ar.edu.ubp.das.backend.dto.response;
 
-import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
-import java.util.List;
-
 /**
- * DTO para respuestas de error que incluyen horarios alternativos.
+ * DTO para respuestas de error que incluyen horarios alternativos agrupados por zona.
  * Usado cuando una reserva falla por falta de disponibilidad.
+ * Mantiene la misma estructura que la respuesta normal de horarios disponibles.
  */
 public class ErrorWithHorariosResponse {
     
     private final String error;
-    private final List<HorarioDisponibleDto> horarios;
+    private final HorariosDisponiblesResponse horarios;
     
-    public ErrorWithHorariosResponse(String error, List<HorarioDisponibleDto> horarios) {
+    public ErrorWithHorariosResponse(String error, HorariosDisponiblesResponse horarios) {
         this.error = error;
         this.horarios = horarios;
     }
@@ -21,7 +19,7 @@ public class ErrorWithHorariosResponse {
         return error;
     }
     
-    public List<HorarioDisponibleDto> getHorarios() {
+    public HorariosDisponiblesResponse getHorarios() {
         return horarios;
     }
 }

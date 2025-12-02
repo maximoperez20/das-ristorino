@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IRestaurante } from '../../api/models/i-restaurante';
 import { ISucursal } from '../../api/models/i-sucursal';
@@ -8,6 +8,7 @@ import { PromocionComponent } from "../promocion/promocion";
 import { FormularioReservaComponent } from '../formulario-reserva/formulario-reserva';
 import { AuthService } from '../../../core/services/auth-service';
 import { IDominioPreferencia } from '../../api/models/i-dominio-preferencia';
+import { IHorariosDisponiblesResponse } from '../../api/models/i-horario-disponible';
 
 @Component({
   selector: 'app-detalle-restaurante',
@@ -31,6 +32,7 @@ export class DetalleRestauranteComponent implements OnInit {
   private _route = inject(ActivatedRoute);
   private _router = inject(Router);
   private _auth = inject(AuthService);
+  private _cdr = inject(ChangeDetectorRef);
 
   ngOnInit(): void {
     this.nroRestaurante = this._route.snapshot.paramMap.get('nroRestaurante') || '';
@@ -101,11 +103,29 @@ export class DetalleRestauranteComponent implements OnInit {
   onModalVisibleChange(visible: boolean): void {
     this.mostrarFormularioReserva = visible;
     if (!visible) {
-      // Limpiar la selección cuando se cierra el modal
       this.horarioSeleccionado = undefined;
       if (this.horariosComponent) {
         this.horariosComponent.limpiarSeleccion();
       }
+    }
+  }
+
+  onActualizarHorariosDisponibles(horarios: IHorariosDisponiblesResponse): void {
+    this.mostrarFormularioReserva = false;
+    this.horarioSeleccionado = undefined;
+    this._cdr.detectChanges();
+    
+    if (this.horariosComponent) {
+      this.horariosComponent.actualizarHorarios(horarios);
+      this.horariosComponent.limpiarSeleccion();
+    } else {
+      setTimeout(() => {
+        this._cdr.detectChanges();
+        if (this.horariosComponent) {
+          this.horariosComponent.actualizarHorarios(horarios);
+          this.horariosComponent.limpiarSeleccion();
+        }
+      }, 200);
     }
   }
 }

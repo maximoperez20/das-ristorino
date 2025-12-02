@@ -15,6 +15,7 @@ import ar.edu.ubp.das.backend.repository.RestauranteRepository;
 import ar.edu.ubp.das.backend.repository.ClienteRepository;
 import ar.edu.ubp.das.backend.client.RestauranteClient;
 import ar.edu.ubp.das.backend.client.RestauranteClientFactory;
+import ar.edu.ubp.das.backend.exception.HorarioNoDisponibleException;
 import org.springframework.stereotype.Service;
 
 
@@ -95,36 +96,6 @@ public class ReservaService {
         );
         
         RestauranteClient client = restauranteClientFactory.getClient(request.getNroRestaurante());
-
-
-        // MOVER ESTA LOGICA AL RESTAURANTE
-        List<HorarioDisponibleDto> horarios = client.getHorariosDisponibles(
-                request.getNroRestaurante(),
-                codSucursalRestaurante,
-                codZonaRestaurante,  // Usamos el cod_zona_restaurante (externo) para la consulta SOAP
-                request.getFechaReserva(),
-                cantTotal
-        );
-        
-        HorarioDisponibleDto horarioSeleccionado = horarios.stream()
-                .filter(h -> h.getCodZona().equals(codZonaRestaurante) 
-                        && h.getHoraDesde() != null 
-                        && h.getHoraDesde().equals(request.getHoraDesde()))
-                .findFirst()
-                .orElse(null);
-        
-        if (horarioSeleccionado == null) {
-            throw new RuntimeException("El horario seleccionado no está disponible");
-        }
-        
-        if (horarioSeleccionado.getDisponibilidad() < cantTotal) {
-            throw new RuntimeException("No hay suficiente capacidad disponible. Disponibilidad: " + 
-                    horarioSeleccionado.getDisponibilidad() + ", Solicitado: " + cantTotal);
-        }
-        
-        if (request.getCantMenores() > 0 && (horarioSeleccionado.getPermiteMenores() == null || !horarioSeleccionado.getPermiteMenores())) {
-            throw new RuntimeException("La zona seleccionada no permite menores");
-        }
         
         BigDecimal costoReserva = reservaRepository.obtenerCostoReserva(request.getFechaReserva());
         
@@ -152,24 +123,78 @@ public class ReservaService {
                 null   // codReservaSucursal
         );
         
+        // Registrar primero en Ristorino
         String codigoReserva = reservaRepository.registrarReservaRistorino(reservaDto);
         
-        String codReservaRestaurante = client.registrarReserva(
-                nroCliente,
-                cliente.getApellido(),
-                cliente.getNombre(),
-                cliente.getCorreo(),
-                cliente.getTelefonos(),
-                request.getNroRestaurante(),
-                codSucursalRestaurante,
-                codZonaRestaurante,  // Usamos el cod_zona_restaurante (externo) para el SOAP
-                request.getFechaReserva(),
-                request.getHoraDesde(),
-                request.getCantAdultos(),
-                request.getCantMenores()
-        );
-        
-        reservaRepository.actualizarCodReservaSucursal(codigoReserva, codReservaRestaurante);
+        try {
+            // Intentar registrar en el restaurante (ahora con validación en el SP)
+            // El SP valida disponibilidad, capacidad, zona habilitada y turno válido
+            String codReservaRestaurante = client.registrarReserva(
+                    nroCliente,
+                    cliente.getApellido(),
+                    cliente.getNombre(),
+                    cliente.getCorreo(),
+                    cliente.getTelefonos(),
+                    request.getNroRestaurante(),
+                    codSucursalRestaurante,
+                    codZonaRestaurante,  // Usamos el cod_zona_restaurante (externo) para el SOAP
+                    request.getFechaReserva(),
+                    request.getHoraDesde(),
+                    request.getCantAdultos(),
+                    request.getCantMenores()
+            );
+            
+            reservaRepository.actualizarCodReservaSucursal(codigoReserva, codReservaRestaurante);
+            
+        } catch (RuntimeException e) {
+            // Si falla por disponibilidad o validación, obtener nuevos horarios y hacer rollback
+            String mensajeError = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+            
+            if (mensajeError.contains("disponibilidad") || 
+                mensajeError.contains("capacidad") ||
+                mensajeError.contains("no permite menores") ||
+                mensajeError.contains("no está disponible") ||
+                mensajeError.contains("no existe") ||
+                mensajeError.contains("habilitada")) {
+                
+                // Obtener horarios actualizados para mostrar al usuario
+                // Obtener TODOS los horarios (sin filtrar por codZona) para mostrar todas las opciones disponibles
+                List<HorarioDisponibleDto> horariosActualizados = client.getHorariosDisponibles(
+                    request.getNroRestaurante(),
+                    codSucursalRestaurante,
+                    null, // null para obtener todas las zonas
+                    request.getFechaReserva(),
+                    cantTotal
+                );
+                
+                // Mapear cod_zona_restaurante a cod_zona interno
+                for (HorarioDisponibleDto horario : horariosActualizados) {
+                    if (horario.getCodZona() != null && !horario.getCodZona().trim().isEmpty()) {
+                        String codZonaInterno = restauranteRepository.obtenerCodZonaInterno(
+                            request.getNroRestaurante(), 
+                            request.getNroSucursal(), 
+                            horario.getCodZona()
+                        );
+                        if (codZonaInterno != null && !codZonaInterno.trim().isEmpty()) {
+                            horario.setCodZona(codZonaInterno);
+                        }
+                    }
+                }
+                
+                // Cancelar la reserva en Ristorino (rollback)
+                reservaRepository.updateEstado(codigoReserva, "Cancelada");
+                
+                // Lanzar excepción con información de horarios actualizados
+                throw new HorarioNoDisponibleException(
+                    "El horario seleccionado ya no está disponible. Por favor, seleccione otro horario.",
+                    horariosActualizados
+                );
+            }
+            
+            // Para otros errores, también hacer rollback pero sin horarios
+            reservaRepository.updateEstado(codigoReserva, "Cancelada");
+            throw e; // Re-lanzar el error original
+        }
         
         SucursalDto sucursal = restauranteRepository.obtenerSucursales(request.getNroRestaurante())
                 .stream()

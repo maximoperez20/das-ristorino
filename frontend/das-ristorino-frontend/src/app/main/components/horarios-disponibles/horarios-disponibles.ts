@@ -37,6 +37,13 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
   private _restauranteResource = inject(RestauranteResource);
   private _dateUtils = inject(DateUtilsService);
 
+  actualizarHorarios(horarios: IHorariosDisponiblesResponse): void {
+    this.horariosData = horarios;
+    this.loading = false;
+    this.error = null;
+    this.limpiarSeleccion();
+  }
+
   ngOnInit(): void {
     if (this.fechaSeleccionada) {
       this.fechaActual = new Date(this.fechaSeleccionada);
@@ -78,7 +85,6 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
       fecha: fechaFormateada
     }).subscribe({
       next: (data) => {
-        // Si la respuesta es un array (caso legacy), convertir a la estructura esperada
         if (Array.isArray(data)) {
           this.horariosData = {
             fecha: fechaFormateada,
@@ -86,7 +92,6 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
             zonas: []
           };
         } else {
-          // Asegurar que zonas siempre existe
           if (!data.zonas) {
             data.zonas = [];
           }
@@ -137,7 +142,7 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
 
   seleccionarHorario(zona: IZona, horario: IHorario): void {
     if (horario.disponibilidad <= 0) {
-      return; // No permitir seleccionar horarios sin disponibilidad
+      return;
     }
 
     this.horarioSeleccionadoActual = { zona, horario };
@@ -159,13 +164,9 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
     this.horarioSeleccionadoActual = null;
   }
 
-  /**
-   * Formatea una hora (string en formato HH:mm:ss o HH:mm) a formato legible (HH:mm)
-   */
   formatearHora(hora: string | null | undefined): string {
     if (!hora) return '';
     try {
-      // Si viene en formato HH:mm:ss, tomar solo HH:mm
       const horaFormateada = hora.split(':').slice(0, 2).join(':');
       return horaFormateada;
     } catch {
@@ -173,9 +174,6 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
     }
   }
 
-  /**
-   * Obtiene el texto formateado para la disponibilidad
-   */
   obtenerTextoDisponibilidad(disponibilidad: number | null | undefined): string {
     if (disponibilidad === null || disponibilidad === undefined) return '';
     if (disponibilidad === 1) {
@@ -184,9 +182,6 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
     return `${disponibilidad} ${$localize`:@@horarios.disponibles:disponibles`}`;
   }
 
-  /**
-   * Obtiene el texto formateado para los reservados
-   */
   obtenerTextoReservados(yaReservados: number | null | undefined): string {
     if (yaReservados === null || yaReservados === undefined || yaReservados === 0) return '';
     if (yaReservados === 1) {

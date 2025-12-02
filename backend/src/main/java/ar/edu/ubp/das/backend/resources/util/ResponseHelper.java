@@ -71,13 +71,17 @@ public class ResponseHelper {
     }
     
     /**
-     * Construye una respuesta de error que incluye horarios alternativos.
+     * Construye una respuesta de error que incluye horarios alternativos agrupados por zona.
      * Usado cuando una reserva falla por falta de disponibilidad.
+     * Los horarios se agrupan por zona para mantener consistencia con la respuesta normal.
      */
     public static ResponseEntity<ErrorWithHorariosResponse> errorWithHorarios(
             String errorMessage, List<HorarioDisponibleDto> horarios) {
+        // Agrupar horarios por zona usando la misma lógica que la respuesta normal
+        HorariosDisponiblesResponse horariosAgrupados = agruparHorariosPorZona(horarios, null);
+        
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorWithHorariosResponse(errorMessage, horarios));
+                .body(new ErrorWithHorariosResponse(errorMessage, horariosAgrupados));
     }
     
     /**
@@ -91,11 +95,16 @@ public class ResponseHelper {
      * Agrupa horarios disponibles por zona.
      * 
      * @param horarios Lista de horarios disponibles
-     * @param fecha Fecha de la consulta
+     * @param fecha Fecha de la consulta (puede ser null, se usará la fecha actual)
      * @return DTO con horarios agrupados por zona
      */
     public static HorariosDisponiblesResponse agruparHorariosPorZona(
             List<HorarioDisponibleDto> horarios, LocalDate fecha) {
+        
+        // Si fecha es null, usar fecha actual
+        if (fecha == null) {
+            fecha = LocalDate.now();
+        }
         
         if (horarios == null || horarios.isEmpty()) {
             return new HorariosDisponiblesResponse(new ArrayList<>(), fecha);
