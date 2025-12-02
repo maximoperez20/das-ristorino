@@ -57,6 +57,8 @@ IF OBJECT_ID('dbo.idiomas', 'U') IS NOT NULL DROP TABLE dbo.idiomas;
 IF OBJECT_ID('dbo.localidades', 'U') IS NOT NULL DROP TABLE dbo.localidades;
 IF OBJECT_ID('dbo.provincias', 'U') IS NOT NULL DROP TABLE dbo.provincias;
 
+IF OBJECT_ID('dbo.costos', 'U') IS NOT NULL DROP TABLE dbo.costos;
+
 PRINT '>> Todas las tablas eliminadas correctamente (si exist�an).';
 GO
 
