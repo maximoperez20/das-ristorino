@@ -249,16 +249,29 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    IF @nuevo_estado = 'CANCELADA'
+    -- Comparación case-insensitive para "Cancelada"
+    IF UPPER(LTRIM(RTRIM(@nuevo_estado))) = 'CANCELADA'
     BEGIN
+        -- Obtener el código del estado "Cancelada"
+        DECLARE @cod_estado_cancelada VARCHAR(36);
+        SELECT @cod_estado_cancelada = cod_estado 
+        FROM estados_reservas 
+        WHERE nom_estado = N'Cancelada';
+        
+        -- Actualizar cancelada, fecha_hora_cancelacion y cod_estado
         UPDATE reservas_restaurantes
-        SET cancelada = 1, fecha_hora_cancelacion = GETDATE()
+        SET cancelada = 1, 
+            fecha_hora_cancelacion = GETDATE(),
+            cod_estado = @cod_estado_cancelada
         WHERE nro_reserva = @id;
     END
     ELSE
     BEGIN
+        -- Si se reactiva, limpiar cancelada y fecha_hora_cancelacion
+        -- El cod_estado se mantiene o se puede actualizar según el nuevo estado si se pasa
         UPDATE reservas_restaurantes
-        SET cancelada = 0, fecha_hora_cancelacion = NULL
+        SET cancelada = 0, 
+            fecha_hora_cancelacion = NULL
         WHERE nro_reserva = @id;
     END;
     
