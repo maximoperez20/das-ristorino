@@ -399,7 +399,10 @@ public class OpenAIService {
                     "\n   - Si la consulta menciona un tipo de comida (aunque sea indirectamente), DEBES incluir el tipo correspondiente del catálogo." +
                     "\n   - Solo usa null si la consulta NO menciona NADA relacionado con tipos de comida." +
                     "\n2. PALABRAS CLAVE: Incluye palabras relevantes de la consulta que no se mapearon a otros campos." +
-                    "\n3. Otros campos: Usa null si no se mencionan explícitamente o no son inferibles." +
+                    "\n3. PREFERENCIAS DEL USUARIO: Si el contexto incluye 'preferenciasUsuario', considera estas preferencias al interpretar la consulta. " +
+                    "\n   Por ejemplo, si el usuario prefiere 'Italiana' y su consulta es genérica como 'quiero comer algo rico', " +
+                    "\n   puedes inferir que probablemente busca restaurantes italianos. Sin embargo, SIEMPRE prioriza lo que el usuario menciona explícitamente." +
+                    "\n4. Otros campos: Usa null si no se mencionan explícitamente o no son inferibles." +
                     "\n\nESTRUCTURA JSON REQUERIDA:\n" +
                     "{\n" +
                     "  \"tipoComida\": [\"Parrilla\"] o null (SIEMPRE intenta asociar si hay mención de comida),\n" +
@@ -530,6 +533,50 @@ public class OpenAIService {
             json.append("]");
         } else {
             json.append(",\n    \"rangosPrecio\": []");
+        }
+        
+        // Preferencias del usuario (si está autenticado y tiene preferencias)
+        BusquedaContextoDto.PreferenciasUsuarioDto preferenciasUsuario = contexto.getContexto().getPreferenciasUsuario();
+        if (preferenciasUsuario != null && preferenciasUsuario.tienePreferencias()) {
+            json.append(",\n    \"preferenciasUsuario\": {");
+            
+            // Tipos de comida preferidos
+            if (preferenciasUsuario.getTiposComida() != null && !preferenciasUsuario.getTiposComida().isEmpty()) {
+                json.append("\n      \"tiposComida\": [");
+                for (int i = 0; i < preferenciasUsuario.getTiposComida().size(); i++) {
+                    if (i > 0) json.append(", ");
+                    json.append("\"").append(escaparJson(preferenciasUsuario.getTiposComida().get(i))).append("\"");
+                }
+                json.append("]");
+            } else {
+                json.append("\n      \"tiposComida\": []");
+            }
+            
+            // Ambientes preferidos
+            if (preferenciasUsuario.getAmbientes() != null && !preferenciasUsuario.getAmbientes().isEmpty()) {
+                json.append(",\n      \"ambientes\": [");
+                for (int i = 0; i < preferenciasUsuario.getAmbientes().size(); i++) {
+                    if (i > 0) json.append(", ");
+                    json.append("\"").append(escaparJson(preferenciasUsuario.getAmbientes().get(i))).append("\"");
+                }
+                json.append("]");
+            } else {
+                json.append(",\n      \"ambientes\": []");
+            }
+            
+            // Rangos de precio preferidos
+            if (preferenciasUsuario.getRangosPrecio() != null && !preferenciasUsuario.getRangosPrecio().isEmpty()) {
+                json.append(",\n      \"rangosPrecio\": [");
+                for (int i = 0; i < preferenciasUsuario.getRangosPrecio().size(); i++) {
+                    if (i > 0) json.append(", ");
+                    json.append("\"").append(escaparJson(preferenciasUsuario.getRangosPrecio().get(i))).append("\"");
+                }
+                json.append("]");
+            } else {
+                json.append(",\n      \"rangosPrecio\": []");
+            }
+            
+            json.append("\n    }");
         }
         
         json.append("\n  }\n}");

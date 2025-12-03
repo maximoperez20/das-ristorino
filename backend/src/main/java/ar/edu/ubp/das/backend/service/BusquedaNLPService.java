@@ -5,10 +5,13 @@ import ar.edu.ubp.das.backend.dto.BusquedaNLPRequestDto;
 import ar.edu.ubp.das.backend.dto.BusquedaNLPResponseDto;
 import ar.edu.ubp.das.backend.dto.BusquedaNLPResultadoDto;
 import ar.edu.ubp.das.backend.dto.BusquedaNLPParametrosDto;
+import ar.edu.ubp.das.backend.dto.CatalogosDto;
+import ar.edu.ubp.das.backend.dto.PreferenciaClienteDto;
 import ar.edu.ubp.das.backend.dto.RestauranteDto;
 import ar.edu.ubp.das.backend.repository.BusquedaRepository;
 import ar.edu.ubp.das.backend.repository.ClienteRepository;
 import ar.edu.ubp.das.backend.repository.RestauranteRepository;
+import ar.edu.ubp.das.backend.service.PreferenciaService;
 import ar.edu.ubp.das.backend.service.ValidacionCatalogoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -35,6 +38,7 @@ public class BusquedaNLPService {
     private final RestauranteRepository restauranteRepository;
     private final ClienteRepository clienteRepository;
     private final ValidacionCatalogoService validacionCatalogoService;
+    private final PreferenciaService preferenciaService;
     
     @Value("${openai.prompt.busqueda.id:pmpt_68f9295bc1e48194b2e725a7b5df2b1c0a01e67130022025}")
     private String promptIdBusqueda;
@@ -45,12 +49,14 @@ public class BusquedaNLPService {
                              OpenAIService openAIService,
                              RestauranteRepository restauranteRepository,
                              ClienteRepository clienteRepository,
-                             ValidacionCatalogoService validacionCatalogoService) {
+                             ValidacionCatalogoService validacionCatalogoService,
+                             PreferenciaService preferenciaService) {
         this.busquedaRepository = busquedaRepository;
         this.openAIService = openAIService;
         this.restauranteRepository = restauranteRepository;
         this.clienteRepository = clienteRepository;
         this.validacionCatalogoService = validacionCatalogoService;
+        this.preferenciaService = preferenciaService;
     }
 
     /**
@@ -61,72 +67,53 @@ public class BusquedaNLPService {
      * @return DTO con resultados exactos y sugerencias
      */
     public BusquedaNLPResultadoDto buscarRestaurantesPorNLP(BusquedaNLPRequestDto request, String nroCliente) {
-        logger.info("🔍 ===== INICIO BÚSQUEDA NLP =====");
-        logger.info("📝 Consulta del usuario: '{}'", request.getConsulta());
-        logger.info("👤 Cliente autenticado: {}", nroCliente != null ? nroCliente : "No autenticado");
+        logger.info("Búsqueda NLP iniciada. Consulta: '{}', Cliente: {}", request.getConsulta(), nroCliente != null ? nroCliente : "No autenticado");
 
-        // 1. Obtener catálogos de la BD
-        BusquedaContextoDto contexto = construirContexto();
-        logger.info("📚 Contexto enviado a IA:");
-        BusquedaContextoDto.ContextoDto contextoDto = contexto.getContexto();
-        logger.info("   - Tipos de comida disponibles: {}", contextoDto != null && contextoDto.getTiposComida() != null ? String.join(", ", contextoDto.getTiposComida()) : "null");
-        logger.info("   - Barrios disponibles: {}", contextoDto != null && contextoDto.getBarrios() != null ? String.join(", ", contextoDto.getBarrios()) : "null");
-        logger.info("   - Localidades disponibles: {}", contextoDto != null && contextoDto.getLocalidades() != null ? String.join(", ", contextoDto.getLocalidades()) : "null");
-        logger.info("   - Ambientes disponibles: {}", contextoDto != null && contextoDto.getAmbientes() != null ? String.join(", ", contextoDto.getAmbientes()) : "null");
-        logger.info("   - Rangos de precio disponibles: {}", contextoDto != null && contextoDto.getRangosPrecio() != null ? String.join(", ", contextoDto.getRangosPrecio()) : "null");
+        // 1. Obtener catálogos de la BD (una sola vez)
+        CatalogosDto catalogos = obtenerCatalogos();
+        
+        // 1.1. Obtener preferencias del usuario si está autenticado
+        BusquedaContextoDto.PreferenciasUsuarioDto preferenciasUsuario = null;
+        if (nroCliente != null && !nroCliente.isEmpty()) {
+            try {
+                preferenciasUsuario = obtenerPreferenciasUsuario(nroCliente);
+                if (preferenciasUsuario != null && preferenciasUsuario.tienePreferencias()) {
+                    logger.debug("Preferencias del usuario obtenidas - Tipos comida: {}, Ambientes: {}, Rangos precio: {}", 
+                                preferenciasUsuario.getTiposComida(), preferenciasUsuario.getAmbientes(), preferenciasUsuario.getRangosPrecio());
+                }
+            } catch (Exception e) {
+                logger.warn("Error al obtener preferencias del usuario: {}", e.getMessage());
+            }
+        }
+        
+        BusquedaContextoDto contexto = construirContexto(catalogos, preferenciasUsuario);
 
         // 2. Analizar consulta con OpenAI
-        logger.info("🤖 Enviando consulta a OpenAI...");
         String respuestaJson = openAIService.analizarConsultaNLP(
             request.getConsulta(),
             contexto,
             promptIdBusqueda
         );
-        logger.info("🤖 Respuesta JSON de OpenAI: {}", respuestaJson);
+        logger.debug("Respuesta JSON de OpenAI: {}", respuestaJson);
 
         // 3. Parsear respuesta JSON de OpenAI
-        BusquedaNLPResponseDto respuestaNLP = parsearRespuestaOpenAI(respuestaJson);
-        logger.info("📥 Respuesta parseada de IA (ANTES de validación):");
-        logger.info("   - Tipo comida: {}", respuestaNLP.getTipoComida());
-        logger.info("   - Barrio: {}", respuestaNLP.getBarrio());
-        logger.info("   - Localidad: {}", respuestaNLP.getLocalidad());
-        logger.info("   - Ambiente: {}", respuestaNLP.getAmbiente());
-        logger.info("   - Rango precio: {}", respuestaNLP.getRangoPrecio());
-        logger.info("   - Palabras clave: {}", respuestaNLP.getPalabrasClave());
-        logger.info("   - Momento día: {}", respuestaNLP.getMomentoDia());
-        logger.info("   - Intención: {}", respuestaNLP.getIntencion());
+        BusquedaNLPResponseDto respuestaNLP = parsearRespuestaOpenAI(respuestaJson, catalogos);
         
         // Guardar la localidad original de la IA antes de validar
         String localidadOriginalIA = respuestaNLP.getLocalidad();
         
         // 3.0. Validar y mapear valores de la IA a valores exactos del catálogo
-        respuestaNLP = validacionCatalogoService.validarYMapar(respuestaNLP);
-        logger.info("✅ Respuesta validada (DESPUÉS de validación):");
-        logger.info("   - Tipo comida: {}", respuestaNLP.getTipoComida());
-        logger.info("   - Barrio: {}", respuestaNLP.getBarrio());
-        logger.info("   - Localidad: {}", respuestaNLP.getLocalidad());
-        logger.info("   - Ambiente: {}", respuestaNLP.getAmbiente());
-        logger.info("   - Rango precio: {}", respuestaNLP.getRangoPrecio());
-        logger.info("   - Palabras clave: {}", respuestaNLP.getPalabrasClave());
+        respuestaNLP = validacionCatalogoService.validarYMapar(respuestaNLP, catalogos);
+        logger.debug("Respuesta validada - Tipo comida: {}, Localidad: {}", respuestaNLP.getTipoComida(), respuestaNLP.getLocalidad());
         
-        // 3.1. Si el usuario está autenticado, obtener su localidad PERO solo usarla si:
-        // - OpenAI NO devolvió ninguna localidad (null o vacío en la respuesta original)
-        // - NO usar la localidad del usuario si OpenAI devolvió una localidad genérica que no se mapeó
-        // Esto evita filtrar incorrectamente cuando la IA devuelve algo genérico como "Córdoba"
+        // 3.1. Si el usuario está autenticado, obtener su localidad solo si OpenAI no devolvió ninguna
         if (nroCliente != null && !nroCliente.isEmpty()) {
             try {
                 String localidadUsuario = clienteRepository.obtenerLocalidadPorNroCliente(nroCliente);
-                if (localidadUsuario != null && !localidadUsuario.isEmpty()) {
-                    // Solo usar la localidad del usuario si OpenAI NO devolvió ninguna localidad en absoluto
-                    // Si OpenAI devolvió algo (aunque no se haya mapeado), NO usar la del usuario
-                    // para evitar filtrar incorrectamente
-                    if (localidadOriginalIA == null || localidadOriginalIA.isEmpty()) {
-                        respuestaNLP.setLocalidad(localidadUsuario);
-                        logger.info("📍 Usando localidad del usuario autenticado: {} (OpenAI no devolvió localidad)", localidadUsuario);
-                    } else {
-                        logger.info("📍 OpenAI devolvió localidad '{}' (mapeada a '{}'), NO usando localidad del usuario para evitar filtrado incorrecto", 
-                                   localidadOriginalIA, respuestaNLP.getLocalidad());
-                    }
+                if (localidadUsuario != null && !localidadUsuario.isEmpty() && 
+                    (localidadOriginalIA == null || localidadOriginalIA.isEmpty())) {
+                    respuestaNLP.setLocalidad(localidadUsuario);
+                    logger.debug("Usando localidad del usuario: {}", localidadUsuario);
                 }
             } catch (Exception e) {
                 logger.error("Error al obtener localidad del usuario: {}", e.getMessage());
@@ -134,19 +121,7 @@ public class BusquedaNLPService {
         }
         
         // 4. Buscar restaurantes exactos usando stored procedure
-        // IMPORTANTE: NO pasar nroCliente aquí - los resultados exactos deben ser estrictamente
-        // basados en los criterios de búsqueda, no en preferencias del usuario
-        // Las preferencias del usuario solo se usan en sugerencias
-        logger.info("🔎 Llamando a stored procedure sp_BuscarRestaurantesPorNLP con parámetros:");
-        logger.info("   - tiposComida: {}", respuestaNLP.getTipoComida());
-        logger.info("   - barrio: {}", respuestaNLP.getBarrio());
-        logger.info("   - localidad: {}", respuestaNLP.getLocalidad());
-        logger.info("   - ambiente: {}", respuestaNLP.getAmbiente());
-        logger.info("   - rangoPrecio: {}", respuestaNLP.getRangoPrecio());
-        logger.info("   - palabrasClave: {}", respuestaNLP.getPalabrasClave());
-        logger.info("   - nroCliente: null (NO usar preferencias del cliente en resultados exactos)");
-        
-        // Crear DTO tipado con los parámetros de búsqueda
+        // Pasar nroCliente para que el SP use las preferencias del usuario en el scoring
         BusquedaNLPParametrosDto parametrosBusqueda = new BusquedaNLPParametrosDto(
             respuestaNLP.getTipoComida(),
             respuestaNLP.getBarrio(),
@@ -154,121 +129,130 @@ public class BusquedaNLPService {
             respuestaNLP.getAmbiente(),
             respuestaNLP.getRangoPrecio(),
             respuestaNLP.getPalabrasClave(),
-            null // NO usar preferencias del cliente en resultados exactos
+            nroCliente // Usar preferencias del usuario en scoring
         );
         
         List<RestauranteDto> resultadosExactos = restauranteRepository.buscarPorNLP(parametrosBusqueda);
         
-        logger.info("📊 Resultados del SP (ANTES de eliminar duplicados): {} restaurantes", resultadosExactos.size());
-        if (!resultadosExactos.isEmpty()) {
-            logger.info("   Restaurantes encontrados:");
-            for (int i = 0; i < Math.min(resultadosExactos.size(), 10); i++) {
-                RestauranteDto r = resultadosExactos.get(i);
-                logger.info("   {}. {} (ID: {})", i + 1, r.getNombre(), r.getNroRestaurante());
-            }
-            if (resultadosExactos.size() > 10) {
-                logger.info("   ... y {} más", resultadosExactos.size() - 10);
-            }
-        }
-        
-        // Eliminar duplicados de resultados exactos (por nro_restaurante)
-        int cantidadAntes = resultadosExactos.size();
+        // Eliminar duplicados de resultados exactos
         resultadosExactos = resultadosExactos.stream()
             .filter(r -> r.getNroRestaurante() != null)
             .collect(Collectors.toMap(
                 RestauranteDto::getNroRestaurante,
                 r -> r,
-                (r1, r2) -> r1 // En caso de duplicados, mantener el primero
+                (r1, r2) -> r1
             ))
             .values()
             .stream()
             .collect(Collectors.toList());
         
-        logger.info("✅ Resultados exactos (DESPUÉS de eliminar duplicados): {} restaurantes (eliminados: {})", 
-                   resultadosExactos.size(), cantidadAntes - resultadosExactos.size());
+        logger.info("Resultados exactos: {} restaurantes", resultadosExactos.size());
         
-        // 5. Obtener sugerencias (siempre, incluso si hay resultados exactos)
-        // Las sugerencias se basan en preferencias del usuario si está autenticado,
-        // o restaurantes populares/aleatorios si no lo está
-        logger.info("💡 Obteniendo sugerencias...");
-        logger.info("   - Excluir restaurantes: {} IDs", resultadosExactos.size());
-        logger.info("   - nroCliente para preferencias: {}", nroCliente != null ? nroCliente : "null");
-        logger.info("   - Límite: 10");
-        
+        // 5. Obtener sugerencias
         List<RestauranteDto> sugerencias = restauranteRepository.obtenerSugerencias(
-            resultadosExactos, // Excluir los que ya están en resultados exactos
-            nroCliente,        // Para usar preferencias del usuario
-            10                 // Límite de sugerencias
+            resultadosExactos,
+            nroCliente,
+            10
         );
         
-        logger.info("📊 Sugerencias del SP (ANTES de eliminar duplicados): {} restaurantes", sugerencias.size());
-        
-        // Eliminar duplicados de sugerencias (por nro_restaurante)
+        // Eliminar duplicados de sugerencias
         sugerencias = sugerencias.stream()
             .filter(r -> r.getNroRestaurante() != null)
             .collect(Collectors.toMap(
                 RestauranteDto::getNroRestaurante,
                 r -> r,
-                (r1, r2) -> r1 // En caso de duplicados, mantener el primero
+                (r1, r2) -> r1
             ))
             .values()
             .stream()
             .collect(Collectors.toList());
         
-        logger.info("   Después de eliminar duplicados: {} restaurantes", sugerencias.size());
-        
-        // Asegurar que las sugerencias no incluyan restaurantes de resultados exactos
+        // Excluir restaurantes que ya están en resultados exactos
         if (!resultadosExactos.isEmpty()) {
             Set<String> idsExactos = resultadosExactos.stream()
                 .map(RestauranteDto::getNroRestaurante)
                 .filter(id -> id != null)
                 .collect(Collectors.toSet());
             
-            int cantidadAntesExclusion = sugerencias.size();
             sugerencias = sugerencias.stream()
                 .filter(r -> !idsExactos.contains(r.getNroRestaurante()))
                 .collect(Collectors.toList());
-            
-            logger.info("   Después de excluir resultados exactos: {} restaurantes (excluidos: {})", 
-                       sugerencias.size(), cantidadAntesExclusion - sugerencias.size());
         }
         
-        logger.info("✅ Sugerencias finales: {} restaurantes", sugerencias.size());
-        if (!sugerencias.isEmpty()) {
-            logger.info("   Restaurantes sugeridos:");
-            for (int i = 0; i < Math.min(sugerencias.size(), 5); i++) {
-                RestauranteDto r = sugerencias.get(i);
-                logger.info("   {}. {} (ID: {})", i + 1, r.getNombre(), r.getNroRestaurante());
-            }
-        }
+        logger.info("Sugerencias: {} restaurantes", sugerencias.size());
         
-        logger.info("🔍 ===== FIN BÚSQUEDA NLP =====");
-        logger.info("📈 Resumen: {} resultados exactos, {} sugerencias", resultadosExactos.size(), sugerencias.size());
-        
-        // Si hay muchos resultados sin filtros específicos, puede ser que OpenAI no extrajo correctamente
         if (resultadosExactos.size() > 10 && 
             (respuestaNLP.getTipoComida() == null || respuestaNLP.getTipoComida().isEmpty()) &&
             (respuestaNLP.getPalabrasClave() == null || respuestaNLP.getPalabrasClave().isEmpty())) {
-            logger.warn("⚠️  Se encontraron {} restaurantes sin filtros específicos. OpenAI puede no haber extraído correctamente la intención.", resultadosExactos.size());
+            logger.warn("Se encontraron {} restaurantes sin filtros específicos", resultadosExactos.size());
         }
 
         return new BusquedaNLPResultadoDto(resultadosExactos, sugerencias);
     }
 
     /**
-     * Construye el contexto con catálogos de la BD
+     * Obtiene todos los catálogos de la BD una sola vez
      */
-    private BusquedaContextoDto construirContexto() {
+    private CatalogosDto obtenerCatalogos() {
+        return new CatalogosDto(
+            busquedaRepository.obtenerTiposComida(),
+            busquedaRepository.obtenerBarrios(),
+            busquedaRepository.obtenerLocalidades(),
+            busquedaRepository.obtenerAmbientes(),
+            busquedaRepository.obtenerRangosPrecio()
+        );
+    }
+
+    /**
+     * Obtiene las preferencias del usuario agrupadas por categoría
+     */
+    private BusquedaContextoDto.PreferenciasUsuarioDto obtenerPreferenciasUsuario(String nroCliente) {
+        try {
+            List<PreferenciaClienteDto> preferencias = preferenciaService.obtenerPreferenciasCliente(nroCliente, 0); // Usar idioma 0 (es-AR)
+            
+            if (preferencias == null || preferencias.isEmpty()) {
+                return null;
+            }
+            
+            BusquedaContextoDto.PreferenciasUsuarioDto preferenciasDto = new BusquedaContextoDto.PreferenciasUsuarioDto();
+            
+            for (PreferenciaClienteDto pref : preferencias) {
+                String categoria = pref.getNombreCategoria();
+                String dominio = pref.getNombreDominio();
+                
+                if (dominio == null || dominio.isEmpty()) {
+                    continue;
+                }
+                
+                if ("Tipo de comida".equals(categoria)) {
+                    preferenciasDto.getTiposComida().add(dominio);
+                } else if ("Ambiente".equals(categoria)) {
+                    preferenciasDto.getAmbientes().add(dominio);
+                } else if ("Rango de precio".equals(categoria)) {
+                    preferenciasDto.getRangosPrecio().add(dominio);
+                }
+            }
+            
+            return preferenciasDto.tienePreferencias() ? preferenciasDto : null;
+        } catch (Exception e) {
+            logger.error("Error al obtener preferencias del usuario: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
+     * Construye el contexto con catálogos y preferencias del usuario para enviar a OpenAI
+     */
+    private BusquedaContextoDto construirContexto(CatalogosDto catalogos, BusquedaContextoDto.PreferenciasUsuarioDto preferenciasUsuario) {
         BusquedaContextoDto contexto = new BusquedaContextoDto();
-        BusquedaContextoDto.ContextoDto ctx = new BusquedaContextoDto.ContextoDto();
-
-        ctx.setTiposComida(busquedaRepository.obtenerTiposComida());
-        ctx.setBarrios(busquedaRepository.obtenerBarrios());
-        ctx.setLocalidades(busquedaRepository.obtenerLocalidades());
-        ctx.setAmbientes(busquedaRepository.obtenerAmbientes());
-        ctx.setRangosPrecio(busquedaRepository.obtenerRangosPrecio());
-
-        contexto.setContexto(ctx);
+        BusquedaContextoDto.ContextoDto contextoDto = catalogos.toContextoDto();
+        
+        // Agregar preferencias del usuario al contexto si existen
+        if (preferenciasUsuario != null && preferenciasUsuario.tienePreferencias()) {
+            contextoDto.setPreferenciasUsuario(preferenciasUsuario);
+        }
+        
+        contexto.setContexto(contextoDto);
         return contexto;
     }
 
@@ -276,7 +260,7 @@ public class BusquedaNLPService {
      * Parsea la respuesta JSON de OpenAI a BusquedaNLPResponseDto
      * Maneja estructuras anidadas (como "criterios") si OpenAI las devuelve
      */
-    private BusquedaNLPResponseDto parsearRespuestaOpenAI(String jsonResponse) {
+    private BusquedaNLPResponseDto parsearRespuestaOpenAI(String jsonResponse, CatalogosDto catalogos) {
         try {
             logger.debug("Respuesta raw de OpenAI ({} caracteres)", jsonResponse.length());
             
@@ -290,14 +274,13 @@ public class BusquedaNLPService {
                 
                 // Si tipoComida es null, intentar extraer de estructura anidada
                 if (dto.getTipoComida() == null || dto.getTipoComida().isEmpty()) {
-                    dto = extraerDeEstructuraAnidada(jsonLimpio, dto);
+                    dto = extraerDeEstructuraAnidada(jsonLimpio, dto, catalogos);
                 }
                 
                 return dto;
             } catch (Exception e) {
-                // Si falla el parsing directo, intentar con estructura anidada
                 logger.warn("Error al parsear directamente, intentando con estructura anidada: {}", e.getMessage());
-                return extraerDeEstructuraAnidada(jsonLimpio, new BusquedaNLPResponseDto());
+                return extraerDeEstructuraAnidada(jsonLimpio, new BusquedaNLPResponseDto(), catalogos);
             }
         } catch (Exception e) {
             logger.error("Error al parsear respuesta JSON de OpenAI", e);
@@ -311,7 +294,7 @@ public class BusquedaNLPService {
      * Extrae datos de una estructura anidada (ej: criterios.tiposComida)
      */
     @SuppressWarnings("unchecked")
-    private BusquedaNLPResponseDto extraerDeEstructuraAnidada(String jsonLimpio, BusquedaNLPResponseDto dto) {
+    private BusquedaNLPResponseDto extraerDeEstructuraAnidada(String jsonLimpio, BusquedaNLPResponseDto dto, CatalogosDto catalogos) {
         try {
             // Parsear como Map genérico
             java.util.Map<String, Object> jsonMap = objectMapper.readValue(jsonLimpio, java.util.Map.class);
@@ -405,7 +388,7 @@ public class BusquedaNLPService {
             // Si aún no hay tipoComida, buscar en palabras clave y extraer si coincide con catálogo
             if ((dto.getTipoComida() == null || dto.getTipoComida().isEmpty()) && 
                 (dto.getPalabrasClave() != null && !dto.getPalabrasClave().isEmpty())) {
-                List<String> tiposComidaCatalogo = busquedaRepository.obtenerTiposComida();
+                List<String> tiposComidaCatalogo = catalogos.getTiposComida();
                 List<String> tiposComidaEncontrados = new ArrayList<>();
                 
                 for (String palabra : dto.getPalabrasClave()) {
@@ -422,12 +405,8 @@ public class BusquedaNLPService {
                 
                 if (!tiposComidaEncontrados.isEmpty()) {
                     dto.setTipoComida(tiposComidaEncontrados);
-                    logger.debug("Tipos de comida extraídos de palabras clave: {}", tiposComidaEncontrados);
                 }
             }
-            
-            logger.debug("Datos extraídos: tipoComida={}, barrio={}, palabrasClave={}", 
-                       dto.getTipoComida(), dto.getBarrio(), dto.getPalabrasClave());
             
             return dto;
         } catch (Exception e) {

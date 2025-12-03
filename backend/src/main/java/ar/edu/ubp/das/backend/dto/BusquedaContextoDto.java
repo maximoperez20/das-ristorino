@@ -44,6 +44,7 @@ public class BusquedaContextoDto {
         private List<String> localidades;
         private List<String> ambientes;
         private List<String> rangosPrecio;
+        private PreferenciasUsuarioDto preferenciasUsuario;
 
         // Constructores
         public ContextoDto() {}
@@ -87,6 +88,59 @@ public class BusquedaContextoDto {
 
         public void setRangosPrecio(List<String> rangosPrecio) {
             this.rangosPrecio = rangosPrecio;
+        }
+
+        public PreferenciasUsuarioDto getPreferenciasUsuario() {
+            return preferenciasUsuario;
+        }
+
+        public void setPreferenciasUsuario(PreferenciasUsuarioDto preferenciasUsuario) {
+            this.preferenciasUsuario = preferenciasUsuario;
+        }
+    }
+
+    /**
+     * DTO para representar las preferencias del usuario en el contexto
+     */
+    public static class PreferenciasUsuarioDto {
+        private List<String> tiposComida;
+        private List<String> ambientes;
+        private List<String> rangosPrecio;
+
+        public PreferenciasUsuarioDto() {
+            this.tiposComida = new java.util.ArrayList<>();
+            this.ambientes = new java.util.ArrayList<>();
+            this.rangosPrecio = new java.util.ArrayList<>();
+        }
+
+        public List<String> getTiposComida() {
+            return tiposComida;
+        }
+
+        public void setTiposComida(List<String> tiposComida) {
+            this.tiposComida = tiposComida != null ? tiposComida : new java.util.ArrayList<>();
+        }
+
+        public List<String> getAmbientes() {
+            return ambientes;
+        }
+
+        public void setAmbientes(List<String> ambientes) {
+            this.ambientes = ambientes != null ? ambientes : new java.util.ArrayList<>();
+        }
+
+        public List<String> getRangosPrecio() {
+            return rangosPrecio;
+        }
+
+        public void setRangosPrecio(List<String> rangosPrecio) {
+            this.rangosPrecio = rangosPrecio != null ? rangosPrecio : new java.util.ArrayList<>();
+        }
+
+        public boolean tienePreferencias() {
+            return (tiposComida != null && !tiposComida.isEmpty()) ||
+                   (ambientes != null && !ambientes.isEmpty()) ||
+                   (rangosPrecio != null && !rangosPrecio.isEmpty());
         }
     }
 }

@@ -1,9 +1,7 @@
 package ar.edu.ubp.das.backend.service;
 
 import ar.edu.ubp.das.backend.dto.BusquedaNLPResponseDto;
-import ar.edu.ubp.das.backend.repository.BusquedaRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import ar.edu.ubp.das.backend.dto.CatalogosDto;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,45 +19,25 @@ import java.util.List;
 @Service
 public class ValidacionCatalogoService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ValidacionCatalogoService.class);
     
-    private final BusquedaRepository busquedaRepository;
-    
-    public ValidacionCatalogoService(BusquedaRepository busquedaRepository) {
-        this.busquedaRepository = busquedaRepository;
+    public ValidacionCatalogoService() {
     }
     
     /**
      * Valida y mapea los valores de la respuesta de la IA a valores exactos del catálogo.
      * 
      * @param respuestaIA Respuesta de la IA (puede contener valores aproximados)
+     * @param catalogos Catálogos del sistema (obtenidos una sola vez)
      * @return Respuesta validada con valores exactos del catálogo
      */
-    public BusquedaNLPResponseDto validarYMapar(BusquedaNLPResponseDto respuestaIA) {
-        logger.info("🔍 ===== VALIDACIÓN DE CATÁLOGO =====");
-        logger.info("📥 Valores recibidos de IA:");
-        logger.info("   - Tipo comida: {}", respuestaIA.getTipoComida());
-        logger.info("   - Barrio: {}", respuestaIA.getBarrio());
-        logger.info("   - Localidad: {}", respuestaIA.getLocalidad());
-        logger.info("   - Ambiente: {}", respuestaIA.getAmbiente());
-        logger.info("   - Rango precio: {}", respuestaIA.getRangoPrecio());
-        logger.info("   - Palabras clave: {}", respuestaIA.getPalabrasClave());
-        
+    public BusquedaNLPResponseDto validarYMapar(BusquedaNLPResponseDto respuestaIA, CatalogosDto catalogos) {
         BusquedaNLPResponseDto respuestaValidada = new BusquedaNLPResponseDto();
         
-        // Obtener catálogos de la BD
-        List<String> tiposComidaCatalogo = busquedaRepository.obtenerTiposComida();
-        List<String> barriosCatalogo = busquedaRepository.obtenerBarrios();
-        List<String> localidadesCatalogo = busquedaRepository.obtenerLocalidades();
-        List<String> ambientesCatalogo = busquedaRepository.obtenerAmbientes();
-        List<String> rangosPrecioCatalogo = busquedaRepository.obtenerRangosPrecio();
-        
-        logger.info("📚 Catálogos disponibles:");
-        logger.info("   - Tipos comida: {}", tiposComidaCatalogo);
-        logger.info("   - Barrios: {}", barriosCatalogo);
-        logger.info("   - Localidades: {}", localidadesCatalogo);
-        logger.info("   - Ambientes: {}", ambientesCatalogo);
-        logger.info("   - Rangos precio: {}", rangosPrecioCatalogo);
+        List<String> tiposComidaCatalogo = catalogos.getTiposComida();
+        List<String> barriosCatalogo = catalogos.getBarrios();
+        List<String> localidadesCatalogo = catalogos.getLocalidades();
+        List<String> ambientesCatalogo = catalogos.getAmbientes();
+        List<String> rangosPrecioCatalogo = catalogos.getRangosPrecio();
         
         // Validar y mapear tipoComida (lista)
         // Para tipos de comida, usamos una validación más inteligente que maneja sinónimos
@@ -69,88 +47,35 @@ public class ValidacionCatalogoService {
                 String tipoValidado = buscarValorExactoTipoComida(tipoIA, tiposComidaCatalogo);
                 if (tipoValidado != null && !tiposComidaValidos.contains(tipoValidado)) {
                     tiposComidaValidos.add(tipoValidado);
-                    logger.info("   ✅ Tipo comida '{}' -> mapeado a '{}'", tipoIA, tipoValidado);
-                } else if (tipoValidado == null) {
-                    logger.warn("   ⚠️ Tipo de comida '{}' NO encontrado en catálogo, se omite", tipoIA);
                 }
             }
             respuestaValidada.setTipoComida(tiposComidaValidos.isEmpty() ? null : tiposComidaValidos);
-        } else {
-            respuestaValidada.setTipoComida(null);
-            logger.info("   ℹ️ Tipo comida: null (no especificado por IA)");
         }
         
         // Validar y mapear barrio
         if (respuestaIA.getBarrio() != null && !respuestaIA.getBarrio().isEmpty()) {
-            String barrioValidado = buscarValorExacto(respuestaIA.getBarrio(), barriosCatalogo);
-            respuestaValidada.setBarrio(barrioValidado);
-            if (barrioValidado != null) {
-                logger.info("   ✅ Barrio '{}' -> mapeado a '{}'", respuestaIA.getBarrio(), barrioValidado);
-            } else {
-                logger.warn("   ⚠️ Barrio '{}' NO encontrado en catálogo", respuestaIA.getBarrio());
-            }
-        } else {
-            respuestaValidada.setBarrio(null);
-            logger.info("   ℹ️ Barrio: null (no especificado por IA)");
+            respuestaValidada.setBarrio(buscarValorExacto(respuestaIA.getBarrio(), barriosCatalogo));
         }
         
-        // Validar y mapear localidad
-        // IMPORTANTE: Para localidades, solo mapear si hay coincidencia exacta o muy cercana
-        // No usar coincidencia parcial porque "Córdoba" podría mapearse incorrectamente a "Alta Córdoba"
+        // Validar y mapear localidad (solo coincidencia exacta o muy cercana)
         if (respuestaIA.getLocalidad() != null && !respuestaIA.getLocalidad().isEmpty()) {
-            String localidadValidada = buscarValorExactoLocalidad(respuestaIA.getLocalidad(), localidadesCatalogo);
-            respuestaValidada.setLocalidad(localidadValidada);
-            if (localidadValidada != null) {
-                logger.info("   ✅ Localidad '{}' -> mapeada a '{}'", respuestaIA.getLocalidad(), localidadValidada);
-            } else {
-                logger.warn("   ⚠️ Localidad '{}' NO encontrada en catálogo (no se mapea)", respuestaIA.getLocalidad());
-            }
-        } else {
-            respuestaValidada.setLocalidad(null);
-            logger.info("   ℹ️ Localidad: null (no especificada por IA)");
+            respuestaValidada.setLocalidad(buscarValorExactoLocalidad(respuestaIA.getLocalidad(), localidadesCatalogo));
         }
         
         // Validar y mapear ambiente
         if (respuestaIA.getAmbiente() != null && !respuestaIA.getAmbiente().isEmpty()) {
-            String ambienteValidado = buscarValorExacto(respuestaIA.getAmbiente(), ambientesCatalogo);
-            respuestaValidada.setAmbiente(ambienteValidado);
-            if (ambienteValidado != null) {
-                logger.info("   ✅ Ambiente '{}' -> mapeado a '{}'", respuestaIA.getAmbiente(), ambienteValidado);
-            } else {
-                logger.warn("   ⚠️ Ambiente '{}' NO encontrado en catálogo", respuestaIA.getAmbiente());
-            }
-        } else {
-            respuestaValidada.setAmbiente(null);
-            logger.info("   ℹ️ Ambiente: null (no especificado por IA)");
+            respuestaValidada.setAmbiente(buscarValorExacto(respuestaIA.getAmbiente(), ambientesCatalogo));
         }
         
         // Validar y mapear rangoPrecio
         if (respuestaIA.getRangoPrecio() != null && !respuestaIA.getRangoPrecio().isEmpty()) {
-            String rangoPrecioValidado = buscarValorExacto(respuestaIA.getRangoPrecio(), rangosPrecioCatalogo);
-            respuestaValidada.setRangoPrecio(rangoPrecioValidado);
-            if (rangoPrecioValidado != null) {
-                logger.info("   ✅ Rango precio '{}' -> mapeado a '{}'", respuestaIA.getRangoPrecio(), rangoPrecioValidado);
-            } else {
-                logger.warn("   ⚠️ Rango precio '{}' NO encontrado en catálogo", respuestaIA.getRangoPrecio());
-            }
-        } else {
-            respuestaValidada.setRangoPrecio(null);
-            logger.info("   ℹ️ Rango precio: null (no especificado por IA)");
+            respuestaValidada.setRangoPrecio(buscarValorExacto(respuestaIA.getRangoPrecio(), rangosPrecioCatalogo));
         }
         
         // Campos que no requieren validación (se copian tal cual)
         respuestaValidada.setMomentoDia(respuestaIA.getMomentoDia());
         respuestaValidada.setIntencion(respuestaIA.getIntencion());
         respuestaValidada.setPalabrasClave(respuestaIA.getPalabrasClave());
-        
-        logger.info("📤 Valores validados finales:");
-        logger.info("   - Tipo comida: {}", respuestaValidada.getTipoComida());
-        logger.info("   - Barrio: {}", respuestaValidada.getBarrio());
-        logger.info("   - Localidad: {}", respuestaValidada.getLocalidad());
-        logger.info("   - Ambiente: {}", respuestaValidada.getAmbiente());
-        logger.info("   - Rango precio: {}", respuestaValidada.getRangoPrecio());
-        logger.info("   - Palabras clave: {}", respuestaValidada.getPalabrasClave());
-        logger.info("🔍 ===== FIN VALIDACIÓN =====");
         
         return respuestaValidada;
     }
@@ -173,7 +98,6 @@ public class ValidacionCatalogoService {
         // 1. Coincidencia exacta (case-insensitive)
         for (String valorCatalogo : catalogo) {
             if (valorCatalogo.equalsIgnoreCase(valorIALimpio)) {
-                logger.debug("Coincidencia exacta (localidad): '{}' → '{}'", valorIALimpio, valorCatalogo);
                 return valorCatalogo;
             }
         }
@@ -181,7 +105,7 @@ public class ValidacionCatalogoService {
         // 2. Fuzzy matching estricto (solo si la distancia es muy pequeña)
         String mejorCoincidencia = null;
         int mejorDistancia = Integer.MAX_VALUE;
-        int umbralMaximo = 2; // Umbral muy estricto para localidades (máximo 2 caracteres de diferencia)
+        int umbralMaximo = 2;
         
         for (String valorCatalogo : catalogo) {
             int distancia = calcularDistanciaLevenshtein(
@@ -195,15 +119,7 @@ public class ValidacionCatalogoService {
             }
         }
         
-        if (mejorCoincidencia != null) {
-            logger.debug("Fuzzy matching (localidad): '{}' → '{}' (distancia: {})", 
-                        valorIALimpio, mejorCoincidencia, mejorDistancia);
-            return mejorCoincidencia;
-        }
-        
-        // 3. Si no hay coincidencia, retornar null (NO mapear)
-        logger.debug("No se encontró coincidencia para localidad '{}'", valorIALimpio);
-        return null;
+        return mejorCoincidencia;
     }
     
     /**
@@ -228,19 +144,16 @@ public class ValidacionCatalogoService {
             for (String tipo : catalogo) {
                 String tipoLower = tipo.toLowerCase();
                 if (tipoLower.contains("fusión") && (tipoLower.contains("japon") || tipoLower.contains("peru"))) {
-                    logger.debug("Mapeo por sinónimo (japonesa): '{}' → '{}'", valorIA, tipo);
                     return tipo;
                 }
             }
             for (String tipo : catalogo) {
                 if (tipo.equalsIgnoreCase("Sushi")) {
-                    logger.debug("Mapeo por sinónimo (japonesa): '{}' → '{}'", valorIA, tipo);
                     return tipo;
                 }
             }
             for (String tipo : catalogo) {
                 if (tipo.equalsIgnoreCase("Asiática")) {
-                    logger.debug("Mapeo por sinónimo (japonesa): '{}' → '{}'", valorIA, tipo);
                     return tipo;
                 }
             }
@@ -248,17 +161,14 @@ public class ValidacionCatalogoService {
         
         // Caso especial: "italiana" o variaciones
         if (valorIALimpio.contains("italian")) {
-            // Prioridad: 1) Italiana tradicional, 2) Italiana
             for (String tipo : catalogo) {
                 String tipoLower = tipo.toLowerCase();
                 if (tipoLower.contains("italian") && tipoLower.contains("tradicional")) {
-                    logger.debug("Mapeo por sinónimo (italiana): '{}' → '{}'", valorIA, tipo);
                     return tipo;
                 }
             }
             for (String tipo : catalogo) {
                 if (tipo.equalsIgnoreCase("Italiana")) {
-                    logger.debug("Mapeo por sinónimo (italiana): '{}' → '{}'", valorIA, tipo);
                     return tipo;
                 }
             }
@@ -288,7 +198,6 @@ public class ValidacionCatalogoService {
         // 1. Coincidencia exacta (case-insensitive)
         for (String valorCatalogo : catalogo) {
             if (valorCatalogo.equalsIgnoreCase(valorIALimpio)) {
-                logger.debug("Coincidencia exacta: '{}' → '{}'", valorIALimpio, valorCatalogo);
                 return valorCatalogo;
             }
         }
@@ -297,7 +206,6 @@ public class ValidacionCatalogoService {
         for (String valorCatalogo : catalogo) {
             if (valorCatalogo.toLowerCase().contains(valorIALimpio.toLowerCase()) ||
                 valorIALimpio.toLowerCase().contains(valorCatalogo.toLowerCase())) {
-                logger.debug("Coincidencia parcial: '{}' → '{}'", valorIALimpio, valorCatalogo);
                 return valorCatalogo;
             }
         }
@@ -305,7 +213,7 @@ public class ValidacionCatalogoService {
         // 3. Fuzzy matching (Levenshtein distance)
         String mejorCoincidencia = null;
         int mejorDistancia = Integer.MAX_VALUE;
-        int umbralMaximo = Math.max(3, valorIALimpio.length() / 3); // Umbral dinámico
+        int umbralMaximo = Math.max(3, valorIALimpio.length() / 3);
         
         for (String valorCatalogo : catalogo) {
             int distancia = calcularDistanciaLevenshtein(
@@ -319,14 +227,7 @@ public class ValidacionCatalogoService {
             }
         }
         
-        if (mejorCoincidencia != null) {
-            logger.debug("Fuzzy matching: '{}' → '{}' (distancia: {})", 
-                        valorIALimpio, mejorCoincidencia, mejorDistancia);
-            return mejorCoincidencia;
-        }
-        
-        logger.debug("No se encontró coincidencia para '{}' en el catálogo", valorIALimpio);
-        return null;
+        return mejorCoincidencia;
     }
     
     /**
