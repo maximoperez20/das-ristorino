@@ -270,5 +270,4 @@ export class MisReservasPage implements OnInit {
     const filtroNormalizado = this.normalizarEstado(filtro);
     return filtroActivoNormalizado === filtroNormalizado;
   }
-
 }

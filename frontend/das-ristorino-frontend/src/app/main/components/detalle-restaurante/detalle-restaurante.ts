@@ -7,6 +7,7 @@ import { HorariosDisponiblesComponent, HorarioSeleccionado } from '../horarios-d
 import { PromocionComponent } from "../promocion/promocion";
 import { FormularioReservaComponent } from '../formulario-reserva/formulario-reserva';
 import { ResenaComponent } from '../resena/resena';
+import { FormularioResenaComponent } from '../formulario-resena/formulario-resena';
 import { AuthService } from '../../../core/services/auth-service';
 import { IDominioPreferencia } from '../../api/models/i-dominio-preferencia';
 import { IHorariosDisponiblesResponse } from '../../api/models/i-horario-disponible';
@@ -15,13 +16,14 @@ import { IHorariosDisponiblesResponse } from '../../api/models/i-horario-disponi
 @Component({
   selector: 'app-detalle-restaurante',
   standalone: true,
-  imports: [NgClass, HorariosDisponiblesComponent, PromocionComponent, FormularioReservaComponent, ResenaComponent],
+  imports: [NgClass, HorariosDisponiblesComponent, PromocionComponent, FormularioReservaComponent, ResenaComponent, FormularioResenaComponent],
   templateUrl: './detalle-restaurante.html',
   styleUrls: ['./detalle-restaurante.scss'],
 })
 export class DetalleRestauranteComponent implements OnInit {
 
   @ViewChild('horariosComponent') horariosComponent?: HorariosDisponiblesComponent;
+  @ViewChild('resenaComponent') resenaComponent?: ResenaComponent;
 
   restaurante?: IRestaurante | undefined;
   especialidadesAlimentarias: IDominioPreferencia[] = [];
@@ -30,6 +32,7 @@ export class DetalleRestauranteComponent implements OnInit {
   nroRestaurante: string = '';
   horarioSeleccionado?: HorarioSeleccionado;
   mostrarFormularioReserva: boolean = false;
+  mostrarModalResena: boolean = false;
 
   private _route = inject(ActivatedRoute);
   private _router = inject(Router);
@@ -128,6 +131,30 @@ export class DetalleRestauranteComponent implements OnInit {
           this.horariosComponent.limpiarSeleccion();
         }
       }, 200);
+    }
+  }
+
+  abrirModalResena(): void {
+    // Verificar autenticación antes de abrir el modal
+    if (!this._auth.isAuthenticated()) {
+      this._router.navigate(['/login'], { 
+        queryParams: { returnUrl: this._router.url } 
+      });
+      return;
+    }
+    
+    this.mostrarModalResena = true;
+  }
+
+  cerrarModalResena(): void {
+    this.mostrarModalResena = false;
+  }
+
+  onResenaEnviada(): void {
+    this.cerrarModalResena();
+    // Recargar las reseñas del componente hijo
+    if (this.resenaComponent) {
+      this.resenaComponent.cargarResenas();
     }
   }
 }

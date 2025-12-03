@@ -168,10 +168,30 @@
 
             <!-- Reseñas -->
             <div class="section-divider"></div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="section-title mb-0" i18n>Reseñas</h2>
+                @if (sucursalSeleccionada) {
+                    <button class="btn btn-primary" (click)="abrirModalResena()" i18n>
+                        <i class="bi bi-plus-lg me-1"></i> Agregar reseña
+                    </button>
+                }
+            </div>
             <app-resena
+                #resenaComponent
                 [nroRestaurante]="nroRestaurante"
                 [nroSucursal]="sucursalSeleccionada?.nroSucursal"
                 ></app-resena>
+
+            <!-- Modal de reseña -->
+            @if (sucursalSeleccionada) {
+                <app-formulario-resena
+                    [visible]="mostrarModalResena"
+                    [nroRestaurante]="nroRestaurante"
+                    [nroSucursal]="sucursalSeleccionada.nroSucursal"
+                    (visibleChange)="cerrarModalResena()"
+                    (resenaEnviada)="onResenaEnviada()">
+                </app-formulario-resena>
+            }
 
             <!-- Horarios Disponibles -->
             @if (sucursalSeleccionada && nroRestaurante) {

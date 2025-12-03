@@ -1,0 +1,77 @@
+@if (visible) {
+  <div class="modal fade show d-block" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" i18n>Dejar una reseña</h5>
+          <button type="button" class="btn-close" (click)="cerrarModal()" [disabled]="enviando"></button>
+        </div>
+        
+        <form [formGroup]="resenaForm" (ngSubmit)="enviarResena()">
+          <div class="modal-body">
+
+            @if (errorMsg) {
+              <div class="alert alert-danger" role="alert">{{ errorMsg }}</div>
+            }
+
+            <!-- Calificación con estrellas -->
+            <div class="mb-3">
+              <label class="form-label" i18n>Calificación</label>
+              <div class="d-flex gap-2">
+                @for (star of estrellas; track star) {
+                  <i 
+                    class="bi fs-2 cursor-pointer"
+                    [ngClass]="star <= resenaForm.value.calificacion ? 'bi-star-fill text-warning' : 'bi-star text-muted'"
+                    (click)="seleccionarCalificacion(star)"
+                    style="cursor: pointer;">
+                  </i>
+                }
+              </div>
+            </div>
+
+            <!-- Comentario -->
+            <div class="mb-3">
+              <label for="comentario" class="form-label" i18n>Comentario</label>
+              <textarea 
+                id="comentario"
+                class="form-control"
+                formControlName="comentario"
+                rows="4"
+                maxlength="1000"
+                [placeholder]="'Cuéntanos tu experiencia...'" i18n-placeholder>
+              </textarea>
+              <small class="text-muted">
+                {{ resenaForm.value.comentario?.length || 0 }}/1000
+              </small>
+              @if (resenaForm.get('comentario')?.invalid && resenaForm.get('comentario')?.touched) {
+                <div class="text-danger small mt-1" i18n>
+                  El comentario es obligatorio
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button 
+              type="button" 
+              class="btn btn-secondary" 
+              (click)="cerrarModal()"
+              [disabled]="enviando" i18n>
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary"
+              [disabled]="resenaForm.invalid || enviando">
+              @if (enviando) {
+                <span class="spinner-border spinner-border-sm me-1"></span>
+              }
+              <ng-container i18n>Enviar reseña</ng-container>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}

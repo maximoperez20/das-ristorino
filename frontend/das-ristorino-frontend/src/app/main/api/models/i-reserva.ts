@@ -17,4 +17,6 @@ export interface IReserva {
   nombre_sucursal?: string | null;
   nombre_zona?: string | null;
   preferencias?: string | null;
+  nro_restaurante?: string | null;
+  nro_sucursal?: string | null;
 }
