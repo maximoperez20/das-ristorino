@@ -1,0 +1,51 @@
+<!-- resenas.html -->
+<div class="resenas-root">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-4">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="!loading && error" class="alert alert-danger" role="alert">
+    <i class="bi bi-exclamation-triangle me-2"></i>
+    {{ error }}
+  </div>
+
+  <!-- Lista de reseñas -->
+
+  <div *ngIf="!loading && !error && resenas && resenas.length > 0" class="resenas-list">
+    @for (r of resenas; track r.nroreserva) {
+      <div class="resena-card" role="article" aria-label="Reseña">
+        <div class="resena-header d-flex justify-content-between align-items-center">
+          <div class="rating" aria-hidden="true">
+            <ng-container *ngFor="let star of [1,2,3,4,5]">
+              <span class="star" [class.filled]="star <= (r.valoracion || 0)">★</span>
+            </ng-container>
+            <small class="ms-2 text-muted">({{ r.valoracion || 0 }})</small>
+          </div>
+
+          <div class="cliente">
+            <small class="cliente-name text-muted">Cliente #{{ r.clienteId ?? 'anon' }}</small>
+          </div>
+        </div>
+
+        <div class="resena-body mt-2">
+          @if (r.comentario && r.comentario.trim().length) {
+            <p class="comentario">{{ r.comentario }}</p>
+          } @else {
+            <p class="comentario muted">Sin comentario</p>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- No hay reseñas -->
+  <div *ngIf="!loading && !error && (!resenas || resenas.length === 0)" class="alert alert-info text-center">
+    <i class="bi bi-info-circle me-2"></i> No hay reseñas para esta sucursal.
+  </div>
+
+</div>

@@ -1,0 +1,16 @@
+Cambios para permitir agregar resenas en las sucursales de los restaurantes
+
+01. Estructura de la bd
+    - Se creo la tabla resenas_sucursales
+    - Se crearon los procedures de get e insert
+
+02. Traer bd al sistema (dto)
+    Se crean el dto correspondiente. 
+    Se crea el repository para manejar operaciones con la bd
+
+    *aclaracion*
+    A veces es mas facil trackear desde el front end un Cambios
+    Si bien la estructura de la bd es siempre necesaria. Por ahi entendes que necesitas cuando vas viendo como llega
+    del frontend al backend
+
+    

@@ -4,6 +4,7 @@ import { IRestaurante } from '../../api/models/i-restaurante';
 import { ISucursal } from '../../api/models/i-sucursal';
 import { NgClass } from '@angular/common';
 import { HorariosDisponiblesComponent, HorarioSeleccionado } from '../horarios-disponibles/horarios-disponibles';
+import { ResenasComponent } from '../resenas-component/resenas';
 import { PromocionComponent } from "../promocion/promocion";
 import { FormularioReservaComponent } from '../formulario-reserva/formulario-reserva';
 import { AuthService } from '../../../core/services/auth-service';
@@ -13,7 +14,7 @@ import { IHorariosDisponiblesResponse } from '../../api/models/i-horario-disponi
 @Component({
   selector: 'app-detalle-restaurante',
   standalone: true,
-  imports: [NgClass, HorariosDisponiblesComponent, PromocionComponent, FormularioReservaComponent],
+  imports: [NgClass, HorariosDisponiblesComponent, PromocionComponent, FormularioReservaComponent, ResenasComponent],
   templateUrl: './detalle-restaurante.html',
   styleUrls: ['./detalle-restaurante.scss'],
 })

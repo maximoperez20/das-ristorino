@@ -165,6 +165,17 @@
                     }
                 </div>
             </div>
+            
+             @if (sucursalSeleccionada) {
+                <div class="section-divider"></div>
+                <div class="mb-5">
+                    <h2 class="section-title mb-4" i18n>Reseñas</h2>
+                    <app-resenas
+                        [nroRestaurante]="nroRestaurante"
+                        [nroSucursal]="sucursalSeleccionada.nroSucursal">
+                    </app-resenas>
+                </div>
+            }
 
             <!-- Horarios Disponibles -->
             @if (sucursalSeleccionada && nroRestaurante) {
@@ -194,7 +205,7 @@
                     [especialidadesAlimentarias]="especialidadesAlimentarias"
                 >    
                 </app-formulario-reserva>
-            }
+            }           
         }
 
         <!-- Promociones -->

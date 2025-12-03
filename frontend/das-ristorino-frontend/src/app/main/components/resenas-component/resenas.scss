@@ -1,0 +1,13 @@
+.resenas-list { display: grid; gap: 12px; }
+.resena-card {
+  border: 1px solid #e0e0e0;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff;
+}
+.resena-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.rating .star { color:#ddd; font-size:18px; margin-right:2px; }
+.rating .star.filled { color:#f5b301; } /* dorado para estrellas llenas */
+.cliente-name { font-weight:600; color:#333; }
+.comentario { margin:0; color:#222; }
+.comentario.muted { color:#888; font-style:italic; }
