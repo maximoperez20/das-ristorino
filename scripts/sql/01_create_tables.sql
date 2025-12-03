@@ -472,6 +472,25 @@ CREATE TABLE dbo.reservas_restaurantes (
 );
 GO
 
+create table dbo.resenas_sucursales_restaurantes (
+    nro_resena VARCHAR(36) NOT NULL DEFAULT NEWID(),
+    nro_restaurante VARCHAR(36) NOT NULL,
+    nro_sucursal VARCHAR(36) NOT NULL,
+    nro_cliente VARCHAR(36) NOT NULL,
+    calificacion INT NOT NULL,
+    comentario NVARCHAR(1000) NULL,
+    fecha_hora_registro DATETIME2(3) NOT NULL DEFAULT SYSDATETIME(),
+    CONSTRAINT PK_resenas_sucursales PRIMARY KEY (nro_resena),
+    CONSTRAINT FK_resenas_sucursales_suc
+        FOREIGN KEY (nro_restaurante, nro_sucursal)
+        REFERENCES dbo.sucursales_restaurantes(nro_restaurante, nro_sucursal)
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT FK_resenas_sucursales_cliente
+        FOREIGN KEY (nro_cliente) REFERENCES dbo.clientes(nro_cliente)
+        ON UPDATE NO ACTION ON DELETE NO ACTION,
+    CONSTRAINT CK_resenas_calificacion CHECK (calificacion >= 1 AND calificacion <= 5)
+);
+
 /* ===========================
    �ndices sugeridos
    =========================== */

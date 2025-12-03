@@ -1646,4 +1646,47 @@ BEGIN
 END;
 GO
 
+CREATE OR ALTER PROCEDURE sp_ObtenerResenas_sucursales
+    @nro_restaurante VARCHAR(36),
+    @nro_sucursal VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT *
+    FROM resenas_sucursales_restaurantes
+    WHERE nro_restaurante = @nro_restaurante
+      AND nro_sucursal = @nro_sucursal;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_InsertarResena_sucursal
+    @nro_restaurante VARCHAR(36),
+    @nro_sucursal VARCHAR(36),
+    @nro_cliente VARCHAR(36),
+    @calificacion INT,
+    @comentario NVARCHAR(1000)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO resenas_sucursales_restaurantes (
+        nro_restaurante,
+        nro_sucursal,
+        nro_cliente,
+        calificacion,
+        comentario,
+        fecha_hora_registro
+    )
+    VALUES (
+        @nro_restaurante,
+        @nro_sucursal,
+        @nro_cliente,
+        @calificacion,
+        @comentario,
+        SYSDATETIME()
+    );
+END;
+GO
+
 PRINT 'Stored procedures creados/actualizados exitosamente!';
