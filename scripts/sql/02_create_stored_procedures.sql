@@ -1653,8 +1653,13 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT *
-    FROM resenas_sucursales_restaurantes
+    SELECT
+        CONCAT(c.nombre,' ',c.apellido) AS nombreCompleto,
+        res.calificacion,
+        res.comentario,
+        res.fecha_hora_registro
+    FROM dbo.resenas_sucursales_restaurantes res
+    JOIN dbo.clientes c on res.nro_cliente = c.nro_cliente
     WHERE nro_restaurante = @nro_restaurante
       AND nro_sucursal = @nro_sucursal;
 END;
