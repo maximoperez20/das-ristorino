@@ -249,30 +249,61 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    -- Comparación case-insensitive para "Cancelada"
-    IF UPPER(LTRIM(RTRIM(@nuevo_estado))) = 'CANCELADA'
+    DECLARE @cod_estado_nuevo VARCHAR(36);
+    DECLARE @estado_normalizado NVARCHAR(20) = UPPER(LTRIM(RTRIM(@nuevo_estado)));
+    
+    -- Obtener el código del estado según el nombre
+    SELECT @cod_estado_nuevo = cod_estado 
+    FROM estados_reservas 
+    WHERE UPPER(LTRIM(RTRIM(nom_estado))) = @estado_normalizado;
+    
+    -- Si el estado es "CANCELADA"
+    IF @estado_normalizado = 'CANCELADA'
     BEGIN
-        -- Obtener el código del estado "Cancelada"
-        DECLARE @cod_estado_cancelada VARCHAR(36);
-        SELECT @cod_estado_cancelada = cod_estado 
-        FROM estados_reservas 
-        WHERE nom_estado = N'Cancelada';
-        
         -- Actualizar cancelada, fecha_hora_cancelacion y cod_estado
         UPDATE reservas_restaurantes
         SET cancelada = 1, 
             fecha_hora_cancelacion = GETDATE(),
-            cod_estado = @cod_estado_cancelada
+            cod_estado = @cod_estado_nuevo
+        WHERE nro_reserva = @id;
+    END
+    -- Si el estado es "CONFIRMADA"
+    ELSE IF @estado_normalizado = 'CONFIRMADA'
+    BEGIN
+        -- Actualizar cod_estado a Confirmada y limpiar cancelada
+        UPDATE reservas_restaurantes
+        SET cancelada = 0, 
+            fecha_hora_cancelacion = NULL,
+            cod_estado = @cod_estado_nuevo
+        WHERE nro_reserva = @id;
+    END
+    -- Si el estado es "PENDIENTE"
+    ELSE IF @estado_normalizado = 'PENDIENTE'
+    BEGIN
+        -- Actualizar cod_estado a Pendiente y limpiar cancelada
+        UPDATE reservas_restaurantes
+        SET cancelada = 0, 
+            fecha_hora_cancelacion = NULL,
+            cod_estado = @cod_estado_nuevo
         WHERE nro_reserva = @id;
     END
     ELSE
     BEGIN
-        -- Si se reactiva, limpiar cancelada y fecha_hora_cancelacion
-        -- El cod_estado se mantiene o se puede actualizar según el nuevo estado si se pasa
-        UPDATE reservas_restaurantes
-        SET cancelada = 0, 
-            fecha_hora_cancelacion = NULL
-        WHERE nro_reserva = @id;
+        -- Para otros estados, solo actualizar cod_estado si se encontró
+        IF @cod_estado_nuevo IS NOT NULL
+        BEGIN
+            UPDATE reservas_restaurantes
+            SET cod_estado = @cod_estado_nuevo
+            WHERE nro_reserva = @id;
+        END
+        ELSE
+        BEGIN
+            -- Si no se encontró el estado, solo limpiar cancelada si se reactiva
+            UPDATE reservas_restaurantes
+            SET cancelada = 0, 
+                fecha_hora_cancelacion = NULL
+            WHERE nro_reserva = @id;
+        END
     END;
     
     SELECT @@ROWCOUNT;

@@ -104,7 +104,11 @@ public class ReservaService {
             throw new RuntimeException("Cliente no encontrado");
         }
         
-        String codEstadoConfirmada = obtenerCodigoEstado("Confirmada");
+        // Crear la reserva inicialmente con estado "Pendiente"
+        String codEstadoPendiente = obtenerCodigoEstado("Pendiente");
+        if (codEstadoPendiente == null) {
+            throw new RuntimeException("El estado 'Pendiente' no existe en la base de datos. Verifique la configuración de estados.");
+        }
         
         // Crear DTO tipado en lugar de pasar 13 parámetros sueltos
         RegistrarReservaRistorinoDto reservaDto = new RegistrarReservaRistorinoDto(
@@ -116,14 +120,14 @@ public class ReservaService {
                 nroCliente,
                 request.getCantAdultos(),
                 request.getCantMenores(),
-                codEstadoConfirmada,
+                codEstadoPendiente,  // Estado inicial: Pendiente
                 costoReserva,
                 request.getPreferenciasReserva(),
                 null,  // notas
                 null   // codReservaSucursal
         );
         
-        // Registrar primero en Ristorino
+        // Registrar primero en Ristorino con estado Pendiente
         String codigoReserva = reservaRepository.registrarReservaRistorino(reservaDto);
         
         try {
@@ -144,7 +148,11 @@ public class ReservaService {
                     request.getCantMenores()
             );
             
+            // Si se registró exitosamente en el restaurante, actualizar el código de reserva del restaurante
             reservaRepository.actualizarCodReservaSucursal(codigoReserva, codReservaRestaurante);
+            
+            // Actualizar el estado a "Confirmada" ya que se confirmó exitosamente en el restaurante
+            reservaRepository.updateEstado(codigoReserva, "Confirmada");
             
         } catch (RuntimeException e) {
             // Si falla por disponibilidad o validación, obtener nuevos horarios y hacer rollback
