@@ -6,14 +6,16 @@ import { NgClass } from '@angular/common';
 import { HorariosDisponiblesComponent, HorarioSeleccionado } from '../horarios-disponibles/horarios-disponibles';
 import { PromocionComponent } from "../promocion/promocion";
 import { FormularioReservaComponent } from '../formulario-reserva/formulario-reserva';
+import { ResenaComponent } from '../resena/resena';
 import { AuthService } from '../../../core/services/auth-service';
 import { IDominioPreferencia } from '../../api/models/i-dominio-preferencia';
 import { IHorariosDisponiblesResponse } from '../../api/models/i-horario-disponible';
 
+
 @Component({
   selector: 'app-detalle-restaurante',
   standalone: true,
-  imports: [NgClass, HorariosDisponiblesComponent, PromocionComponent, FormularioReservaComponent],
+  imports: [NgClass, HorariosDisponiblesComponent, PromocionComponent, FormularioReservaComponent, ResenaComponent],
   templateUrl: './detalle-restaurante.html',
   styleUrls: ['./detalle-restaurante.scss'],
 })
