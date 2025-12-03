@@ -1,19 +1,18 @@
 package ar.edu.ubp.das.backend.repository;
 
 import ar.edu.ubp.das.backend.dto.ResenasSucursalesDto;
-import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
+
 
 import ar.edu.ubp.das.backend.dto.*;
-import java.sql.Types;
+
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 import ar.edu.ubp.das.backend.components.SimpleJdbcCallFactory;
 
@@ -24,8 +23,8 @@ public class ResenasSucursalesRepository {
     @Autowired
     private SimpleJdbcCallFactory jdbcCallFactory;
     
-    @Autowired
-    private ObjectMapper objectMapper;
+    // @Autowired
+    // private ObjectMapper objectMapper;
 
     // Obtener reseña por restaurante y sucursal
     public List<ResenasSucursalesDto> getBySucursalRestaurante(String id_sucursal, String id_restaurante) {
@@ -47,7 +46,7 @@ public class ResenasSucursalesRepository {
             String nroCliente, ConfirmarResenaDto resena) {
         try {                    
             //convertir la lista a json
-            String resenaJson = objectMapper.writeValueAsString(resena);
+            // resenaJson = objectMapper.writeValueAsString(resena);
             //por ahora no se usa. Se toman los valores de la resena. 
 
             SqlParameterSource params = new MapSqlParameterSource()

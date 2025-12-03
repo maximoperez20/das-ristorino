@@ -11,8 +11,6 @@ import ar.edu.ubp.das.backend.dto.RestauranteDto;
 import ar.edu.ubp.das.backend.repository.BusquedaRepository;
 import ar.edu.ubp.das.backend.repository.ClienteRepository;
 import ar.edu.ubp.das.backend.repository.RestauranteRepository;
-import ar.edu.ubp.das.backend.service.PreferenciaService;
-import ar.edu.ubp.das.backend.service.ValidacionCatalogoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

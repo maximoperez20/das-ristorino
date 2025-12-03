@@ -24,7 +24,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+
 import java.util.ArrayList;
 import java.util.Base64;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoJsonDto;
@@ -46,7 +46,7 @@ import java.util.Map; // Necesario para parsear respuestas dinámicas
 public class RestauranteRestClient implements RestauranteClient {
 
     private static final Logger logger = LoggerFactory.getLogger(RestauranteRestClient.class);
-    private static final DateTimeFormatter ISO_DATE_TIME = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    //private static final DateTimeFormatter ISO_DATE_TIME = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     private final RestTemplate restTemplate;
     private final Gson gson;

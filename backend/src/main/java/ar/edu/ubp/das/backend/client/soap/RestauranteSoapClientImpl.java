@@ -23,9 +23,9 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+
 import java.util.ArrayList;
-import java.util.Base64;
+
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoJsonDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickJsonDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchJsonDto;
@@ -38,7 +38,7 @@ import java.util.Map; // Necesario para parsear respuestas dinámicas
 public class RestauranteSoapClientImpl implements RestauranteClient {
 
     private static final Logger logger = LoggerFactory.getLogger(RestauranteSoapClientImpl.class);
-    private static final DateTimeFormatter ISO_DATE_TIME = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    //private static final DateTimeFormatter ISO_DATE_TIME = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     @Value("${soap.restaurante.wsdl:http://localhost:8081/ws/restaurantes.wsdl}")
     private String defaultWsdlUrl;
