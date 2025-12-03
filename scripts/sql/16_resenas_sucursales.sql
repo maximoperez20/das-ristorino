@@ -51,8 +51,11 @@ BEGIN
         r.nro_restaurante, 
         r.nro_sucursal,
         r.valoracion, 
-        r.nro_cliente
+        r.nro_cliente,
+				c.nombre + ' ' + c.apellido as nombre_cliente 
     FROM resenas_sucursales r
+			inner join clientes c
+				on r.nro_cliente = c.nro_cliente
     WHERE r.nro_restaurante = @nro_restaurante
       AND r.nro_sucursal    = @nro_sucursal;
 END
@@ -118,6 +121,7 @@ BEGIN
 END
 GO
 
+		
 		
 EXEC dbo.sp_insertar_resena_sucursal
     @nro_restaurante = 'BELLA-PIZZA-1111-1111-1111-111111111',

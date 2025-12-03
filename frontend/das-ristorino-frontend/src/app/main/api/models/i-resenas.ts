@@ -5,7 +5,8 @@ export interface IResena {
     nroreserva: string;
     nroRestaurante: string;
     nroSucursal: string;
-    clienteId: number;
+    nroCliente: number;
     comentario: string;
     valoracion: number;  
+    nombreCliente: string;
 }
