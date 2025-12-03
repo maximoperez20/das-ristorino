@@ -8,16 +8,6 @@
         <div class="hero-overlay">
             <div class="container">
                 <h1 class="hero-title">{{ restaurante.nombre }}</h1>
-                @if (restaurante.calificacion) {
-                    <div class="hero-rating">
-                        @for (star of [1,2,3,4,5]; track star) {
-                            <i class="bi"
-                               [ngClass]="star <= restaurante.calificacion! ? 'bi-star-fill text-warning' : 'bi-star text-muted'">
-                            </i>
-                        }
-                        <span class="ms-2 rating-value">({{ restaurante.calificacion.toFixed(1) }})</span>
-                    </div>
-                }
             </div>
         </div>
     </div>
@@ -107,20 +97,6 @@
                     } @else {
                         <span class="badge bg-secondary mb-3 d-block" i18n>Inactivo</span>
                     }
-
-                    @if (restaurante.calificacion) {
-                        <div class="mb-3">
-                            <strong i18n>Calificación</strong>
-                            <div class="mt-2">
-                                @for (star of [1,2,3,4,5]; track star) {
-                                    <i class="bi fs-5"
-                                       [ngClass]="star <= restaurante.calificacion! ? 'bi-star-fill text-warning' : 'bi-star text-muted'">
-                                    </i>
-                                }
-                                <span class="ms-2">{{ restaurante.calificacion.toFixed(1) }}</span>
-                            </div>
-                        </div>
-                    }
                 </div>
             </div>
         </div>
@@ -165,6 +141,26 @@
                     }
                 </div>
             </div>
+
+            @if (resenas.length > 0) {
+                <h2 class="section-title mb-4" i18n>Reseñas</h2>
+                @for (resena of resenas; track resena.fechaResena) {
+                    <div class="section-divider bg-secondary"></div>
+                    <div class="mb-3">
+                        <div class="mt-2">
+                            @for (star of [1,2,3,4,5]; track star) {
+                                <i class="bi fs-5"
+                                [ngClass]="star <= resena.calificacion! ? 'bi-star-fill text-warning' : 'bi-star text-muted'">
+                                </i>
+                            }
+                            <span class="ms-2">{{ restaurante.calificacion.toFixed(1) }}</span>
+                        </div>
+                        <p class="mb-0"><strong>{{ resena.nombreCliente }}</strong></p>
+                        <p class="mb-0">{{ resena.comentario }}</p>
+                        <p class="mb-0">{{ resena.fechaResena }}</p>
+                    </div>
+                }
+            }
 
             <!-- Horarios Disponibles -->
             @if (sucursalSeleccionada && nroRestaurante) {

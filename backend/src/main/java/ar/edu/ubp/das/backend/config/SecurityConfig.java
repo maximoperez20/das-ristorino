@@ -45,6 +45,7 @@ public class SecurityConfig {
                        .requestMatchers(
                            "/actuator/health",
                            "/api/restaurantes/**",     // Consulta de restaurantes y búsqueda NLP - PÚBLICO
+                           "/api/resenas/**",     // Consulta de restaurantes y búsqueda NLP - PÚBLICO
                            "/api/promociones/**",      // Consulta de promociones - PÚBLICO
                            "/api/localidades/**",      // Consulta de localidades - PÚBLICO
                            "/api/preferencias/categorias",  // Consulta de categorías de preferencias - PÚBLICO

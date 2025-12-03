@@ -17,6 +17,7 @@ import { ReservaResource } from './main/api/resources/reserva-resource';
 import { ClienteResource } from './main/api/resources/cliente-resource';
 import { LocalidadResource } from './main/api/resources/localidad-resource';
 import { PreferenciaResource } from './main/api/resources/preferencia-resource';
+import { ResenaResource } from './main/api/resources/resena-resource';
 
 export const routes: Routes = [
     {path: '', component: HomePage, 
@@ -43,7 +44,7 @@ export const routes: Routes = [
                     m => m.DetalleRestauranteComponent
                 ),
                 resolve: { restaurante: restauranteResolver, especialidadesAlimentarias: especialidadesAlimentariasResolver },
-                providers: [RestauranteResource, PromocionResource, ReservaResource, PreferenciaResource]
+                providers: [RestauranteResource, PromocionResource, ReservaResource, PreferenciaResource, ResenaResource]
             },
             {
                 path: 'login',

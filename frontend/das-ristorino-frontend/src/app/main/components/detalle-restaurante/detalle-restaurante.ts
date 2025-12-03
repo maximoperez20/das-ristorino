@@ -9,6 +9,8 @@ import { FormularioReservaComponent } from '../formulario-reserva/formulario-res
 import { AuthService } from '../../../core/services/auth-service';
 import { IDominioPreferencia } from '../../api/models/i-dominio-preferencia';
 import { IHorariosDisponiblesResponse } from '../../api/models/i-horario-disponible';
+import { IResena } from '../../api/models/i-resena';
+import { ResenaResource } from '../../api/resources/resena-resource';
 
 @Component({
   selector: 'app-detalle-restaurante',
@@ -23,6 +25,7 @@ export class DetalleRestauranteComponent implements OnInit {
 
   restaurante?: IRestaurante | undefined;
   especialidadesAlimentarias: IDominioPreferencia[] = [];
+  resenas: IResena[] = [];
   sucursalSeleccionada?: ISucursal;
   fechaSeleccionada: Date = new Date();
   nroRestaurante: string = '';
@@ -33,6 +36,7 @@ export class DetalleRestauranteComponent implements OnInit {
   private _router = inject(Router);
   private _auth = inject(AuthService);
   private _cdr = inject(ChangeDetectorRef);
+  private _resenaResource: ResenaResource = inject(ResenaResource);
 
   ngOnInit(): void {
     this.nroRestaurante = this._route.snapshot.paramMap.get('nroRestaurante') || '';
@@ -50,11 +54,13 @@ export class DetalleRestauranteComponent implements OnInit {
   seleccionarPrimeraSucursal(): void {
     if (this.restaurante?.sucursales && this.restaurante.sucursales.length > 0) {
       this.sucursalSeleccionada = this.restaurante.sucursales[0];
+      this.cargarResenas();
     }
   }
 
   seleccionarSucursal(sucursal: ISucursal): void {
     this.sucursalSeleccionada = sucursal;
+    this.cargarResenas();
   }
 
   formatearHorario(horario: string | null): string {
@@ -128,4 +134,26 @@ export class DetalleRestauranteComponent implements OnInit {
       }, 200);
     }
   }
+
+
+  cargarResenas(): void {
+    if (!this.sucursalSeleccionada || !this.nroRestaurante) {
+      this.resenas = [];
+      return;
+    }
+
+    this._resenaResource.obtenerResenasPorRestaurante({
+      nroRestaurante: this.nroRestaurante,
+      nroSucursal: this.sucursalSeleccionada.nroSucursal
+    }).subscribe({
+      next: (resenas: IResena[]) => {
+        this.resenas = resenas || [];
+      },
+      error: (err: any) => {
+        console.error('Error al cargar reseñas:', err);
+        this.resenas = [];
+      }
+    });
+  }
+
 }
