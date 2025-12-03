@@ -2,6 +2,10 @@ package ar.edu.ubp.das.backend.resources;
 
 import ar.edu.ubp.das.backend.dto.ResenaDto;
 import ar.edu.ubp.das.backend.service.ResenaService;
+import ar.edu.ubp.das.backend.dto.ResenaRequestDto;
+import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,9 +33,9 @@ public class ResenaResource {
         return ResponseEntity.ok(resenas);
     }
 
-    // @PostMapping
-    // public ResponseEntity<ResenaDto> createResena(@Valid @RequestBody ResenaRequestDto resenaRequestDto) {
-    //   resenaService.crearResena(resenaRequestDto);
-    //   return ResponseEntity.status(HttpStatus.CREATED).build();
-    // }
+    @PostMapping
+    public ResponseEntity<ResenaDto> createResena(@Valid @RequestBody ResenaRequestDto resenaRequestDto) {
+      resenaService.crearResena(resenaRequestDto);
+      return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
 }

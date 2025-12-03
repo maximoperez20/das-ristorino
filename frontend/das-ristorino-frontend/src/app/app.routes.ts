@@ -91,7 +91,7 @@ export const routes: Routes = [
                     m => m.MisReservasPage
                 ),
                 resolve: { reservas: misReservasResolver },
-                providers: [ReservaResource]
+                providers: [ReservaResource, ResenaResource]
             },
             {
                 path: 'buscar',

@@ -143,9 +143,14 @@
                     </div>
 
                     @if (esReservaPasada(reserva.fecha_hora)) {
-                      <div class="alert alert-secondary small mb-0" role="alert" i18n>
+                      <div class="alert alert-secondary small mb-2" role="alert" i18n>
                         <i class="bi bi-clock-history"></i> Esta reserva ya pasó
                       </div>
+
+                      <button class="btn btn-primary btn-sm" (click)="agregarResena(reserva)"> 
+                        <i class="bi bi-star me-1"></i>
+                        <span i18n>Agregar Reseña</span>
+                      </button>
                     }
                   </div>
                 </div>
@@ -157,3 +162,13 @@
     }
   </div>
 </div>
+
+<!-- Modal de Agregar Reseña -->
+@if (reservaSeleccionadaParaResena) {
+  <app-agregar-resena
+    [nroReserva]="reservaSeleccionadaParaResena.id"
+    [visible]="mostrarFormularioResena"
+    (visibleChange)="onModalResenaVisibleChange($event)"
+  >
+  </app-agregar-resena>
+}

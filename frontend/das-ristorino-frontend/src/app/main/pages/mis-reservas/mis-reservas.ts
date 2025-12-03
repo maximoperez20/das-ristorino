@@ -4,6 +4,7 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { IReserva } from '../../api/models/i-reserva';
 import { AuthService } from '../../../core/services/auth-service';
 import { DateUtilsService } from '../../../core/services/date-utils.service';
+import { FormularioReservaComponent } from '../../components/agregar-resena/agregar-resena'; // Importar el componente
 
 interface ReservaPorDia {
   fecha: Date;
@@ -15,7 +16,7 @@ interface ReservaPorDia {
 @Component({
   selector: 'app-mis-reservas',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormularioReservaComponent], // Agregar FormularioReservaComponent
   templateUrl: './mis-reservas.html',
   styleUrls: ['./mis-reservas.scss'],
 })
@@ -24,6 +25,10 @@ export class MisReservasPage implements OnInit {
   reservas: IReserva[] = [];
   reservasPorDia: ReservaPorDia[] = [];
   filtroActivo: string | undefined = undefined;
+  
+  // Propiedades para el modal de reseña
+  mostrarFormularioResena: boolean = false;
+  reservaSeleccionadaParaResena?: IReserva;
 
   private _auth = inject(AuthService);
   private _router = inject(Router);
@@ -271,4 +276,37 @@ export class MisReservasPage implements OnInit {
     return filtroActivoNormalizado === filtroNormalizado;
   }
 
+  agregarResena(reserva: IReserva): void {
+    // Guardar la reserva seleccionada y mostrar el modal
+    this.reservaSeleccionadaParaResena = reserva;
+    this.mostrarFormularioResena = true;
+  }
+
+  onModalResenaVisibleChange(visible: boolean): void {
+    this.mostrarFormularioResena = visible;
+    if (!visible) {
+      this.reservaSeleccionadaParaResena = undefined;
+    }
+  }
+
+  onResenaCreada(): void {
+    // Recargar las reservas o actualizar la lista
+    // Puedes recargar desde el resolver o hacer una llamada directa
+    this.mostrarFormularioResena = false;
+    this.reservaSeleccionadaParaResena = undefined;
+  }
+
+  // Método helper para obtener nroRestaurante y nroSucursal de la reserva
+  // Nota: Necesitarás agregar estos campos a IReserva si no están disponibles
+  obtenerNroRestaurante(reserva: IReserva): string {
+    // Si IReserva tiene nro_restaurante, usarlo
+    // Si no, necesitarás obtenerlo de otra manera o agregarlo al DTO
+    return (reserva as any).nro_restaurante || '';
+  }
+
+  obtenerNroSucursal(reserva: IReserva): string {
+    // Si IReserva tiene nro_sucursal, usarlo
+    // Si no, necesitarás obtenerlo de otra manera o agregarlo al DTO
+    return (reserva as any).nro_sucursal || '';
+  }
 }

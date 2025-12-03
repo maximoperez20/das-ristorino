@@ -3,7 +3,7 @@ import { Resource, ResourceAction, ResourceHandler, ResourceParams, ResourceRequ
 import type { IResourceMethodObservable } from '@ngx-resource/core';
 import { IResena } from '../models/i-resena';
 import { environment } from '../../../../environments/environment';
-
+import { IResenaRequest } from '../models/i-resena-request';
 @Injectable()
 @ResourceParams({
   pathPrefix: `${environment.apiUrl}/resenas`
@@ -20,9 +20,9 @@ export class ResenaResource extends Resource {
   })
   declare obtenerResenasPorRestaurante: IResourceMethodObservable<{nroRestaurante: string, nroSucursal: string}, IResena[]>;
 
-//   @ResourceAction({
-//     path: '/{nroRestaurante}/especialidades-alimentarias',
-//     method: ResourceRequestMethod.Get,
-//   })
-//   declare obtenerEspecialidadesAlimentariasPorRestaurante: IResourceMethodObservable<{nroRestaurante: string}, IDominioPreferencia[]>;
+  @ResourceAction({
+    path: '/{nroRestaurante}/especialidades-alimentarias',
+    method: ResourceRequestMethod.Post,
+  })
+  declare crearResena: IResourceMethodObservable<IResenaRequest, null>;
 }

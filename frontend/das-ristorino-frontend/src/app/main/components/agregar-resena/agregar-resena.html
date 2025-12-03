@@ -1,0 +1,56 @@
+<div class="modal-wrapper" [hidden]="!visible">
+  <div class="modal-backdrop" (click)="cerrar()"></div>
+  <div class="modal-container">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4 class="modal-title" i18n>
+          <i class="bi bi-star"></i> Agregar Reseña
+        </h4>
+        <button type="button" class="btn-close" (click)="cerrar()" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        <form (ngSubmit)="onSubmit($event)">
+          <div class="mb-3">
+            <label for="calificacion" class="form-label" i18n>Calificación</label>
+            <div class="d-flex gap-2 align-items-center">
+              @for (star of [1,2,3,4,5]; track star) {
+                <button 
+                  type="button"
+                  class="btn btn-link p-0"
+                  [class.text-warning]="calificacionSeleccionada >= star"
+                  [class.text-muted]="calificacionSeleccionada < star"
+                  (click)="calificacionSeleccionada = star">
+                  <i class="bi fs-2" [ngClass]="calificacionSeleccionada >= star ? 'bi-star-fill' : 'bi-star'"></i>
+                </button>
+              }
+              <span class="ms-2">{{ calificacionSeleccionada }}/5</span>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="comentario" class="form-label" i18n>Comentario</label>
+            <textarea 
+              name="comentario" 
+              id="comentario" 
+              class="form-control" 
+              rows="4"
+              [(ngModel)]="comentario"
+              [required]="true">
+            </textarea>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="cerrar()" i18n>Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="!calificacionSeleccionada || !comentario || loading" i18n>
+              @if (loading) {
+                <span class="spinner-border spinner-border-sm me-2"></span>
+              }
+              Agregar Reseña
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,65 +1,50 @@
 package ar.edu.ubp.das.backend.dto;
 import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ResenaRequestDto {
     
-  private int calificacion;
-  private String comentario;
-  private Date fechaResena;
-  private String nroRestaurante;
-  private String nroSucursal;
-  private String nroCliente;
+    private int calificacion;
+    private String comentario;
+    private String nroReserva;
     
+    // Constructor sin argumentos (requerido por Jackson)
+    public ResenaRequestDto() {
+    }
+    
+    // Constructor con argumentos (opcional, para facilitar creación)
     public ResenaRequestDto(
         int calificacion,
         String comentario,
-        Date fechaResena,
-        String nroRestaurante,
-        String nroSucursal,
-        String nroCliente) {
+        String nroReserva) {
         this.calificacion = calificacion;
         this.comentario = comentario;
-        this.fechaResena = fechaResena;
-        this.nroRestaurante = nroRestaurante;
-        this.nroSucursal = nroSucursal;
-        this.nroCliente = nroCliente;
+        this.nroReserva = nroReserva;
     }
 
+    // Getters y Setters
     public int getCalificacion() {
         return calificacion;
     }
-    public String getComentario() {
-        return comentario;
-    }
-    public Date getFechaResena() {
-        return fechaResena;
-    }
-    public String getNroRestaurante() {
-        return nroRestaurante;
-    }
-    public String getNroSucursal() {
-        return nroSucursal;
-    }
-    public String getNroCliente() {
-        return nroCliente;
-    }
+    
     public void setCalificacion(int calificacion) {
         this.calificacion = calificacion;
     }
+    
+    public String getComentario() {
+        return comentario;
+    }
+    
     public void setComentario(String comentario) {
         this.comentario = comentario;
     }
-    public void setFechaResena(Date fechaResena) {
-        this.fechaResena = fechaResena;
+    
+    public String getNroReserva() {
+        return nroReserva;
     }
-    public void setNroRestaurante(String nroRestaurante) {
-        this.nroRestaurante = nroRestaurante;
-    }
-    public void setNroSucursal(String nroSucursal) {
-        this.nroSucursal = nroSucursal;
-    }
-    public void setNroCliente(String nroCliente) {
-        this.nroCliente = nroCliente;
+    
+    public void setNroReserva(String nroReserva) {
+        this.nroReserva = nroReserva;
     }
 }
 

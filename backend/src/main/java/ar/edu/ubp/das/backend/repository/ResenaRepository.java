@@ -28,9 +28,7 @@ public class ResenaRepository {
 
   public void crearResena(ResenaRequestDto resenaRequestDto) {
     SqlParameterSource params = new MapSqlParameterSource()
-            .addValue("nro_cliente", resenaRequestDto.getNroCliente())
-            .addValue("nro_restaurante", resenaRequestDto.getNroRestaurante())
-            .addValue("nro_sucursal", resenaRequestDto.getNroSucursal())
+            .addValue("nro_reserva", resenaRequestDto.getNroReserva())
             .addValue("comentario", resenaRequestDto.getComentario())
             .addValue("calificacion", resenaRequestDto.getCalificacion());
 
