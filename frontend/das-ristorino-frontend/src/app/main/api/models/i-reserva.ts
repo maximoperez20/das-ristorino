@@ -17,4 +17,7 @@ export interface IReserva {
   nombre_sucursal?: string | null;
   nombre_zona?: string | null;
   preferencias?: string | null;
+  // Opcionales: usados para agregar reseña
+  nro_restaurante?: number | string | null;
+  nro_sucursal?: number | string | null;
 }

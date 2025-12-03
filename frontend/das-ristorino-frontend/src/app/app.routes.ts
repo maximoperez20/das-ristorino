@@ -14,10 +14,12 @@ import { RestaurantesPage } from './main/pages/restaurantes/restaurantes';
 import { PromocionResource } from './main/api/resources/promocion-resource';
 import { RestauranteResource } from './main/api/resources/restaurante-resource';
 import { ReservaResource } from './main/api/resources/reserva-resource';
+import { ResenasResource } from './main/api/resources/resenas-resource';
 import { ClienteResource } from './main/api/resources/cliente-resource';
 import { LocalidadResource } from './main/api/resources/localidad-resource';
 import { PreferenciaResource } from './main/api/resources/preferencia-resource';
 import { resenasResolver } from './main/resolvers/resenas.resolver';
+
 
 export const routes: Routes = [
     {path: '', component: HomePage, 
@@ -92,6 +94,15 @@ export const routes: Routes = [
                 ),
                 resolve: { reservas: misReservasResolver },
                 providers: [ReservaResource]
+            },
+            {
+                path: 'mis-reservas/nueva-resena',
+                loadComponent: () =>
+                import('./main/components/agregar-resena/agregar-resena').then(
+                    m => m.AgregarResenaComponent
+                ), 
+                providers: [ResenasResource]
+
             },
             {
                 path: 'buscar',

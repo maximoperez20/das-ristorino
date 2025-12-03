@@ -28,4 +28,10 @@ export class ReservaResource extends Resource {
   })
   declare confirmarReserva: IResourceMethodObservable<IConfirmarReservaRequest, IConfirmarReservaResponse>;
 
+  @ResourceAction({
+    path: '/{id}',
+    method: ResourceRequestMethod.Get,
+  })
+  declare obtenerReservaPorId: IResourceMethodObservable<string, IReserva>;
+
 }

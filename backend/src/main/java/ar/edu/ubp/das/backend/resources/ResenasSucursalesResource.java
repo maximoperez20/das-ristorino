@@ -1,17 +1,9 @@
 package ar.edu.ubp.das.backend.resources;
 
-import ar.edu.ubp.das.backend.dto.ActualizarReservaDto;
-import ar.edu.ubp.das.backend.dto.CambiarEstadoDto;
-import ar.edu.ubp.das.backend.dto.ConfirmarReservaDto;
-import ar.edu.ubp.das.backend.dto.ConfirmarReservaResponseDto;
-import ar.edu.ubp.das.backend.dto.CrearReservaDto;
-import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
+import ar.edu.ubp.das.backend.dto.ConfirmarResenaDto;
+
 import ar.edu.ubp.das.backend.dto.ResenasSucursalesDto;
-import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
-import ar.edu.ubp.das.backend.exception.HorarioNoDisponibleException;
 import ar.edu.ubp.das.backend.resources.util.ResponseHelper;
-import ar.edu.ubp.das.backend.service.ReservaService;
-import ar.edu.ubp.das.backend.service.RestauranteService;
 import ar.edu.ubp.das.backend.service.LanguageService;
 import ar.edu.ubp.das.backend.service.ResenaSucursalService;
 import jakarta.validation.Valid;
@@ -52,5 +44,35 @@ public class ResenasSucursalesResource {
             logger.error("Error al obtener reseñas de sucursales", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         } 
-    }    
+    } 
+    
+    @PostMapping("/insertar-resena-sucursal")
+    public ResponseEntity<?> insertarResenaSucursal (
+         @Valid @RequestBody ConfirmarResenaDto request,
+            Authentication authentication) {
+        try {
+
+            if(authentication == null || !(authentication.getPrincipal() instanceof Jwt)) {
+                return ResponseHelper.unauthorized("No autenticado");
+            }
+
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            String clienteIdFromToken = jwt.getClaimAsString("nroCliente");
+
+            if(clienteIdFromToken == null ||clienteIdFromToken.isEmpty()) {
+                return ResponseHelper.unauthorized("NroCliente no presente en el token"); 
+            }
+
+
+            resenaSucursalService.insertarResenaSucursal(clienteIdFromToken, request);
+
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {  
+            logger.error("Error al insertar reseña de sucursal", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+    }
+    
+
 }

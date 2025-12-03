@@ -3,6 +3,7 @@ import { Resource, ResourceAction, ResourceHandler, ResourceParams, ResourceRequ
 import type { IResourceMethodObservable } from '@ngx-resource/core';
 import { environment } from '../../../../environments/environment';
 import { IResena } from '../models/i-resenas';
+import { IConfirmarResenaRequest } from '../models/i-confirmar-resena-request';
 
 
 
@@ -21,4 +22,12 @@ export class ResenasResource extends Resource{
       method: ResourceRequestMethod.Get,
     })
     declare obtenerResenasPorSucursal: IResourceMethodObservable<{nroRestaurante: string, nroSucursal: string}, IResena[]>;
+
+    @ResourceAction({
+        path: '/insertar-resena-sucursal',
+        method: ResourceRequestMethod.Post,
+    })
+    declare agregarResenaASucursal: IResourceMethodObservable<IConfirmarResenaRequest, IResena>;
+     
+
 }

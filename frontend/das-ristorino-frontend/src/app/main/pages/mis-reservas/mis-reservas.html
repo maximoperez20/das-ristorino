@@ -146,6 +146,13 @@
                       <div class="alert alert-secondary small mb-0" role="alert" i18n>
                         <i class="bi bi-clock-history"></i> Esta reserva ya pasó
                       </div>
+
+                      <a 
+                        (click)="redirigirNuevaResena(reserva.id)"
+                        class="btn btn-primary w-100"
+                        i18n>
+                        <i class="bi bi-eye"></i> Agregar Reseña
+                      </a>
                     }
                   </div>
                 </div>

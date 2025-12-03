@@ -271,4 +271,10 @@ export class MisReservasPage implements OnInit {
     return filtroActivoNormalizado === filtroNormalizado;
   }
 
+  redirigirNuevaResena(id: string): void {
+    const idReserva = this
+    this._router.navigate(['/mis-reservas/nueva-resena']
+      , { queryParams: { idReserva: id } });
+  
+  }       
 }

@@ -3,6 +3,7 @@ package ar.edu.ubp.das.backend.repository;
 import ar.edu.ubp.das.backend.dto.ResenasSucursalesDto;
 import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 
+import ar.edu.ubp.das.backend.dto.*;
 import java.sql.Types;
 import java.util.List;
 import java.util.Optional;
@@ -43,18 +44,16 @@ public class ResenasSucursalesRepository {
      * @param valoracion Valoracion numerica
      */
     public void insertarResenaSucursal(
-            String nroRestaurante,
-            String nroSucursal,
-            String nroCliente,
-            String comentario,
-            int valoracion) {
+            String nroCliente, ConfirmarResenaDto resena) {
         try {                    
-            SqlParameterSource params = new MapSqlParameterSource()                                
-                    .addValue("nro_restaurante", nroRestaurante)
-                    .addValue("nro_sucursal", nroSucursal)
-                    .addValue("nro_cliente", nroCliente)
-                    .addValue("comentario", comentario)
-                    .addValue("valoracion", valoracion);
+            //convertir la lista a json
+            String resenaJson = objectMapper.writeValueAsString(resena);
+            //por ahora no se usa. Se toman los valores de la resena. 
+
+            SqlParameterSource params = new MapSqlParameterSource()
+                    .addValue("id_reserva", resena.getIdReserva())
+                    .addValue("comentario", resena.getComentario())
+                    .addValue("valoracion", resena.getValoracion());
             
             jdbcCallFactory.execute("sp_insertar_resena_sucursal", "dbo", params);
         } catch (Exception e) {

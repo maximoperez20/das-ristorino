@@ -63,9 +63,7 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.sp_insertar_resena_sucursal
-  @nro_restaurante   VARCHAR(36),
-  @nro_sucursal      VARCHAR(36),
-  @nro_cliente       VARCHAR(36),
+  @id_reserva		VARCHAR(36),
   @comentario		NVARCHAR(400),
   @valoracion		SMALLINT
 AS
@@ -75,26 +73,25 @@ BEGIN
   DECLARE @exitoso BIT = 0;
   DECLARE @mensaje NVARCHAR(200) = '';
 
+	DECLARE @nro_restaurante NVARCHAR(200) = '';
+	DECLARE @nro_sucursal NVARCHAR(200) = '';
+	DECLARE @nro_cliente NVARCHAR(200) = '';
+
   BEGIN TRY
       
-    IF NOT EXISTS (SELECT 1 FROM restaurantes WHERE nro_restaurante = @nro_restaurante)
+    IF NOT EXISTS (SELECT 1 FROM reservas_restaurantes WHERE nro_reserva = @id_reserva)
     BEGIN
-        SELECT 'Restaurante no encontrado' AS mensaje;
+        SELECT 'Reserva no encontrada' AS mensaje;
         RETURN;
     END
 
-    IF NOT EXISTS (
-        SELECT 1 
-        FROM sucursales_restaurantes 
-        WHERE nro_restaurante = @nro_restaurante 
-          AND nro_sucursal = @nro_sucursal
-    )
-    BEGIN
-        SELECT 'Sucursal no encontrada' AS mensaje;
-        RETURN;
-    END
-
-
+		SELECT  
+			@nro_cliente     = R.nro_cliente,
+			@nro_restaurante = R.nro_restaurante,
+			@nro_sucursal    = R.nro_sucursal
+		FROM reservas_restaurantes R
+		WHERE R.nro_reserva = @id_reserva;
+			
     INSERT INTO resenas_sucursales(
       nro_restaurante,
       nro_sucursal,
@@ -121,17 +118,14 @@ BEGIN
 END
 GO
 
-		
+
 		
 EXEC dbo.sp_insertar_resena_sucursal
-    @nro_restaurante = 'BELLA-PIZZA-1111-1111-1111-111111111',
-    @nro_sucursal = '986340FE-9EAA-4325-990D-3D15EF2EDA78',
-		@nro_cliente = 'E79190F4-967E-402D-A90F-54C13902497B',
-		@comentario = 'Muy buen ambiente, el servicio fue estupendo. ',
-		@valoracion = 5
+    @id_reserva = 'RES-2025-000001-15CC',   
+		@comentario = 'Buena atencion. ',
+		@valoracion = 3
 
 
 EXEC dbo.get_resenas_x_sucursales 
     @nro_restaurante = 'BELLA-PIZZA-1111-1111-1111-111111111',
     @nro_sucursal = '986340FE-9EAA-4325-990D-3D15EF2EDA78';
-

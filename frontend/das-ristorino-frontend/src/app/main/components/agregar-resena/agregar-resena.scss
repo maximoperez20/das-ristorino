@@ -1,0 +1,61 @@
+/* Styles for the agregar-resena modal */
+.modal-wrapper {
+	position: fixed;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1050; /* above most page content */
+}
+
+.modal-backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.6);
+	z-index: 1040;
+}
+
+.modal-container {
+	position: relative;
+	z-index: 1060;
+	width: 100%;
+	max-width: 680px;
+	padding: 1rem;
+	box-sizing: border-box;
+}
+
+.modal-content {
+	background: #ffffff;
+	color: #212529;
+	border-radius: 0.5rem;
+	box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+	overflow: auto;
+	max-height: 90vh;
+	padding: 1rem;
+}
+
+.modal-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: .5rem;
+}
+
+.modal-title {
+	margin: 0;
+	font-size: 1.1rem;
+}
+
+.btn-close {
+	background: transparent;
+	border: none;
+	font-size: 1.1rem;
+	line-height: 1;
+}
+
+/* Small screens tweaks */
+@media (max-width: 576px) {
+	.modal-container { max-width: 95%; padding: .5rem; }
+	.modal-content { padding: .75rem; }
+}
+

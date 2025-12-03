@@ -1,0 +1,36 @@
+<div class="modal-wrapper" [hidden]="!visible">     
+    <div class="modal-backdrop" (click)="cerrar()"></div>  
+    <div class="modal-container">                       
+        <div class="modal-content" (click)="$event.stopPropagation()"> 
+        <div class="modal-header">                      
+            <h4 class="modal-title" i18n>                
+            <i class="bi bi-pencil-square"></i> Agregar Reseña
+            </h4>
+            <button type="button" class="btn-close" (click)="cerrar()" [attr.aria-label]="getCerrarAriaLabel()"></button>
+        </div>
+    
+        <div class="modal-body">
+            <form (ngSubmit)="agregarResena()" #resenaForm="ngForm">
+                <div class="mb-3">
+                    <label for="valoracion" class="form-label" i18n>
+                        <i class="bi bi-star-fill"></i> Valoración <span class="text-danger">*</span>
+                    </label>
+                    <select id="valoracion" class="form-select" required [(ngModel)]="valoracion" name="valoracion" #valoracionModel="ngModel">
+                        <option *ngFor="let estrella of [1,2,3,4,5]" [value]="estrella">{{ estrella }}</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="comentario" class="form-label" i18n>
+                        <i class="bi bi-chat-dots-fill"></i> Comentario
+                    </label>    
+                    <textarea id="comentario" class="form-control" rows="4" [(ngModel)]="comentario" name="comentario"></textarea>
+                </div>
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary" [disabled]="resenaForm.invalid" i18n>
+                        <i class="bi bi-send"></i> Enviar
+                    </button>   
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
