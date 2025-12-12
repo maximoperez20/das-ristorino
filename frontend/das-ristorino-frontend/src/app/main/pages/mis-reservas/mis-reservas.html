@@ -147,6 +147,14 @@
                         <i class="bi bi-clock-history"></i> Esta reserva ya pasó
                       </div>
                     }
+                    @else if (reserva.estado !== 'Cancelada') {
+                      <button 
+                        class="btn btn-danger btn-sm" 
+                        type="button"
+                        (click)="cancelarReserva(reserva.id)">
+                          Cancelar Reserva
+                      </button>
+                    }
                   </div>
                 </div>
               </div>
