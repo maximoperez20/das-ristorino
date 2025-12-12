@@ -199,13 +199,33 @@ END;
 GO
 
 -- 5. Eliminar reserva
-CREATE OR ALTER PROCEDURE sp_EliminarReserva
-    @id VARCHAR(36)
+CREATE OR ALTER PROCEDURE sp_CancelarReserva
+    @nro_reserva VARCHAR(36)
 AS
 BEGIN
     SET NOCOUNT ON;
-    DELETE FROM reservas_restaurantes WHERE nro_reserva = @id;
+
+    DECLARE @cod_estado_cancelado VARCHAR(36);
+    SELECT @cod_estado_cancelado = cod_estado FROM estados_reservas WHERE nom_estado = 'Cancelada';
+
+    UPDATE reservas_restaurantes
+    SET cancelada = 1, fecha_hora_cancelacion = GETDATE(), cod_estado = @cod_estado_cancelado
+    WHERE nro_reserva = @nro_reserva;
     SELECT @@ROWCOUNT;
+END;
+GO
+
+-- 5.1. Obtener datos de cancelación de reserva
+CREATE OR ALTER PROCEDURE sp_ObtenerDatosCancelacionReserva
+    @nro_reserva VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT 
+        nro_restaurante AS nroRestaurante,
+        cod_reserva_sucursal AS nroReservaRestaurante
+    FROM reservas_restaurantes
+    WHERE nro_reserva = @nro_reserva;
 END;
 GO
 

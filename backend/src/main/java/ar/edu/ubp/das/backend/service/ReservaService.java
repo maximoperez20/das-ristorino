@@ -10,12 +10,15 @@ import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
 import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.SucursalDto;
 import ar.edu.ubp.das.backend.dto.UsuarioDto;
+import ar.edu.ubp.das.backend.dto.DatosCancelarReservaDto;
 import ar.edu.ubp.das.backend.repository.ReservaRepository;
 import ar.edu.ubp.das.backend.repository.RestauranteRepository;
 import ar.edu.ubp.das.backend.repository.ClienteRepository;
 import ar.edu.ubp.das.backend.client.RestauranteClient;
 import ar.edu.ubp.das.backend.client.RestauranteClientFactory;
 import ar.edu.ubp.das.backend.exception.HorarioNoDisponibleException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 
@@ -27,6 +30,8 @@ import java.util.Optional;
 
 @Service
 public class ReservaService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(ReservaService.class);
     
     private final ReservaRepository reservaRepository;
     private final RestauranteRepository restauranteRepository;
@@ -59,8 +64,23 @@ public class ReservaService {
         return reservaRepository.update(actualizarReservaDto, id);
     }
     
-    public boolean eliminarReserva(String id) {
-        return reservaRepository.deleteById(id);
+    public boolean cancelarReserva(String nroReserva) {
+        DatosCancelarReservaDto datosCancelarReserva = reservaRepository.obtenerDatosCancelacionReserva(nroReserva);
+        if (datosCancelarReserva == null) {
+            throw new RuntimeException("No se encontraron datos de cancelación de reserva");
+        }
+
+        String nroRestaurante = datosCancelarReserva.getNroRestaurante();
+        String nroReservaRestaurante = datosCancelarReserva.getNroReservaRestaurante();
+
+        logger.info("Nro restaurante: {}", nroRestaurante);
+        logger.info("Nro reserva restaurante: {}", nroReservaRestaurante);
+        RestauranteClient client = restauranteClientFactory.getClient(nroRestaurante);
+        client.cancelarReserva(nroReservaRestaurante);
+
+        reservaRepository.cancelarReserva(nroReserva);
+
+        return true;
     }
     
     public boolean cambiarEstadoReserva(String id, String nuevoEstado) {

@@ -3,9 +3,12 @@ package ar.edu.ubp.das.backend.repository;
 import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.CostoReservaDto;
 import ar.edu.ubp.das.backend.dto.EstadoReservaDto;
+import ar.edu.ubp.das.backend.dto.DatosCancelarReservaDto;
 import ar.edu.ubp.das.backend.dto.RegistrarReservaRistorinoDto;
 import ar.edu.ubp.das.backend.components.SimpleJdbcCallFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.SqlOutParameter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -19,6 +22,8 @@ import java.util.Optional;
 
 @Repository
 public class ReservaRepository {
+    
+    private static final Logger logger = LoggerFactory.getLogger(ReservaRepository.class);
     
     @Autowired
     private SimpleJdbcCallFactory jdbcCallFactory;
@@ -72,11 +77,11 @@ public class ReservaRepository {
     }
     
     // Eliminar reserva
-    public boolean deleteById(String id) {
+    public boolean cancelarReserva(String nroReserva) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("id", id);
+                .addValue("nro_reserva", nroReserva);
         
-        Map<String, Object> result = jdbcCallFactory.executeWithOutputs("sp_EliminarReserva", "dbo", params);
+        Map<String, Object> result = jdbcCallFactory.executeWithOutputs("sp_CancelarReserva", "dbo", params);
         return result != null && result.size() > 0;
     }
     
@@ -202,6 +207,29 @@ public class ReservaRepository {
                 "sp_ObtenerCodigoEstado", "dbo", params, "estado", EstadoReservaDto.class);
         if (results != null && !results.isEmpty()) {
             return results.get(0).getCodEstado();
+        }
+        return null;
+    }
+
+    /**
+     * Obtiene el nro_restaurante de una reserva.
+     * @param nroReserva Número de reserva
+     * @return nro_restaurante o null si no existe la reserva
+     */
+    public DatosCancelarReservaDto obtenerDatosCancelacionReserva(String nroReserva) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("nro_reserva", nroReserva);
+        
+        List<DatosCancelarReservaDto> results = jdbcCallFactory.executeQuery(
+                "sp_ObtenerDatosCancelacionReserva", "dbo", params, "resultado", DatosCancelarReservaDto.class);
+        
+        if (results != null && !results.isEmpty() && results.get(0).getNroRestaurante() != null) {
+            // DatosCancelarReservaDto datos = new DatosCancelarReservaDto();
+            // datos.setNroRestaurante(results.get(0).getNroRestaurante());
+            // datos.setNroReservaRestaurante(results.get(0).getNroReservaRestaurante());
+            // return datos;
+            logger.info("Datos cancelación de reserva: {}", results.get(0).getNroReservaRestaurante());
+            return results.get(0);
         }
         return null;
     }

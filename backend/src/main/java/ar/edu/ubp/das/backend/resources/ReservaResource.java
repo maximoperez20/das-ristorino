@@ -100,17 +100,13 @@ public class ReservaResource {
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReserva(@PathVariable String id) {
-        if (!reservaService.existeReserva(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        
-        boolean eliminado = reservaService.eliminarReserva(id);
-        if (eliminado) {
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    @GetMapping("/cancelar/{nroReserva}")
+    public ResponseEntity<?> cancelarReserva(@PathVariable String nroReserva) {
+        try {
+            boolean cancelada = reservaService.cancelarReserva(nroReserva);
+            return ResponseEntity.ok(cancelada);
+        } catch (Exception e) {
+            return ResponseHelper.internalServerError("Error al cancelar la reserva: " + e.getMessage());
         }
     }
 

@@ -437,19 +437,20 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
     }
 
     @Override
-    public int cancelarReserva(String nroReserva) {
+    public boolean cancelarReserva(String nroReserva) {
         try {
             // Usar DTO tipado en lugar de HashMap
             CancelarReservaJsonDto jsonDto = new CancelarReservaJsonDto(nroReserva);
             String jsonString = gson.toJson(jsonDto);
 
+            logger.info("JSON a enviar: {}", jsonString);
             SOAPClient soapClient = createSoapClient("cancelarReservaRequest");
             Map<String, Object> parameters = createSoapParameters(jsonString);
 
             String jsonResponseStr = soapClient.extractJsonResponse("cancelarReservaResponse", parameters);
 
             Map<String, Object> resp = parseJsonToMap(jsonResponseStr);
-            return getIntValue(resp, "actualizados");
+            return resp.get("exitosa") != null && (Boolean) resp.get("exitosa");
         } catch (Exception e) {
             logger.error("Error al cancelar reserva vía SOAP: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
