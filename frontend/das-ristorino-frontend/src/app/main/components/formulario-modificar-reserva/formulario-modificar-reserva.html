@@ -1,0 +1,128 @@
+<div class="modal-wrapper" [hidden]="!visible">
+  <div class="modal-backdrop" (click)="cerrar()"></div>
+  <div class="modal-container">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4 class="modal-title" i18n>
+          <i class="bi bi-calendar-check"></i> Modificar Reserva
+        </h4>
+        <button type="button" class="btn-close" (click)="cerrar()"></button>
+      </div>
+
+      <div class="modal-body">
+        @if (reservaSeleccionada) {
+           <form (ngSubmit)="confirmarModificacionReserva()">
+            <div class="mb-3">
+              <label for="zonaSeleccionada" class="form-label" i18n>
+                <i class="bi bi-building"></i> Zona <span class="text-danger">*</span>
+              </label>
+              <select name="zonaSeleccionada" id="zonaSeleccionada" class="form-control" [(ngModel)]="zonaSeleccionada" (change)="onZonaSeleccionada(zonaSeleccionada ?? '')">
+                @for (zona of zonasDisponibles; track zona.codZona) {
+                  <option value="{{ zona.codZona }}">{{ zona.nomZona }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label for="fechaReserva" class="form-label" i18n>
+                <i class="bi bi-calendar"></i> Fecha de reserva <span class="text-danger">*</span>
+              </label>
+              <input 
+                type="date"
+                class="form-control"
+                [(ngModel)]="fechaSeleccionada"
+                name="fechaReserva"
+                id="fechaReserva">
+            </div>  
+
+            <div class="mb-3">
+              <label for="horaDesde" class="form-label" i18n>
+                <i class="bi bi-clock"></i> Horario <span class="text-danger">*</span>
+              </label>
+              <select 
+                name="horaDesde" 
+                id="horaDesde" 
+                class="form-control"
+                [(ngModel)]="horaSeleccionada">
+                @for (hora of horarios; track hora.horaDesde) {
+                  <option [value]="hora.horaDesde">{{ hora.horaDesde }}</option>
+                }
+              </select>
+            </div>  
+            
+            <div class="mb-3">
+              <label for="cantAdultos" class="form-label" i18n>
+                <i class="bi bi-person"></i> Cantidad de adultos <span class="text-danger">*</span>
+              </label>
+              <input 
+                type="number" 
+                class="form-control" 
+                id="cantAdultos"
+                [(ngModel)]="cantAdultos"
+                name="cantAdultos"
+                min="1"
+                required>
+              <small class="form-text text-muted" i18n>Mínimo 1 adulto</small>
+            </div>
+
+            <div class="mb-3">
+              <label for="cantMenores" class="form-label" i18n>
+                <i class="bi bi-person-heart"></i> Cantidad de menores
+              </label>
+              <input 
+                type="number" 
+                class="form-control" 
+                id="cantMenores"
+                [(ngModel)]="cantMenores"
+                name="cantMenores"
+                min="0"
+                [max]="10 - cantAdultos">
+              <small class="form-text text-muted" i18n>Máximo {{ 10 - cantAdultos }} menores</small>
+            </div>
+
+            <div class="mb-3">
+              <label for="especialidadesAlimentarias" class="form-label" i18n>
+                Especialidades alimentarias
+              </label>        
+              @for (especialidad of especialidadesAlimentariasDisponibles; track especialidad.nroValorDominio) {
+                <div class="form-check">
+                  <input type="checkbox" class="form-check-input" 
+                    name="especialidadesAlimentarias" 
+                    id="especialidadesAlimentarias{{ especialidad.nroValorDominio }}" 
+                    [value]="especialidad.nroValorDominio"
+                    [checked]="especialidadesAlimentariasSeleccionadas.includes(especialidad.nroValorDominio)"
+                    (change)="onCambioEspecialidadAlimentaria($event, especialidad.nroValorDominio)"
+                  >
+                  <label class="form-check-label" for="especialidadesAlimentarias{{ especialidad.nroValorDominio }}">{{ especialidad.nombre }}</label>
+                </div>
+              }
+            </div>
+
+            @if (error) {
+              <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle"></i> {{ error }}
+              </div>
+            }
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" (click)="cerrar()" [disabled]="loading" i18n>
+                Cancelar
+              </button>
+              <button 
+                type="submit" 
+                class="btn btn-primary" >
+                @if (loading) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  <span i18n>Confirmando...</span>
+                } @else {
+                  <i class="bi bi-check-circle"></i> <span i18n>Confirmar Reserva</span>
+                }
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -7,6 +7,7 @@ import ar.edu.ubp.das.backend.dto.ConfirmarReservaDto;
 import ar.edu.ubp.das.backend.dto.ConfirmarReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.CrearReservaDto;
 import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
+import ar.edu.ubp.das.backend.dto.ModificarReservaDto;
 import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.SucursalDto;
 import ar.edu.ubp.das.backend.dto.UsuarioDto;
@@ -81,6 +82,10 @@ public class ReservaService {
         reservaRepository.cancelarReserva(nroReserva);
 
         return true;
+    }
+    
+    public boolean modificarReserva(String nroReserva, ModificarReservaDto modificarReservaDto) {
+        return reservaRepository.modificarReserva(nroReserva, modificarReservaDto);
     }
     
     public boolean cambiarEstadoReserva(String id, String nuevoEstado) {

@@ -69,14 +69,15 @@ BEGIN
         
         -- Parsear JSON y insertar preferencias
         -- El JSON debe tener formato: [1, 2, 3] (array de nro_valor_dominio)
+        -- ✅ CORREGIDO: nro_preferencia ahora es IDENTITY, no se especifica en el INSERT
         INSERT INTO preferencias_reservas_restaurantes (
             nro_reserva,
             nro_cliente,
             nro_restaurante,
             cod_categoria,
             nro_valor_dominio,
-            nro_preferencia,
             observaciones
+            -- ✅ nro_preferencia NO se incluye, se genera automáticamente
         )
         SELECT 
             @nro_reserva,
@@ -84,15 +85,10 @@ BEGIN
             @nro_restaurante,
             @cod_categoria,
             CAST(oj.value AS INT) AS nro_valor_dominio,
-            MIN(pr.nro_preferencia) AS nro_preferencia, -- Usar el primer nro_preferencia si hay múltiples
             NULL AS observaciones
         FROM OPENJSON(@preferencias) oj
-        INNER JOIN preferencias_restaurantes pr
-            ON pr.nro_restaurante = @nro_restaurante
-            AND pr.cod_categoria = @cod_categoria
-            AND pr.nro_valor_dominio = CAST(oj.value AS INT)
-            AND pr.nro_sucursal IS NULL -- Solo preferencias del restaurante, no de sucursal específica
-        GROUP BY CAST(oj.value AS INT)
+        WHERE ISNUMERIC(oj.value) = 1  -- Validar que es numérico
+            AND CAST(oj.value AS INT) IS NOT NULL;
         
         COMMIT TRANSACTION;
         

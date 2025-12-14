@@ -4,6 +4,7 @@ import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.CostoReservaDto;
 import ar.edu.ubp.das.backend.dto.EstadoReservaDto;
 import ar.edu.ubp.das.backend.dto.DatosCancelarReservaDto;
+import ar.edu.ubp.das.backend.dto.ModificarReservaDto;
 import ar.edu.ubp.das.backend.dto.RegistrarReservaRistorinoDto;
 import ar.edu.ubp.das.backend.components.SimpleJdbcCallFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -232,5 +233,18 @@ public class ReservaRepository {
             return results.get(0);
         }
         return null;
+    }
+    
+    public boolean modificarReserva(String nroReserva, ModificarReservaDto modificarReservaDto) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("nro_reserva", nroReserva)
+                .addValue("fecha", java.sql.Date.valueOf(modificarReservaDto.getFechaReserva()))
+                .addValue("cod_zona", modificarReservaDto.getCodZona())
+                .addValue("hora_desde", java.sql.Time.valueOf(modificarReservaDto.getHoraDesde()))
+                .addValue("cant_adultos", modificarReservaDto.getCantAdultos())
+                .addValue("cant_menores", modificarReservaDto.getCantMenores())
+                .addValue("preferencias_reserva", modificarReservaDto.getPreferenciasReserva(), Types.NVARCHAR);
+        Map<String, Object> result = jdbcCallFactory.executeWithOutputs("sp_ModificarReserva", "dbo", params);
+        return result != null && result.size() > 0;
     }
 }

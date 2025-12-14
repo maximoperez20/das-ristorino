@@ -2,6 +2,7 @@ package ar.edu.ubp.das.backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class ReservaResponseDto {
     
@@ -53,12 +54,22 @@ public class ReservaResponseDto {
     @JsonProperty("preferencias")
     private String preferencias;
     
+    private String nroRestaurante;
+    
+    private String nroSucursal;
+    
+    private String codZona;
+
+    private String horaDesde;
+
+    private List<Integer> preferenciasValores;
     // Constructores
     public ReservaResponseDto() {}
     
     public ReservaResponseDto(String id, String nombreCliente, String email, String telefono, 
                              LocalDateTime fechaHora, Integer cantidadPersonas, String estado, 
-                             String observaciones, LocalDateTime fechaCreacion, LocalDateTime fechaActualizacion) {
+                             String observaciones, LocalDateTime fechaCreacion, LocalDateTime fechaActualizacion,
+                             String nroRestaurante, String nroSucursal, String codZona, String horaDesde, List<Integer> preferenciasValores) {
         this.id = id;
         this.nombreCliente = nombreCliente;
         this.email = email;
@@ -69,6 +80,11 @@ public class ReservaResponseDto {
         this.observaciones = observaciones;
         this.fechaCreacion = fechaCreacion;
         this.fechaActualizacion = fechaActualizacion;
+        this.nroRestaurante = nroRestaurante;
+        this.nroSucursal = nroSucursal;
+        this.codZona = codZona;
+        this.horaDesde = horaDesde;
+        this.preferenciasValores = preferenciasValores;
     }
     
     // Getters y Setters
@@ -199,6 +215,46 @@ public class ReservaResponseDto {
     public void setPreferencias(String preferencias) {
         this.preferencias = preferencias;
     }
+
+    public String getNroRestaurante() {
+        return nroRestaurante;
+    }
+    
+    public void setNroRestaurante(String nroRestaurante) {
+        this.nroRestaurante = nroRestaurante;
+    }
+    
+    public String getNroSucursal() {
+        return nroSucursal;
+    }
+    
+    public void setNroSucursal(String nroSucursal) {
+        this.nroSucursal = nroSucursal;
+    }
+    
+    public String getCodZona() {
+        return codZona;
+    }
+    
+    public void setCodZona(String codZona) {
+        this.codZona = codZona;
+    }
+    
+    public String getHoraDesde() {
+        return horaDesde;
+    }
+    
+    public void setHoraDesde(String horaDesde) {
+        this.horaDesde = horaDesde;
+    }
+    
+    public List<Integer> getPreferenciasValores() {
+        return preferenciasValores;
+    }
+    
+    public void setPreferenciasValores(List<Integer> preferenciasValores) {
+        this.preferenciasValores = preferenciasValores;
+    }
     
     @Override
     public String toString() {
@@ -213,6 +269,12 @@ public class ReservaResponseDto {
                 ", observaciones='" + observaciones + '\'' +
                 ", fechaCreacion=" + fechaCreacion +
                 ", fechaActualizacion=" + fechaActualizacion +
+                ", nroRestaurante='" + nroRestaurante + '\'' +
+                ", nroSucursal='" + nroSucursal + '\'' +
+                ", codZona='" + codZona + '\'' +
+
+                ", horaDesde='" + horaDesde + '\'' +
+                ", preferenciasValores='" + preferenciasValores + '\'' +
                 '}';
     }
 }

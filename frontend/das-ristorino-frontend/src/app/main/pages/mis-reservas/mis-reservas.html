@@ -148,12 +148,21 @@
                       </div>
                     }
                     @else if (reserva.estado !== 'Cancelada') {
-                      <button 
-                        class="btn btn-danger btn-sm" 
-                        type="button"
-                        (click)="cancelarReserva(reserva.id)">
-                          Cancelar Reserva
-                      </button>
+                      <div class="d-flex justify-content-start gap-2">
+                        <button 
+                          class="btn btn-warning btn-sm" 
+                          type="button"
+                          (click)="onClickReserva(reserva)">
+                          Modificar Reserva
+                        </button>
+                        <button 
+                          class="btn btn-danger btn-sm" 
+                          type="button"
+                          (click)="cancelarReserva(reserva.id)">
+                            Cancelar Reserva
+                        </button>
+                      </div>
+                      
                     }
                   </div>
                 </div>
@@ -164,4 +173,13 @@
       }
     }
   </div>
+
 </div>
+@if (mostrarModalModificarReserva && reservaSeleccionadaParaModificar) {
+<app-formulario-modificar-reserva
+  [visible]="mostrarModalModificarReserva"
+  [reservaSeleccionada]="reservaSeleccionadaParaModificar"
+  (visibleChange)="onModalVisibleChange($event)"
+  (reservaModificada)="onReservaModificada()">
+</app-formulario-modificar-reserva>
+}

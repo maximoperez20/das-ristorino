@@ -7,6 +7,7 @@ import ar.edu.ubp.das.backend.dto.ConfirmarReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.CrearReservaDto;
 import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
 import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
+import ar.edu.ubp.das.backend.dto.ModificarReservaDto;
 import ar.edu.ubp.das.backend.exception.HorarioNoDisponibleException;
 import ar.edu.ubp.das.backend.resources.util.ResponseHelper;
 import ar.edu.ubp.das.backend.service.ReservaService;
@@ -72,31 +73,45 @@ public class ReservaResource {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateReserva(@PathVariable String id, @Valid @RequestBody ActualizarReservaDto actualizarReservaDto) {
-        if (!reservaService.existeReserva(id)) {
-            return ResponseEntity.notFound().build();
-        }
+    // @PutMapping("/{id}")
+    // public ResponseEntity<?> updateReserva(@PathVariable String id, @Valid @RequestBody ActualizarReservaDto actualizarReservaDto) {
+    //     if (!reservaService.existeReserva(id)) {
+    //         return ResponseEntity.notFound().build();
+    //     }
         
+    //     try {
+    //         boolean actualizado = reservaService.actualizarReserva(id, actualizarReservaDto);
+    //         if (actualizado) {
+    //             return reservaService.obtenerReservaPorId(id)
+    //                     .<ResponseEntity<?>>map(ResponseEntity::ok)
+    //                     .orElseGet(() -> {
+    //                         logger.warn("Reserva actualizada pero no se pudo obtener: {}", id);
+    //                         return ResponseHelper.internalServerError("No se pudo recuperar la reserva actualizada");
+    //                     });
+    //         } else {
+    //             logger.warn("No se pudo actualizar la reserva: {}", id);
+    //             return ResponseHelper.internalServerError("No se pudo actualizar la reserva");
+    //         }
+    //     } catch (RuntimeException e) {
+    //         logger.warn("Error al actualizar reserva {}: {}", id, e.getMessage());
+    //         return ResponseHelper.badRequest(e.getMessage());
+    //     } catch (Exception e) {
+    //         logger.error("Error inesperado al actualizar reserva: {}", id, e);
+    //         return ResponseHelper.internalServerError("Error al actualizar la reserva: " + e.getMessage());
+    //     }
+    // }
+
+    @PutMapping("{nroReserva}")
+    public ResponseEntity<?> modificarReserva(@PathVariable String nroReserva, @Valid @RequestBody ModificarReservaDto modificarReservaDto) {
         try {
-            boolean actualizado = reservaService.actualizarReserva(id, actualizarReservaDto);
-            if (actualizado) {
-                return reservaService.obtenerReservaPorId(id)
-                        .<ResponseEntity<?>>map(ResponseEntity::ok)
-                        .orElseGet(() -> {
-                            logger.warn("Reserva actualizada pero no se pudo obtener: {}", id);
-                            return ResponseHelper.internalServerError("No se pudo recuperar la reserva actualizada");
-                        });
+            boolean modificado = reservaService.modificarReserva(nroReserva, modificarReservaDto);
+            if (modificado) {
+                return ResponseEntity.ok(modificado);
             } else {
-                logger.warn("No se pudo actualizar la reserva: {}", id);
-                return ResponseHelper.internalServerError("No se pudo actualizar la reserva");
+                return ResponseHelper.internalServerError("No se pudo modificar la reserva");
             }
-        } catch (RuntimeException e) {
-            logger.warn("Error al actualizar reserva {}: {}", id, e.getMessage());
-            return ResponseHelper.badRequest(e.getMessage());
         } catch (Exception e) {
-            logger.error("Error inesperado al actualizar reserva: {}", id, e);
-            return ResponseHelper.internalServerError("Error al actualizar la reserva: " + e.getMessage());
+            return ResponseHelper.internalServerError("Error al modificar la reserva: " + e.getMessage());
         }
     }
 

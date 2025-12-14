@@ -2,11 +2,17 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { IReserva } from '../../api/models/i-reserva';
+import { IModificarReservaRequest } from '../../api/models/i-modificar-reserva-request';
+import { IHorariosDisponiblesResponse } from '../../api/models/i-horario-disponible';
+import { HorarioSeleccionado } from '../../components/horarios-disponibles/horarios-disponibles';
 import { AuthService } from '../../../core/services/auth-service';
 import { DateUtilsService } from '../../../core/services/date-utils.service';
 import { ReservaResource } from '../../api/resources/reserva-resource';
+import { RestauranteResource } from '../../api/resources/restaurante-resource';
+import { PreferenciaResource } from '../../api/resources/preferencia-resource';
 import { AppMessageService } from '../../../core/services/app-message-service';
-
+import { FormularioModificarReservaComponent } from '../../components/formulario-modificar-reserva/formulario-modificar-reserva';
+import { IDominioPreferencia } from '../../api/models/i-dominio-preferencia';
 interface ReservaPorDia {
   fecha: Date;
   fechaKey: string; // YYYY-MM-DD para agrupar
@@ -17,7 +23,7 @@ interface ReservaPorDia {
 @Component({
   selector: 'app-mis-reservas',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormularioModificarReservaComponent],
   templateUrl: './mis-reservas.html',
   styleUrls: ['./mis-reservas.scss'],
 })
@@ -26,12 +32,24 @@ export class MisReservasPage implements OnInit {
   reservas: IReserva[] = [];
   reservasPorDia: ReservaPorDia[] = [];
   filtroActivo: string | undefined = undefined;
+  horarioSeleccionado?: HorarioSeleccionado | undefined;
+  especialidadesAlimentariasSeleccionadas: IDominioPreferencia[] = [];
+  especialidadesAlimentariasDisponibles: IDominioPreferencia[] = [];
+  horariosDisponibles: IHorariosDisponiblesResponse | null = null;
+  zonasDisponibles: {codZona: string, nomZona: string}[] = [];
+
+  
+  mostrarModalModificarReserva: boolean = false;
+  reservaSeleccionadaParaModificar: IReserva | null = null;
+
 
   private _auth = inject(AuthService);
   private _router = inject(Router);
   private _route = inject(ActivatedRoute);
   private _dateUtils = inject(DateUtilsService);
   private _reservaResource = inject(ReservaResource);
+  private _restauranteResource = inject(RestauranteResource);
+  private _preferenciaResource = inject(PreferenciaResource);
   private _messageService = inject(AppMessageService);
   
   ngOnInit(): void {
@@ -287,4 +305,51 @@ export class MisReservasPage implements OnInit {
       }
     });
   } 
+
+  modificarReserva(nroReserva: string): void {
+
+  }
+
+  abrirModalModificarReserva(): void {
+
+  }
+
+  confirmarModificacionReserva(reserva: IReserva): void {
+    // const data: IModificarReservaRequest = {
+    //   nroRestaurante: reserva.nro_restaurante,
+    //   nroSucursal: reserva.nro_sucursal,
+    //   codZona: reserva.cod_zona,
+    //   fechaReserva: reserva.fecha_hora,
+    //   cantAdultos: reserva.cant_adultos ?? 0,
+    //   cantMenores: reserva.cant_menores ?? 0,
+    //   preferenciasReserva: reserva.preferenciasValores ?? []
+    // };
+
+    // this._reservaResource.modificarReserva({ nroReserva: reserva.id, data }).subscribe({
+    //   next: (response: boolean) => {
+    //     if (response) {
+    //       this._messageService.showSuccess('Reserva modificada exitosamente');
+    //     } else {
+    //       this._messageService.showError('Error al modificar reserva');
+    //     }
+    //   }
+    // });
+  }
+
+  onClickReserva(reserva: IReserva): void {
+    this.mostrarModalModificarReserva = true;
+    this.reservaSeleccionadaParaModificar = reserva;
+  }
+
+  onModalVisibleChange(visible: boolean): void {
+    this.mostrarModalModificarReserva = visible;
+    if (!visible) {
+      this.reservaSeleccionadaParaModificar = null;
+    }
+  }
+
+  onReservaModificada(): void {
+    this.mostrarModalModificarReserva = false;
+    this.reservaSeleccionadaParaModificar = null;
+  }
 }

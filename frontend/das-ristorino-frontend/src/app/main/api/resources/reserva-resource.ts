@@ -4,6 +4,7 @@ import type { IResourceMethodObservable } from '@ngx-resource/core';
 import { IReserva } from '../models/i-reserva';
 import { IConfirmarReservaRequest } from '../models/i-confirmar-reserva-request';
 import { IConfirmarReservaResponse } from '../models/i-confirmar-reserva-response';
+import { IModificarReservaRequest } from '../models/i-modificar-reserva-request';
 import { environment } from '../../../../environments/environment';
 
 @Injectable()
@@ -33,4 +34,10 @@ export class ReservaResource extends Resource {
     method: ResourceRequestMethod.Get,
   })
   declare cancelarReserva: IResourceMethodObservable<{ nroReserva: string }, boolean>;
+
+  @ResourceAction({
+    path: '/{!nroReserva}',
+    method: ResourceRequestMethod.Put,
+  })
+  declare modificarReserva: IResourceMethodObservable<IModificarReservaRequest, boolean>;
 }

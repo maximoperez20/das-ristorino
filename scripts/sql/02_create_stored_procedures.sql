@@ -368,6 +368,9 @@ BEGIN
     SET NOCOUNT ON;
     SELECT
         rr.nro_reserva as id,
+        rr.nro_restaurante as nroRestaurante,
+        rr.nro_sucursal as nroSucursal,
+        rr.cod_zona as codZona,
         c.nombre + ' ' + c.apellido as nombre_cliente,
         c.correo as email,
         c.telefonos as telefono,
@@ -1663,6 +1666,98 @@ BEGIN
     SELECT cod_estado AS codEstado
     FROM estados_reservas
     WHERE nom_estado = @nom_estado;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE sp_ModificarReserva
+    @nro_reserva VARCHAR(36),
+    @fecha DATE,
+    @cod_zona VARCHAR(36),
+    @hora_desde TIME(0),
+    @cant_adultos SMALLINT,
+    @cant_menores SMALLINT,
+    @preferencias_reserva NVARCHAR(MAX)  -- Formato JSON: [1, 2, 3]
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
+    
+    BEGIN TRY
+        -- 1. Actualizar los datos de la reserva
+        UPDATE reservas_restaurantes
+        SET fecha_reserva = @fecha,
+            cod_zona = @cod_zona,
+            hora_desde = @hora_desde,
+            cant_adultos = @cant_adultos,
+            cant_menores = @cant_menores
+        WHERE nro_reserva = @nro_reserva;
+
+        IF @@ROWCOUNT = 0
+        BEGIN
+            RAISERROR('Reserva no encontrada: %s', 16, 1, @nro_reserva);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 2. Obtener datos necesarios de la reserva
+        DECLARE @nro_cliente VARCHAR(36);
+        DECLARE @nro_restaurante VARCHAR(36);
+        
+        SELECT @nro_cliente = nro_cliente,
+               @nro_restaurante = nro_restaurante
+        FROM reservas_restaurantes
+        WHERE nro_reserva = @nro_reserva;
+
+        -- 3. Eliminar todas las preferencias existentes de la reserva
+        DELETE FROM preferencias_reservas_restaurantes
+        WHERE nro_reserva = @nro_reserva;
+
+        -- 4. Obtener el cod_categoria de "Especialidades alimentarias"
+        DECLARE @cod_categoria VARCHAR(36);
+        SELECT @cod_categoria = cod_categoria 
+        FROM categorias_preferencias 
+        WHERE nom_categoria = 'Especialidades alimentarias';
+        
+        IF @cod_categoria IS NULL
+        BEGIN
+            RAISERROR('Categoría "Especialidades alimentarias" no encontrada', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+        
+        -- 5. Insertar las nuevas preferencias desde el JSON array numérico
+        -- El JSON viene como: [1, 2, 3] donde cada número es un nro_valor_dominio
+        -- El nro_preferencia ahora es autoincremental, no se especifica en el INSERT
+        IF ISJSON(@preferencias_reserva) = 1 AND LEN(LTRIM(RTRIM(@preferencias_reserva))) > 2  -- Más que solo "[]"
+        BEGIN
+            INSERT INTO preferencias_reservas_restaurantes (
+                nro_reserva,
+                nro_cliente,
+                nro_restaurante,
+                cod_categoria,
+                nro_valor_dominio,
+                observaciones
+                -- ✅ nro_preferencia NO se especifica, se genera automáticamente
+            )
+            SELECT 
+                @nro_reserva,
+                @nro_cliente,
+                @nro_restaurante,
+                @cod_categoria,
+                CAST(oj.value AS INT) AS nro_valor_dominio,
+                NULL AS observaciones
+            FROM OPENJSON(@preferencias_reserva) oj
+            WHERE ISNUMERIC(oj.value) = 1  -- Validar que es numérico
+                AND CAST(oj.value AS INT) IS NOT NULL;
+        END
+
+        COMMIT TRANSACTION;
+        SELECT @@ROWCOUNT AS filas_actualizadas;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        THROW;
+    END CATCH
 END;
 GO
 
