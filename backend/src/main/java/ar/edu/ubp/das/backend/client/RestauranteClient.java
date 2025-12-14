@@ -5,6 +5,8 @@ import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchResponse;
+import ar.edu.ubp.das.backend.dto.restaurante.ObtenerMenuRequest;
+import ar.edu.ubp.das.backend.dto.restaurante.ObtenerMenuResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
 
@@ -104,5 +106,9 @@ public interface RestauranteClient {
      * @return número de filas actualizadas en el sistema legacy.
      */
     int marcarPublicado(String nroRestaurante, java.util.List<String> nroContenidos);
+
+    /* Menu de sucursales restaurantes */
+    ObtenerMenuResponse obtenerMenu(ObtenerMenuRequest request);
+
 }
 

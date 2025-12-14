@@ -10,6 +10,9 @@ import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarReservaRequest;
+import ar.edu.ubp.das.backend.dto.restaurante.ObtenerMenuRequest;
+import ar.edu.ubp.das.backend.dto.restaurante.ObtenerMenuResponse;
+
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -465,6 +468,92 @@ public class RestauranteRestClient implements RestauranteClient {
             logger.error("Error al registrar reserva vía REST: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación REST: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public ObtenerMenuResponse obtenerMenu(ObtenerMenuRequest request) {
+        try{
+            String url = getBaseUrl() + "/menu/activo";
+            
+            if(request.getNroRestaurante() == null || request.getNroSucursal() == null){
+                throw new IllegalArgumentException("NroRestaurante y NroSucursal son obligatorios");
+            }
+
+            // Construir query parameters
+            StringBuilder urlBuilder = new StringBuilder(url);
+            urlBuilder.append("?nroRestaurante=").append(request.getNroRestaurante());
+            urlBuilder.append("&nroSucursal=").append(request.getNroSucursal());
+            url = urlBuilder.toString();
+
+            HttpHeaders headers = createHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<byte[]> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    byte[].class
+                );
+
+            byte[] responseBody = response.getBody();
+            
+            // Mapear headers HTTP a los campos del DTO
+            HttpHeaders respHeaders = response.getHeaders();
+
+            if (responseBody != null && responseBody.length > 0) {
+                ObtenerMenuResponse menuResponse = new ObtenerMenuResponse();
+
+                // Content-Type
+                String contentType = respHeaders.getContentType() != null 
+                        ? respHeaders.getContentType().toString() 
+                        : null;
+                menuResponse.setTipoMime(contentType);
+
+                // Content-Length
+                Long contentLength = respHeaders.getContentLength() >= 0 
+                        ? respHeaders.getContentLength() 
+                        : null;
+                menuResponse.setTamanoBytes(contentLength);
+
+                // Content-Disposition (filename)
+                String disposition = respHeaders.getFirst("Content-Disposition");
+                String filename = null;
+                if (disposition != null) {
+                    // Buscar filename=... (con o sin comillas)
+                    int idx = disposition.toLowerCase().indexOf("filename=");
+                    if (idx >= 0) {
+                        filename = disposition.substring(idx + 9).trim();
+                        if (filename.startsWith("\"") && filename.endsWith("\"") && filename.length() >= 2) {
+                            filename = filename.substring(1, filename.length() - 1);
+                        }
+                    }
+                }
+                menuResponse.setNombreArchivo(filename);
+
+                // Cuerpo binario (se guarda tal cual en el DTO)
+                menuResponse.setDatosArchivoBase64(responseBody);
+
+                // Campos de estado
+                menuResponse.setExitoso(true);
+                menuResponse.setMensaje("OK");
+
+                return menuResponse;
+            } else {
+                // Sin cuerpo: tratar como error de servidor
+                ObtenerMenuResponse errorResp = new ObtenerMenuResponse();
+                errorResp.setExitoso(false);
+                errorResp.setMensaje("Respuesta vacía del servidor REST para menú activo");
+                return errorResp;
+            }
+
+
+
+        }catch(Exception e){
+            logger.error("Error al obtener el menú vía REST: {}", e.getMessage(), e);
+
+        }
+        
+        return null;
     }
 }
 

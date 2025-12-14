@@ -6,11 +6,15 @@ import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchResponse;
+import ar.edu.ubp.das.backend.dto.restaurante.ObtenerMenuRequest;
+import ar.edu.ubp.das.backend.dto.restaurante.ObtenerMenuResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.ClienteDto;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarReservaRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarReservaResponse;
+import ar.edu.ubp.das.backend.dto.restaurante.ObtenerMenuRequest;
+import ar.edu.ubp.das.backend.dto.restaurante.ObtenerMenuResponse;
 import ar.edu.ubp.das.backend.dto.soap.GetHorariosDisponiblesSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.NotificarClickSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.RegistrarContenidoSoapDto;
@@ -460,5 +464,10 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             logger.error("Error al marcar publicados vía SOAP: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public ObtenerMenuResponse obtenerMenu(ObtenerMenuRequest request) {
+        return null;
     }
 }
