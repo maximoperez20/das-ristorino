@@ -4,6 +4,7 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { IReserva } from '../../api/models/i-reserva';
 import { AuthService } from '../../../core/services/auth-service';
 import { DateUtilsService } from '../../../core/services/date-utils.service';
+import { ReservaResource } from '../../api/resources/reserva-resource';
 
 interface ReservaPorDia {
   fecha: Date;
@@ -29,6 +30,7 @@ export class MisReservasPage implements OnInit {
   private _router = inject(Router);
   private _route = inject(ActivatedRoute);
   private _dateUtils = inject(DateUtilsService);
+  private _reservaResource = inject(ReservaResource);
 
   ngOnInit(): void {
     if (!this._auth.isAuthenticated()) {
@@ -270,4 +272,19 @@ export class MisReservasPage implements OnInit {
     const filtroNormalizado = this.normalizarEstado(filtro);
     return filtroActivoNormalizado === filtroNormalizado;
   }
+  /**
+   * Cancelar una reserva
+   */
+  cancelarReserva(nroReserva: string): void {
+    this._reservaResource.cancelarReserva({ codReserva: nroReserva }).subscribe({
+      next: () => {
+        // Refrescar la página para ver los cambios
+        window.location.reload();
+      },
+      error: (err) => {
+        console.error('Error al cancelar la reserva:', err);
+        alert($localize`Ocurrió un error al cancelar la reserva. Por favor, intenta nuevamente más tarde.`);
+      }
+    });
+}   
 }

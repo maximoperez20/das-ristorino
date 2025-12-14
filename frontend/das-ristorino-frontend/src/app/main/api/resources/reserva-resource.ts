@@ -28,4 +28,9 @@ export class ReservaResource extends Resource {
   })
   declare confirmarReserva: IResourceMethodObservable<IConfirmarReservaRequest, IConfirmarReservaResponse>;
 
+  @ResourceAction({
+    path: '/cancelar/{!codReserva}',
+    method: ResourceRequestMethod.Get,
+  })
+  declare cancelarReserva: IResourceMethodObservable<{ codReserva: string }, void>;
 }

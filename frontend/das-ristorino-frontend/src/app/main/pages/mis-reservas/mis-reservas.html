@@ -147,6 +147,23 @@
                         <i class="bi bi-clock-history"></i> Esta reserva ya pasó
                       </div>
                     }
+
+                    @if (!esReservaPasada(reserva.fecha_hora) 
+                            && reserva.estado !== 'Cancelada' 
+                            && reserva.estado !== 'Finalizada') {
+
+                        <div class="d-grid mt-3">
+                          <button 
+                            class="btn btn-outline-danger btn-sm"
+                            (click)="cancelarReserva(reserva.id)"
+                            i18n>
+                            <i class="bi bi-x-circle me-1"></i>
+                            Cancelar reserva
+                          </button>
+                        </div>
+
+                      }
+                    
                   </div>
                 </div>
               </div>
