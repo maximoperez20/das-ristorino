@@ -1694,4 +1694,37 @@ BEGIN
 END;
 GO
 
+create or alter procedure sp_CancelarReservaRistorino
+    @nro_reserva VARCHAR(36)
+    as
+begin
+    set nocount on;
+
+    DECLARE @cod_estado_cancelada VARCHAR(36);
+    SELECT @cod_estado_cancelada = cod_estado FROM estados_reservas WHERE nom_estado = 'Cancelada';
+
+    update reservas_restaurantes
+    set cancelada = 1, cod_estado = @cod_estado_cancelada, fecha_hora_cancelacion = GETDATE()
+    where nro_reserva = @nro_reserva;
+
+    if @@rowcount = 0
+    begin
+        raiserror('Reserva no encontrada: %s', 16, 1, @nro_reserva);
+    end
+end;
+GO
+
+CREATE OR ALTER PROCEDURE sp_ObtenerCancelacionReserva
+    @nro_reserva VARCHAR(36)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        nro_restaurante,
+        cod_reserva_sucursal
+    FROM reservas_restaurantes
+    WHERE nro_reserva = @nro_reserva;
+END;
+
 PRINT 'Stored procedures creados/actualizados exitosamente!';

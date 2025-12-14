@@ -141,7 +141,25 @@ public class ReservaResource {
             return ResponseHelper.internalServerError("Error al cambiar el estado: " + e.getMessage());
         }
     }
-    
+
+    @GetMapping("/cancelar/{nroReserva}")
+    public ResponseEntity<?> cancelarReserva(@PathVariable String nroReserva) {
+        try {
+            boolean cancelado = reservaService.cancelarReserva(nroReserva);
+            if (cancelado) {
+                return ResponseEntity.noContent().build();
+            } else {
+                return ResponseHelper.internalServerError("No se pudo cancelar la reserva");
+            }
+        } catch (RuntimeException e) {
+            logger.warn("Error al cancelar reserva {}: {}", nroReserva, e.getMessage());
+            return ResponseHelper.badRequest(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error inesperado al cancelar reserva: {}", nroReserva, e);
+            return ResponseHelper.internalServerError("Error al cancelar la reserva: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/mis-reservas")
     public ResponseEntity<?> getMisReservas(
             Authentication authentication,

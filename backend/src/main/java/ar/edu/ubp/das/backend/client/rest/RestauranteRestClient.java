@@ -466,5 +466,34 @@ public class RestauranteRestClient implements RestauranteClient {
             throw new RuntimeException("Error en comunicación REST: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public int cancelarReserva(String nroRestaurante, String nroReserva) {
+        try {
+            String url = getBaseUrl() + "/restaurantes/" + nroRestaurante + "/reservas/" + nroReserva + "/cancelar";
+
+            HttpHeaders headers = createHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    String.class
+            );
+            String responseBody = response.getBody();
+            com.google.gson.reflect.TypeToken<Map<String, Object>> mapType =
+                    new com.google.gson.reflect.TypeToken<Map<String, Object>>(){};
+            Map<String, Object> resp = gson.fromJson(responseBody != null ? responseBody : "{}", mapType.getType());
+            if (resp != null && resp.get("actualizados") != null) {
+                Number n = (Number) resp.get("actualizados");
+                return n.intValue();
+            }
+            return 0;
+        } catch (Exception e) {
+            logger.error("Error al cancelar reserva vía REST: {}", e.getMessage(), e);
+            throw new RuntimeException("Error en comunicación REST: " + e.getMessage(), e);
+        }
+    }
 }
 

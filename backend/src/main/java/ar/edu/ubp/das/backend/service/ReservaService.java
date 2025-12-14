@@ -6,6 +6,7 @@ import ar.edu.ubp.das.backend.dto.ActualizarReservaDto;
 import ar.edu.ubp.das.backend.dto.ConfirmarReservaDto;
 import ar.edu.ubp.das.backend.dto.ConfirmarReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.CrearReservaDto;
+import ar.edu.ubp.das.backend.dto.DatosCancelarReservaDto;
 import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
 import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.SucursalDto;
@@ -241,5 +242,17 @@ public class ReservaService {
     
     private String obtenerCodigoEstado(String nomEstado) {
         return reservaRepository.obtenerCodigoEstado(nomEstado);
+    }
+
+    public boolean cancelarReserva(String nroReserva){
+        Optional<DatosCancelarReservaDto> datosReserva = reservaRepository.obtenerDatosCancelarReservaDto(nroReserva);
+        if (datosReserva.isEmpty()) {
+            throw new RuntimeException("Reserva no encontrada");
+        }
+        RestauranteClient client = restauranteClientFactory.getClient(datosReserva.get().getNroRestaurante());
+        client.cancelarReserva(datosReserva.get().getNroRestaurante(), datosReserva.get().getCodReservaSucursal());
+        reservaRepository.cancelarReserva(nroReserva);
+        
+        return true;
     }
 }

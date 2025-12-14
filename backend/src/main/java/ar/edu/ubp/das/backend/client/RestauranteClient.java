@@ -111,6 +111,13 @@ public interface RestauranteClient {
      * @param nroReserva UUID de la reserva
      * @return Número de filas actualizadas en el sistema del restaurante
      */
-    int cancelarReserva(String nroReserva);
+    /**
+     * Cancela una reserva en el sistema del restaurante.
+     *
+     * @param nroRestaurante Número del restaurante
+     * @param nroReserva Código de la reserva en el restaurante
+     * @return 1 si se canceló exitosamente, 0 si no se encontró
+     */
+    int cancelarReserva(String nroRestaurante, String nroReserva);
 }
 

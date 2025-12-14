@@ -2,6 +2,7 @@ package ar.edu.ubp.das.backend.repository;
 
 import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.CostoReservaDto;
+import ar.edu.ubp.das.backend.dto.DatosCancelarReservaDto;
 import ar.edu.ubp.das.backend.dto.EstadoReservaDto;
 import ar.edu.ubp.das.backend.dto.RegistrarReservaRistorinoDto;
 import ar.edu.ubp.das.backend.components.SimpleJdbcCallFactory;
@@ -205,4 +206,23 @@ public class ReservaRepository {
         }
         return null;
     }
+
+    public Optional<DatosCancelarReservaDto> obtenerDatosCancelarReservaDto(String nroReserva){
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("nro_reserva", nroReserva);
+        List<DatosCancelarReservaDto> results = jdbcCallFactory.executeQuery(
+                "sp_ObtenerCancelacionReserva", "dbo", params, "datos_cancelar", DatosCancelarReservaDto.class);
+        if (results != null && !results.isEmpty()) {
+            return Optional.of(results.get(0));
+        }
+        return null;
+    }
+
+    public void cancelarReserva(String nroReserva) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("nro_reserva", nroReserva);
+        jdbcCallFactory.execute("sp_CancelarReservaRistorino", "dbo", params);
+    }
+
+
 }
