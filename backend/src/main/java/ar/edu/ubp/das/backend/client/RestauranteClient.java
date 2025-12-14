@@ -1,6 +1,7 @@
 package ar.edu.ubp.das.backend.client;
 
 import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
+import ar.edu.ubp.das.backend.dto.restaurante.ModificarReservaJsonDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchRequest;
@@ -112,5 +113,7 @@ public interface RestauranteClient {
      * @return Número de filas actualizadas en el sistema del restaurante
      */
     boolean cancelarReserva(String nroReserva);
+
+    boolean modificarReserva( ModificarReservaJsonDto modificarReservaDto);
 }
 

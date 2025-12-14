@@ -62,6 +62,8 @@ public class ReservaResponseDto {
 
     private String horaDesde;
 
+    private String nroReservaRestaurante;
+    
     private List<Integer> preferenciasValores;
     // Constructores
     public ReservaResponseDto() {}
@@ -69,7 +71,7 @@ public class ReservaResponseDto {
     public ReservaResponseDto(String id, String nombreCliente, String email, String telefono, 
                              LocalDateTime fechaHora, Integer cantidadPersonas, String estado, 
                              String observaciones, LocalDateTime fechaCreacion, LocalDateTime fechaActualizacion,
-                             String nroRestaurante, String nroSucursal, String codZona, String horaDesde, List<Integer> preferenciasValores) {
+                             String nroRestaurante, String nroSucursal, String codZona, String horaDesde, String nroReservaRestaurante, List<Integer> preferenciasValores) {
         this.id = id;
         this.nombreCliente = nombreCliente;
         this.email = email;
@@ -84,6 +86,7 @@ public class ReservaResponseDto {
         this.nroSucursal = nroSucursal;
         this.codZona = codZona;
         this.horaDesde = horaDesde;
+        this.nroReservaRestaurante = nroReservaRestaurante;
         this.preferenciasValores = preferenciasValores;
     }
     
@@ -256,6 +259,14 @@ public class ReservaResponseDto {
         this.preferenciasValores = preferenciasValores;
     }
     
+    public String getNroReservaRestaurante() {
+        return nroReservaRestaurante;
+    }
+    
+    public void setNroReservaRestaurante(String nroReservaRestaurante) {
+        this.nroReservaRestaurante = nroReservaRestaurante;
+    }
+    
     @Override
     public String toString() {
         return "ReservaResponseDto{" +
@@ -275,6 +286,7 @@ public class ReservaResponseDto {
 
                 ", horaDesde='" + horaDesde + '\'' +
                 ", preferenciasValores='" + preferenciasValores + '\'' +
+                ", nroReservaRestaurante='" + nroReservaRestaurante + '\'' +
                 '}';
     }
 }

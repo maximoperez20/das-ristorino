@@ -14,6 +14,8 @@ import ar.edu.ubp.das.backend.dto.restaurante.RegistrarReservaResponse;
 import ar.edu.ubp.das.backend.dto.soap.GetHorariosDisponiblesSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.NotificarClickSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.RegistrarContenidoSoapDto;
+import ar.edu.ubp.das.backend.dto.restaurante.ModificarReservaJsonDto;
+
 import ar.edu.ubp.das.backend.utils.SOAPClient;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -453,6 +455,34 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             return resp.get("exitosa") != null && (Boolean) resp.get("exitosa");
         } catch (Exception e) {
             logger.error("Error al cancelar reserva vía SOAP: {}", e.getMessage(), e);
+            throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public boolean modificarReserva(ModificarReservaJsonDto modificarReservaDto) {
+        try {
+            // Usar DTO tipado en lugar de HashMap
+            ModificarReservaJsonDto jsonDto = new ModificarReservaJsonDto();
+            jsonDto.setCodReserva(modificarReservaDto.getCodReserva());
+            jsonDto.setCodZona(modificarReservaDto.getCodZona());
+            jsonDto.setFechaReserva(modificarReservaDto.getFechaReserva());
+            jsonDto.setHoraDesde(modificarReservaDto.getHoraDesde());
+            jsonDto.setCantAdultos(modificarReservaDto.getCantAdultos());
+            jsonDto.setCantMenores(modificarReservaDto.getCantMenores());
+
+            String jsonString = gson.toJson(jsonDto);
+
+            logger.info("JSON a enviar: {}", jsonString);
+            SOAPClient soapClient = createSoapClient("modificarReservaRequest");
+            Map<String, Object> parameters = createSoapParameters(jsonString);
+
+            String jsonResponseStr = soapClient.extractJsonResponse("modificarReservaResponse", parameters);
+
+            Map<String, Object> resp = parseJsonToMap(jsonResponseStr);
+            return resp.get("exitosa") != null && (Boolean) resp.get("exitosa");
+        } catch (Exception e) {
+            logger.error("Error al modificar reserva vía SOAP: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
         }
     }

@@ -12,6 +12,8 @@ import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.SucursalDto;
 import ar.edu.ubp.das.backend.dto.UsuarioDto;
 import ar.edu.ubp.das.backend.dto.DatosCancelarReservaDto;
+import ar.edu.ubp.das.backend.dto.restaurante.ModificarReservaJsonDto;
+
 import ar.edu.ubp.das.backend.repository.ReservaRepository;
 import ar.edu.ubp.das.backend.repository.RestauranteRepository;
 import ar.edu.ubp.das.backend.repository.ClienteRepository;
@@ -85,6 +87,37 @@ public class ReservaService {
     }
     
     public boolean modificarReserva(String nroReserva, ModificarReservaDto modificarReservaDto) {
+
+        String nroRestaurante = modificarReservaDto.getNroRestaurante();
+        String nroSucursal = modificarReservaDto.getNroSucursal();
+
+
+        Optional<ReservaResponseDto> reserva = reservaRepository.findById(nroReserva);
+        if (reserva.isEmpty()) {
+            throw new RuntimeException("Reserva no encontrada");
+        }
+
+        String nroReservaRestaurante = reserva.get().getNroReservaRestaurante();
+
+        String codZonaRestaurante = restauranteRepository.obtenerCodZonaRestaurante(
+            nroRestaurante,
+            nroSucursal,
+            modificarReservaDto.getCodZona()
+        );
+
+        ModificarReservaJsonDto modificarReservaJsonDto = new ModificarReservaJsonDto(
+            nroReservaRestaurante,
+            codZonaRestaurante,
+            modificarReservaDto.getFechaReserva(),
+            modificarReservaDto.getHoraDesde(),
+            modificarReservaDto.getCantAdultos(),
+            modificarReservaDto.getCantMenores()
+        );
+        logger.info("Nro restaurante: {}", nroRestaurante);
+        logger.info("Nro reserva restaurante: {}", nroReservaRestaurante);
+        
+        RestauranteClient client = restauranteClientFactory.getClient(nroRestaurante);
+        client.modificarReserva(modificarReservaJsonDto);
         return reservaRepository.modificarReserva(nroReserva, modificarReservaDto);
     }
     

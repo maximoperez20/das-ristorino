@@ -105,7 +105,8 @@ BEGIN
         END as estado,
         rr.notas as observaciones,
         rr.fecha_hora_registro as fecha_creacion,
-        rr.fecha_hora_cancelacion as fecha_actualizacion
+        rr.fecha_hora_cancelacion as fecha_actualizacion,
+        rr.cod_reserva_sucursal as nroReservaRestaurante
     FROM reservas_restaurantes rr
     LEFT JOIN clientes c ON c.nro_cliente = rr.nro_cliente
     LEFT JOIN estados_reservas er ON er.cod_estado = rr.cod_estado
