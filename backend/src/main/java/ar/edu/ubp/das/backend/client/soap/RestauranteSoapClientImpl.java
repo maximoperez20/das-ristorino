@@ -16,6 +16,7 @@ import ar.edu.ubp.das.backend.dto.soap.NotificarClickSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.RegistrarContenidoSoapDto;
 import ar.edu.ubp.das.backend.utils.SOAPClient;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,11 +26,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Base64;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoJsonDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickJsonDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchJsonDto;
 import ar.edu.ubp.das.backend.dto.restaurante.MarcarPublicadoJsonDto;
+//import ar.edu.ubp.das.backend.dto.restaurante.CancelarReservaJsonDto;
 import java.util.HashMap; // Necesario para parámetros SOAP
 import java.util.List;
 import java.util.Map; // Necesario para parsear respuestas dinámicas
@@ -38,7 +39,11 @@ import java.util.Map; // Necesario para parsear respuestas dinámicas
 public class RestauranteSoapClientImpl implements RestauranteClient {
 
     private static final Logger logger = LoggerFactory.getLogger(RestauranteSoapClientImpl.class);
-    private static final DateTimeFormatter ISO_DATE_TIME = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    private static final DateTimeFormatter ISO_LOCAL_DATE = DateTimeFormatter.ISO_LOCAL_DATE;
+    
+    // TypeToken reutilizable para parsear Map<String, Object> desde JSON
+    private static final TypeToken<Map<String, Object>> MAP_STRING_OBJECT_TYPE = 
+        new TypeToken<Map<String, Object>>(){};
 
     @Value("${soap.restaurante.wsdl:http://localhost:8081/ws/restaurantes.wsdl}")
     private String defaultWsdlUrl;
@@ -80,6 +85,66 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
         String url = dynamicWsdlUrl.get();
         return url != null ? url : defaultWsdlUrl;
     }
+    
+    /**
+     * Helper method para parsear JSON string a Map<String, Object>.
+     * Evita repetir el código de TypeToken en cada método.
+     */
+    private Map<String, Object> parseJsonToMap(String jsonString) {
+        return gson.fromJson(jsonString, MAP_STRING_OBJECT_TYPE.getType());
+    }
+    
+    /**
+     * Helper method para extraer un valor numérico de un Map y convertirlo a int.
+     * Retorna 0 si el valor no existe o es null.
+     */
+    private int getIntValue(Map<String, Object> map, String key) {
+        if (map == null || !map.containsKey(key) || map.get(key) == null) {
+            return 0;
+        }
+        Object value = map.get(key);
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        return 0;
+    }
+    
+    /**
+     * Helper method para extraer un valor numérico de un Map y convertirlo a Integer.
+     * Retorna null si el valor no existe o es null.
+     */
+    private Integer getIntegerValue(Map<String, Object> map, String key) {
+        if (map == null || !map.containsKey(key) || map.get(key) == null) {
+            return null;
+        }
+        Object value = map.get(key);
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        return null;
+    }
+    
+    /**
+     * Helper method para crear un SOAPClient con la configuración estándar.
+     */
+    private SOAPClient createSoapClient(String operationName) {
+        return new SOAPClient.SOAPClientBuilder()
+                .wsdlUrl(getWsdlUrl())
+                .namespace(namespace)
+                .serviceName(serviceName)
+                .portName(portName)
+                .operationName(operationName)
+                .build();
+    }
+    
+    /**
+     * Helper method para crear los parámetros SOAP con el JSON data.
+     */
+    private Map<String, Object> createSoapParameters(String jsonData) {
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("jsonData", jsonData);
+        return parameters;
+    }
 
     @Override
     public RegistrarContenidoResponse registrarContenido(RegistrarContenidoRequest request) {
@@ -88,17 +153,8 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             RegistrarContenidoJsonDto jsonDto = new RegistrarContenidoJsonDto(request);
             String jsonString = gson.toJson(jsonDto);
 
-            // Crear cliente SOAP y enviar JSON
-            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
-                    .wsdlUrl(getWsdlUrl())
-                    .namespace(namespace)
-                    .serviceName(serviceName)
-                    .portName(portName)
-                    .operationName("registrarContenidoRequest")
-                    .build();
-
-            Map<String, Object> parameters = new HashMap<>();
-            parameters.put("jsonData", jsonString);
+            SOAPClient soapClient = createSoapClient("registrarContenidoRequest");
+            Map<String, Object> parameters = createSoapParameters(jsonString);
 
             RegistrarContenidoSoapDto soapResponse = soapClient.callServiceForObject(
                     RegistrarContenidoSoapDto.class,
@@ -125,34 +181,12 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
                 request.getNroRestaurante(), request.getNroContenido(), request.getNroClick());
 
         try {
-            // ============================================
-            // CONSTRUCCIÓN DEL JSON A ENVIAR
-            // ============================================
-            // Para agregar/modificar campos JSON, editar el Map jsonData abajo.
-            // Los campos disponibles en request son:
-            // - nroRestaurante (String)
-            // - nroContenido (String)
-            // - nroClick (String)
-            // - fechaHoraRegistro (LocalDateTime, se convierte a ISO string)
-            // - nroCliente (String, opcional)
-            // - costoClick (BigDecimal, opcional)
-            // ============================================
-            
             // Usar DTO tipado en lugar de HashMap
             NotificarClickJsonDto jsonDto = new NotificarClickJsonDto(request);
             String jsonString = gson.toJson(jsonDto);
 
-            // Crear cliente SOAP y enviar JSON
-            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
-                    .wsdlUrl(getWsdlUrl())
-                    .namespace(namespace)
-                    .serviceName(serviceName)
-                    .portName(portName)
-                    .operationName("notificarClickRequest")
-                    .build();
-
-            Map<String, Object> parameters = new HashMap<>();
-            parameters.put("jsonData", jsonString);
+            SOAPClient soapClient = createSoapClient("notificarClickRequest");
+            Map<String, Object> parameters = createSoapParameters(jsonString);
 
             NotificarClickSoapDto soapResponse = soapClient.callServiceForObject(
                     NotificarClickSoapDto.class,
@@ -180,32 +214,19 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             NotificarClicksBatchJsonDto jsonDto = new NotificarClicksBatchJsonDto(request);
             String jsonString = gson.toJson(jsonDto);
 
-            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
-                    .wsdlUrl(getWsdlUrl())
-                    .namespace(namespace)
-                    .serviceName(serviceName)
-                    .portName(portName)
-                    .operationName("notificarClicksBatchRequest")
-                    .build();
-
-            Map<String, Object> parameters = new HashMap<>();
-            parameters.put("jsonData", jsonString);
+            SOAPClient soapClient = createSoapClient("notificarClicksBatchRequest");
+            Map<String, Object> parameters = createSoapParameters(jsonString);
 
             String jsonResponseStr = soapClient.extractJsonResponse("notificarClicksBatchResponse", parameters);
             
-            com.google.gson.reflect.TypeToken<Map<String, Object>> mapType = 
-                new com.google.gson.reflect.TypeToken<Map<String, Object>>(){};
-            Map<String, Object> jsonMap = gson.fromJson(jsonResponseStr, mapType.getType());
+            Map<String, Object> jsonMap = parseJsonToMap(jsonResponseStr);
             
             NotificarClicksBatchResponse response = new NotificarClicksBatchResponse();
             response.setExitoso(jsonMap.get("exitoso") != null && (Boolean) jsonMap.get("exitoso"));
             response.setMensaje((String) jsonMap.get("mensaje"));
-            response.setTotalClicks(jsonMap.get("totalClicks") != null ? 
-                ((Number) jsonMap.get("totalClicks")).intValue() : 0);
-            response.setClicksExitosos(jsonMap.get("clicksExitosos") != null ? 
-                ((Number) jsonMap.get("clicksExitosos")).intValue() : 0);
-            response.setClicksFallidos(jsonMap.get("clicksFallidos") != null ? 
-                ((Number) jsonMap.get("clicksFallidos")).intValue() : 0);
+            response.setTotalClicks(getIntValue(jsonMap, "totalClicks"));
+            response.setClicksExitosos(getIntValue(jsonMap, "clicksExitosos"));
+            response.setClicksFallidos(getIntValue(jsonMap, "clicksFallidos"));
             
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> resultadosMap = (List<Map<String, Object>>) jsonMap.get("resultados");
@@ -242,22 +263,13 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             jsonData.put("nroRestaurante", nroRestaurante);
             jsonData.put("nroSucursal", nroSucursal);
             jsonData.put("codZona", codZona);
-            jsonData.put("fecha", fecha.format(java.time.format.DateTimeFormatter.ISO_LOCAL_DATE));
+            jsonData.put("fecha", fecha.format(ISO_LOCAL_DATE));
             jsonData.put("cantidad", cantidad);
             
             String jsonString = gson.toJson(jsonData);
 
-            // Crear cliente SOAP y enviar JSON
-            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
-                    .wsdlUrl(getWsdlUrl())
-                    .namespace(namespace)
-                    .serviceName(serviceName)
-                    .portName(portName)
-                    .operationName("getHorariosDisponiblesRequest")
-                    .build();
-
-            Map<String, Object> parameters = new HashMap<>();
-            parameters.put("jsonData", jsonString);
+            SOAPClient soapClient = createSoapClient("getHorariosDisponiblesRequest");
+            Map<String, Object> parameters = createSoapParameters(jsonString);
 
             GetHorariosDisponiblesSoapDto soapResponse = soapClient.callServiceForObject(
                     GetHorariosDisponiblesSoapDto.class,
@@ -268,8 +280,7 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             // Parsear respuesta JSON que viene agrupada por zonas
             // La respuesta tiene formato: { "zonas": [...], "totalZonas": N, "fecha": "..." }
             // Necesitamos aplanar la estructura para devolver List<HorarioDisponibleDto>
-            com.google.gson.reflect.TypeToken<Map<String, Object>> typeToken = new com.google.gson.reflect.TypeToken<Map<String, Object>>(){};
-            Map<String, Object> jsonResponse = gson.fromJson(soapResponse.getJsonResponse(), typeToken.getType());
+            Map<String, Object> jsonResponse = parseJsonToMap(soapResponse.getJsonResponse());
             
             List<HorarioDisponibleDto> horarios = new ArrayList<>();
             
@@ -280,8 +291,7 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
                 for (Map<String, Object> zona : zonas) {
                     String codZonaResp = (String) zona.get("codZona");
                     String nomZona = (String) zona.get("nomZona");
-                    Integer capacidadZona = zona.get("capacidadZona") != null 
-                        ? ((Number) zona.get("capacidadZona")).intValue() : null;
+                    Integer capacidadZona = getIntegerValue(zona, "capacidadZona");
                     Boolean permiteMenores = zona.get("permiteMenores") != null 
                         ? (Boolean) zona.get("permiteMenores") : null;
                     
@@ -306,12 +316,10 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
                                 horario.setHoraHasta(LocalTime.parse((String) turno.get("horaHasta")));
                             }
                             if (turno.containsKey("yaReservados")) {
-                                horario.setYaReservados(turno.get("yaReservados") != null 
-                                    ? ((Number) turno.get("yaReservados")).intValue() : 0);
+                                horario.setYaReservados(getIntValue(turno, "yaReservados"));
                             }
                             if (turno.containsKey("disponibilidad")) {
-                                horario.setDisponibilidad(turno.get("disponibilidad") != null 
-                                    ? ((Number) turno.get("disponibilidad")).intValue() : 0);
+                                horario.setDisponibilidad(getIntValue(turno, "disponibilidad"));
                             }
                             
                             horarios.add(horario);
@@ -360,16 +368,8 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             
             String jsonString = gson.toJson(request);
 
-            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
-                    .wsdlUrl(getWsdlUrl())
-                    .namespace(namespace)
-                    .serviceName(serviceName)
-                    .portName(portName)
-                    .operationName("registrarReservaRequest")
-                    .build();
-
-            Map<String, Object> parameters = new HashMap<>();
-            parameters.put("jsonData", jsonString);
+            SOAPClient soapClient = createSoapClient("registrarReservaRequest");
+            Map<String, Object> parameters = createSoapParameters(jsonString);
 
             String jsonResponseStr = soapClient.extractJsonResponse("registrarReservaResponse", parameters);
 
@@ -390,22 +390,15 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
     }
 
     @Override
-    public java.util.Map<String, Object> obtenerContenidos(String nroRestaurante, String nroSucursal) {
+    public Map<String, Object> obtenerContenidos(String nroRestaurante, String nroSucursal) {
         try {
-            java.util.Map<String, Object> jsonData = new java.util.HashMap<>();
+            Map<String, Object> jsonData = new HashMap<>();
             jsonData.put("nroRestaurante", nroRestaurante);
             jsonData.put("nroSucursal", nroSucursal);
 
-            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
-                    .wsdlUrl(getWsdlUrl())
-                    .namespace(namespace)
-                    .serviceName(serviceName)
-                    .portName(portName)
-                    .operationName("listarContenidosRequest")
-                    .build();
-
-            java.util.Map<String, Object> parameters = new java.util.HashMap<>();
-            parameters.put("jsonData", gson.toJson(jsonData));
+            String jsonString = gson.toJson(jsonData);
+            SOAPClient soapClient = createSoapClient("listarContenidosRequest");
+            Map<String, Object> parameters = createSoapParameters(jsonString);
 
             String jsonResponseStr = soapClient.extractJsonResponse("listarContenidosResponse", parameters);
 
@@ -415,10 +408,7 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             }
 
             // Parsear como Map (no como List)
-            com.google.gson.reflect.TypeToken<java.util.Map<String, Object>> typeToken =
-                    new com.google.gson.reflect.TypeToken<java.util.Map<String, Object>>(){};
-
-            java.util.Map<String, Object> contenido = gson.fromJson(jsonResponseStr, typeToken.getType());
+            Map<String, Object> contenido = parseJsonToMap(jsonResponseStr);
             return contenido;
         } catch (Exception e) {
             logger.error("Error al obtener contenidos vía SOAP: {}", e.getMessage(), e);
@@ -427,38 +417,42 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
     }
 
     @Override
-    public int marcarPublicado(String nroRestaurante, java.util.List<String> nroContenidos) {
+    public int marcarPublicado(String nroRestaurante, List<String> nroContenidos) {
         try {
             // Usar DTO tipado en lugar de HashMap
             MarcarPublicadoJsonDto jsonDto = new MarcarPublicadoJsonDto(nroContenidos);
             String jsonString = gson.toJson(jsonDto);
             
-            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
-                    .wsdlUrl(getWsdlUrl())
-                    .namespace(namespace)
-                    .serviceName(serviceName)
-                    .portName(portName)
-                    .operationName("marcarPublicadoRequest")
-                    .build();
-
-            // Los parámetros SOAP deben ser Map para el cliente SOAP
-            Map<String, Object> parameters = new HashMap<>();
-            parameters.put("jsonData", jsonString);
+            SOAPClient soapClient = createSoapClient("marcarPublicadoRequest");
+            Map<String, Object> parameters = createSoapParameters(jsonString);
 
             String jsonResponseStr = soapClient.extractJsonResponse("marcarPublicadoResponse", parameters);
 
-            com.google.gson.reflect.TypeToken<java.util.Map<String, Object>> mapType =
-                    new com.google.gson.reflect.TypeToken<java.util.Map<String, Object>>(){};
-
-            java.util.Map<String, Object> resp = gson.fromJson(jsonResponseStr, mapType.getType());
-            if (resp != null && resp.get("actualizados") != null) {
-                Number n = (Number) resp.get("actualizados");
-                return n.intValue();
-            }
-            return 0;
+            Map<String, Object> resp = parseJsonToMap(jsonResponseStr);
+            return getIntValue(resp, "actualizados");
         } catch (Exception e) {
             logger.error("Error al marcar publicados vía SOAP: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
         }
     }
+
+    // @Override
+    // public int cancelarReserva(String nroReserva) {
+    //     try {
+    //         // Usar DTO tipado en lugar de HashMap
+    //         CancelarReservaJsonDto jsonDto = new CancelarReservaJsonDto(nroReserva);
+    //         String jsonString = gson.toJson(jsonDto);
+
+    //         SOAPClient soapClient = createSoapClient("cancelarReservaRequest");
+    //         Map<String, Object> parameters = createSoapParameters(jsonString);
+
+    //         String jsonResponseStr = soapClient.extractJsonResponse("cancelarReservaResponse", parameters);
+
+    //         Map<String, Object> resp = parseJsonToMap(jsonResponseStr);
+    //         return getIntValue(resp, "actualizados");
+    //     } catch (Exception e) {
+    //         logger.error("Error al cancelar reserva vía SOAP: {}", e.getMessage(), e);
+    //         throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
+    //     }
+    // }
 }
