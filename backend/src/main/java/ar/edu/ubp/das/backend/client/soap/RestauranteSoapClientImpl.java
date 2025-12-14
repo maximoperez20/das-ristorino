@@ -30,7 +30,9 @@ import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoJsonDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickJsonDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchJsonDto;
 import ar.edu.ubp.das.backend.dto.restaurante.MarcarPublicadoJsonDto;
-//import ar.edu.ubp.das.backend.dto.restaurante.CancelarReservaJsonDto;
+
+import ar.edu.ubp.das.backend.dto.restaurante.CancelarReservaJsonDto;
+
 import java.util.HashMap; // Necesario para parámetros SOAP
 import java.util.List;
 import java.util.Map; // Necesario para parsear respuestas dinámicas
@@ -435,24 +437,24 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
         }
     }
+    @Override
+    public int cancelarReserva(String nroReserva) {
+        try {
+            // Usar DTO tipado en lugar de HashMap
+            CancelarReservaJsonDto jsonDto = new CancelarReservaJsonDto(nroReserva);
+            String jsonString = gson.toJson(jsonDto);
 
-    // @Override
-    // public int cancelarReserva(String nroReserva) {
-    //     try {
-    //         // Usar DTO tipado en lugar de HashMap
-    //         CancelarReservaJsonDto jsonDto = new CancelarReservaJsonDto(nroReserva);
-    //         String jsonString = gson.toJson(jsonDto);
+            SOAPClient soapClient = createSoapClient("cancelarReservaRequest");
+            Map<String, Object> parameters = createSoapParameters(jsonString);
 
-    //         SOAPClient soapClient = createSoapClient("cancelarReservaRequest");
-    //         Map<String, Object> parameters = createSoapParameters(jsonString);
+            String jsonResponseStr = soapClient.extractJsonResponse("cancelarReservaResponse", parameters);
 
-    //         String jsonResponseStr = soapClient.extractJsonResponse("cancelarReservaResponse", parameters);
+            Map<String, Object> resp = parseJsonToMap(jsonResponseStr);
+            return getIntValue(resp, "actualizados");
+        } catch (Exception e) {
+            logger.error("Error al cancelar reserva vía SOAP: {}", e.getMessage(), e);
+            throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
+        }
+    }
 
-    //         Map<String, Object> resp = parseJsonToMap(jsonResponseStr);
-    //         return getIntValue(resp, "actualizados");
-    //     } catch (Exception e) {
-    //         logger.error("Error al cancelar reserva vía SOAP: {}", e.getMessage(), e);
-    //         throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
-    //     }
-    // }
 }

@@ -104,5 +104,13 @@ public interface RestauranteClient {
      * @return número de filas actualizadas en el sistema legacy.
      */
     int marcarPublicado(String nroRestaurante, java.util.List<String> nroContenidos);
+
+    /**
+     * Cancela una reserva en el sistema del restaurante.
+     *
+     * @param nroReserva UUID de la reserva
+     * @return Número de filas actualizadas en el sistema del restaurante
+     */
+    int cancelarReserva(String nroReserva);
 }
 
