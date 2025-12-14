@@ -47,6 +47,7 @@ public class SecurityConfig {
                            "/api/restaurantes/**",     // Consulta de restaurantes y búsqueda NLP - PÚBLICO
                            "/api/promociones/**",      // Consulta de promociones - PÚBLICO
                            "/api/localidades/**",      // Consulta de localidades - PÚBLICO
+                           "/api/resenas/**",          // Reseñas públicas - PÚBLICO
                            "/api/preferencias/categorias",  // Consulta de categorías de preferencias - PÚBLICO
                            "/api/preferencias/*/especialidades-alimentarias",  // Especialidades por restaurante - PÚBLICO
                            "/api/clientes/register",   // Registro de cliente - PÚBLICO
@@ -78,6 +79,7 @@ public class SecurityConfig {
                         path.contains("/api/restaurantes") ||
                         path.contains("/api/promociones") ||
                         path.contains("/api/localidades") ||
+                        path.contains("/api/resenas") ||
                         path.contains("/api/clientes/register") ||
                         path.contains("/api/clientes/login")) {
                         logger.debug("Endpoint público detectado: {}, no se validará JWT", path);
