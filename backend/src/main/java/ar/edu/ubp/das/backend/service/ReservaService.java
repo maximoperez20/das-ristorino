@@ -249,8 +249,11 @@ public class ReservaService {
         if (datosReserva.isEmpty()) {
             throw new RuntimeException("Reserva no encontrada");
         }
-        RestauranteClient client = restauranteClientFactory.getClient(datosReserva.get().getNroRestaurante());
-        client.cancelarReserva(datosReserva.get().getNroRestaurante(), datosReserva.get().getCodReservaSucursal());
+        DatosCancelarReservaDto reserva = datosReserva.get();
+
+        RestauranteClient client = restauranteClientFactory.getClient(reserva.getNroRestaurante());
+        client.cancelarReserva(reserva.getNroRestaurante(), reserva.getCodReservaSucursal());
+        
         reservaRepository.cancelarReserva(nroReserva);
         
         return true;
