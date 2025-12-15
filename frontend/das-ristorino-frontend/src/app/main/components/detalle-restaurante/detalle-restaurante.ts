@@ -10,6 +10,8 @@ import { FormularioReservaComponent } from '../formulario-reserva/formulario-res
 import { AuthService } from '../../../core/services/auth-service';
 import { IDominioPreferencia } from '../../api/models/i-dominio-preferencia';
 import { IHorariosDisponiblesResponse } from '../../api/models/i-horario-disponible';
+import { MenuResource } from '../../api/resources/menu-resource';
+import { IMenu } from '../../api/models/i-menu';
 
 @Component({
   selector: 'app-detalle-restaurante',
@@ -34,6 +36,7 @@ export class DetalleRestauranteComponent implements OnInit {
   private _router = inject(Router);
   private _auth = inject(AuthService);
   private _cdr = inject(ChangeDetectorRef);
+  private _menuResource = inject(MenuResource);
 
   ngOnInit(): void {
     this.nroRestaurante = this._route.snapshot.paramMap.get('nroRestaurante') || '';
@@ -128,5 +131,40 @@ export class DetalleRestauranteComponent implements OnInit {
         }
       }, 200);
     }
+  }
+
+  verMenu(): void {
+    if (!this.nroRestaurante || !this.sucursalSeleccionada?.nroSucursal) {
+      return;
+    }
+
+    this._menuResource.obtenerMenu({
+      nroRestaurante: this.nroRestaurante,
+      nroSucursal: this.sucursalSeleccionada.nroSucursal
+    }).subscribe({
+      next: (menu: IMenu) => {
+        if (!menu || !menu.datosArchivoBase64 || !menu.tipoMime) {
+          return;
+        }
+        try {
+          const byteCharacters = atob(menu.datosArchivoBase64);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: menu.tipoMime });
+          const url = URL.createObjectURL(blob);
+          window.open(url, '_blank');
+          // Liberar URL cuando el navegador cierre la pestaña no es trivial; si se usa modal, revocar al cerrar
+          // setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        } catch (e) {
+          // noop: podrías loguear o mostrar mensaje si tenés un message service
+        }
+      },
+      error: () => {
+        // noop: opcionalmente mostrar mensaje de error
+      }
+    });
   }
 }

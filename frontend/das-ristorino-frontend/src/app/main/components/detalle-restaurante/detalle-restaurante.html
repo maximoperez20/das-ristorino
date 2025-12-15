@@ -166,9 +166,17 @@
                 </div>
             </div>
 
-             @if (sucursalSeleccionada) {
+            @if (sucursalSeleccionada) {
                 <div class="section-divider"></div>
                 <div class="mb-5">
+                    <div class="d-flex justify-content-end mb-3">
+                        <button type="button"
+                                class="btn btn-outline-primary"
+                                (click)="verMenu()">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>
+                            <span i18n>Ver menú</span>
+                        </button>
+                    </div>
                     <h2 class="section-title mb-4" i18n>Reseñas</h2>
                     <app-resenas
                         [nroRestaurante]="nroRestaurante"

@@ -50,7 +50,8 @@ public class SecurityConfig {
                            "/api/preferencias/categorias",  // Consulta de categorías de preferencias - PÚBLICO
                            "/api/preferencias/*/especialidades-alimentarias",  // Especialidades por restaurante - PÚBLICO
                            "/api/clientes/register",   // Registro de cliente - PÚBLICO
-                           "/api/clientes/login",      // Login de cliente - PÚBLICO
+                           "/api/clientes/login",      // Login de cliente - PÚBLICO,
+                           "/api/menus/**",             // Consulta de menús - PÚBLICO
                            // Swagger UI (documentación API)
                            "/swagger-ui/**",
                            "/swagger-ui.html",

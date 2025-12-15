@@ -1,6 +1,5 @@
 package ar.edu.ubp.das.backend.dto.restaurante;
 
-import java.time.LocalDateTime;
 
 public class ObtenerMenuResponse {
     
@@ -73,5 +72,5 @@ public class ObtenerMenuResponse {
     public void setMensaje(String mensaje) {
         this.mensaje = mensaje;
     }
-    
+
 }

@@ -13,10 +13,10 @@ import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarReservaRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarReservaResponse;
-import ar.edu.ubp.das.backend.dto.restaurante.ObtenerMenuRequest;
-import ar.edu.ubp.das.backend.dto.restaurante.ObtenerMenuResponse;
+
 import ar.edu.ubp.das.backend.dto.soap.GetHorariosDisponiblesSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.NotificarClickSoapDto;
+import ar.edu.ubp.das.backend.dto.soap.ObtenerMenuSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.RegistrarContenidoSoapDto;
 import ar.edu.ubp.das.backend.utils.SOAPClient;
 import com.google.gson.Gson;
@@ -468,6 +468,60 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
 
     @Override
     public ObtenerMenuResponse obtenerMenu(ObtenerMenuRequest request) {
-        return null;
+        try {
+            if (request.getNroRestaurante() == null || request.getNroSucursal() == null) {
+                throw new IllegalArgumentException("NroRestaurante y NroSucursal son obligatorios");
+            }
+
+            // Construir JSON a enviar
+            Map<String, Object> jsonData = new HashMap<>();
+            jsonData.put("nroRestaurante", request.getNroRestaurante());
+            jsonData.put("nroSucursal", request.getNroSucursal());
+            
+            String jsonString = gson.toJson(jsonData);
+
+            // Crear cliente SOAP y enviar JSON
+            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
+                    .wsdlUrl(getWsdlUrl())
+                    .namespace(namespace)
+                    .serviceName(serviceName)
+                    .portName(portName)
+                    .operationName("getMenuActivoRequest")
+                    .build();
+
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("jsonData", jsonString);
+
+            // El servicio SOAP devuelve estructura XML, no JSON
+            ObtenerMenuSoapDto soapResponse = soapClient.callServiceForObject(
+                    ObtenerMenuSoapDto.class,
+                    "getMenuActivoResponse",
+                    parameters
+            );
+
+            // Mapear respuesta SOAP a DTO genérico
+            ObtenerMenuResponse response = new ObtenerMenuResponse();
+            response.setNroMenu(soapResponse.getNroMenu());
+            response.setNombreArchivo(soapResponse.getNombreArchivo());
+            response.setTipoMime(soapResponse.getTipoMime());
+            response.setTamanoBytes(soapResponse.getTamanoBytes());
+            response.setExitoso(soapResponse.isExitoso());
+            response.setMensaje(soapResponse.getMensaje());
+
+            // Decodificar base64 a bytes
+            if (soapResponse.getDatosArchivoBase64() != null && !soapResponse.getDatosArchivoBase64().isEmpty()) {
+                byte[] datosArchivo = java.util.Base64.getDecoder().decode(soapResponse.getDatosArchivoBase64());
+                response.setDatosArchivoBase64(datosArchivo);
+            }
+
+            return response;
+
+        } catch (Exception e) {
+            logger.error("Error al obtener el menú vía SOAP: {}", e.getMessage(), e);
+            ObtenerMenuResponse errorResp = new ObtenerMenuResponse();
+            errorResp.setExitoso(false);
+            errorResp.setMensaje("Error en comunicación SOAP: " + e.getMessage());
+            return errorResp;
+        }
     }
 }
