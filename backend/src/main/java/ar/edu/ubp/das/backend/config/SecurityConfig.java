@@ -52,6 +52,7 @@ public class SecurityConfig {
                            "/api/clientes/register",   // Registro de cliente - PÚBLICO
                            "/api/clientes/login",      // Login de cliente - PÚBLICO,
                            "/api/menus/**",             // Consulta de menús - PÚBLICO
+                           "/api/motivos-cancelacion/**", // Motivos de cancelación - PRIVADO
                            // Swagger UI (documentación API)
                            "/swagger-ui/**",
                            "/swagger-ui.html",
@@ -64,7 +65,8 @@ public class SecurityConfig {
                     "/api/preferencias/guardar",       // Guardar preferencias - PRIVADO
                     "/api/preferencias/mis-preferencias",  // Obtener preferencias del cliente - PRIVADO
                     "/api/usuarios/**",
-                    "/api/contenidos/**"        // Generación de contenido con IA - PRIVADO
+                    "/api/contenidos/**"      // Generación de contenido con IA - PRIVADO                    
+                   
                 ).authenticated()
                 // Por defecto, cualquier otro endpoint requiere autenticación
                 .anyRequest().authenticated()

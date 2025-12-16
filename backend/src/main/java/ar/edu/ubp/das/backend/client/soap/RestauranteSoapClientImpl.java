@@ -37,6 +37,7 @@ import ar.edu.ubp.das.backend.dto.restaurante.MarcarPublicadoJsonDto;
 import java.util.HashMap; // Necesario para parámetros SOAP
 import java.util.List;
 import java.util.Map; // Necesario para parsear respuestas dinámicas
+import com.google.gson.reflect.TypeToken;
 
 @Component
 public class RestauranteSoapClientImpl implements RestauranteClient {
@@ -522,6 +523,47 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             errorResp.setExitoso(false);
             errorResp.setMensaje("Error en comunicación SOAP: " + e.getMessage());
             return errorResp;
+        }
+    }
+
+    @Override
+    public boolean cancelarReservaRestaurante(String nroRestaurante, String codReserva) {
+        try {
+            Map<String, Object> jsonData = new HashMap<>();
+            jsonData.put("codReserva", codReserva);
+
+            String jsonString = gson.toJson(jsonData);
+
+            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
+                    .wsdlUrl(getWsdlUrl())
+                    .namespace(namespace)
+                    .serviceName(serviceName)
+                    .portName(portName)
+                    .operationName("cancelarReservaRequest")
+                    .build();
+
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("jsonData", jsonString);
+
+            String jsonResponseStr = soapClient.extractJsonResponse("cancelarReservaResponse", parameters);
+
+            java.lang.reflect.Type type = new TypeToken<Map<String, Object>>(){}.getType();
+            Map<String, Object> jsonResponse = gson.fromJson(jsonResponseStr, type);
+
+            if (jsonResponse != null && jsonResponse.containsKey("exitosa")) {
+                Object val = jsonResponse.get("exitosa");
+                if (val instanceof Boolean) {
+                    return (Boolean) val;
+                }
+                if (val instanceof Number) {
+                    return ((Number) val).intValue() != 0;
+                }
+            }
+
+            return false;
+        } catch (Exception e) {
+            logger.error("Error al cancelar reserva en restaurante SOAP: {}", e.getMessage(), e);
+            return false;
         }
     }
 }

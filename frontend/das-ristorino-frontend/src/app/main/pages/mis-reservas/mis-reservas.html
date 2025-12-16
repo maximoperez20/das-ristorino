@@ -11,6 +11,18 @@
         </div>
       </div>
     </div>
+    
+    @if (exitoCancelacion) {
+      <div class="alert alert-success" role="alert">
+        {{ exitoCancelacion }}
+      </div>
+    }
+
+    @if (errorCancelacion) {
+      <div class="alert alert-danger" role="alert">
+        {{ errorCancelacion }}
+      </div>
+    }
 
     <h4 i18n>Filtrar por estado</h4>
     <div class="d-flex flex-row gap-2 mb-4 flex-wrap">
@@ -143,7 +155,7 @@
                     </div>
 
                     @if (esReservaPasada(reserva.fecha_hora)) {
-                      <div class="alert alert-secondary small mb-0" role="alert" i18n>
+                      <div class="alert alert-secondary small mb-3" role="alert" i18n>
                         <i class="bi bi-clock-history"></i> Esta reserva ya pasó
                       </div>
 
@@ -153,6 +165,23 @@
                         i18n>
                         <i class="bi bi-eye"></i> Agregar Reseña
                       </a>
+                    } @else {
+                      @if (esCancelable(reserva)) {
+                        <div class="d-flex gap-2">
+                          <button
+                            class="btn btn-outline-danger w-100"
+                            [disabled]="cancelandoId === reserva.id"
+                            (click)="abrirModalCancelacion(reserva)">
+                            @if (cancelandoId === reserva.id) {
+                              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                              <span i18n>Cancelando...</span>
+                            } @else {
+                              <i class="bi bi-x-circle me-1"></i>
+                              <span i18n>Cancelar reserva</span>
+                            }
+                          </button>
+                        </div>
+                      }
                     }
                   </div>
                 </div>
@@ -164,3 +193,43 @@
     }
   </div>
 </div>
+
+<!-- Modal de cancelación -->
+@if (mostrarModalCancelacion && reservaSeleccionada) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show d-block" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" i18n>Cancelar reserva</h5>
+          <button type="button" class="btn-close" aria-label="Close" (click)="cerrarModalCancelacion()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="motivoSelect" i18n>Motivo de cancelación</label>
+            <select id="motivoSelect" class="form-select" [(ngModel)]="motivoSeleccionado">
+              <option [ngValue]="undefined" i18n>Seleccioná un motivo</option>
+              @for (m of motivos; track m.cod_motivo_cancelacion) {
+                <option [ngValue]="m.cod_motivo_cancelacion">{{ m.descripcion }}</option>
+              }
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="notas" i18n>Comentario (opcional)</label>
+            <textarea id="notas" class="form-control" rows="3" [(ngModel)]="notasCancelacion" [maxLength]="400"></textarea>
+            <div class="form-text">
+              <span i18n>Te quedan</span> {{ notasRestantes }} <span i18n>caracteres</span>
+            </div>
+          </div>
+          @if (errorCancelacion) {
+            <div class="alert alert-danger" role="alert">{{ errorCancelacion }}</div>
+          }
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="cerrarModalCancelacion()" i18n>Cancelar</button>
+          <button type="button" class="btn btn-danger" (click)="confirmarCancelacion()" [disabled]="!motivoSeleccionado || notasRestantes < 0" i18n>Confirmar cancelación</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

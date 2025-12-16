@@ -1,9 +1,14 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { IReserva } from '../../api/models/i-reserva';
 import { AuthService } from '../../../core/services/auth-service';
 import { DateUtilsService } from '../../../core/services/date-utils.service';
+import { ReservaResource } from '../../api/resources/reserva-resource';
+import { MotivoCancelacionResource } from '../../api/resources/motivo-cancelacion-resource';
+import { IMotivoCancelacion } from '../../api/models/i-motivo-cancelacion';
+import { firstValueFrom } from 'rxjs';
 
 interface ReservaPorDia {
   fecha: Date;
@@ -15,7 +20,8 @@ interface ReservaPorDia {
 @Component({
   selector: 'app-mis-reservas',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
+  providers: [ReservaResource, MotivoCancelacionResource],
   templateUrl: './mis-reservas.html',
   styleUrls: ['./mis-reservas.scss'],
 })
@@ -24,11 +30,21 @@ export class MisReservasPage implements OnInit {
   reservas: IReserva[] = [];
   reservasPorDia: ReservaPorDia[] = [];
   filtroActivo: string | undefined = undefined;
+  cancelandoId?: string;
+  errorCancelacion?: string;
+  exitoCancelacion?: string;
+  mostrarModalCancelacion = false;
+  motivos: IMotivoCancelacion[] = [];
+  motivoSeleccionado?: string;
+  notasCancelacion: string = '';
+  reservaSeleccionada?: IReserva;
 
   private _auth = inject(AuthService);
   private _router = inject(Router);
   private _route = inject(ActivatedRoute);
   private _dateUtils = inject(DateUtilsService);
+  private _reservaResource = inject(ReservaResource);
+  private _motivoResource = inject(MotivoCancelacionResource);
 
   ngOnInit(): void {
     if (!this._auth.isAuthenticated()) {
@@ -47,6 +63,12 @@ export class MisReservasPage implements OnInit {
     
     // Agrupar y ordenar reservas por día
     this.reservasPorDia = this.agruparReservasPorDia(this.reservas);
+
+    // Precargar motivos de cancelación
+    this._motivoResource.obtenerMotivos().subscribe({
+      next: (motivos) => this.motivos = motivos ?? [],
+      error: () => this.motivos = []
+    });
   }
 
   agruparReservasPorDia(reservas: IReserva[]): ReservaPorDia[] {
@@ -166,6 +188,13 @@ export class MisReservasPage implements OnInit {
     }
   }
 
+  esCancelable(reserva: IReserva): boolean {
+    if (!reserva || !reserva.fecha_hora) return false;
+    if (this.esReservaPasada(reserva.fecha_hora)) return false;
+    const estado = this.normalizarEstado(reserva.estado);
+    return estado !== 'CANCELADA' && estado !== 'FINALIZADA';
+  }
+
   /**
    * Normaliza un estado de reserva a un valor canónico para comparación
    * Mapea estados en español e inglés al mismo valor canónico
@@ -276,5 +305,65 @@ export class MisReservasPage implements OnInit {
     this._router.navigate(['/mis-reservas/nueva-resena']
       , { queryParams: { idReserva: id } });
   
-  }       
+  }
+
+  abrirModalCancelacion(reserva: IReserva): void {
+    if (!this.esCancelable(reserva)) return;
+    this.reservaSeleccionada = reserva;
+    this.motivoSeleccionado = undefined;
+    this.notasCancelacion = '';
+    this.mostrarModalCancelacion = true;
+  }
+
+  cerrarModalCancelacion(): void {
+    this.mostrarModalCancelacion = false;
+    this.reservaSeleccionada = undefined;
+    this.errorCancelacion = undefined;
+  }
+
+  async confirmarCancelacion(): Promise<void> {
+    if (!this.reservaSeleccionada) return;
+    if (!this.motivoSeleccionado || this.motivoSeleccionado.trim() === '') {
+      this.errorCancelacion = $localize`Seleccioná un motivo de cancelación.`;
+      return;
+    }
+
+    const reserva = this.reservaSeleccionada;
+    this.cancelandoId = reserva.id;
+    this.errorCancelacion = undefined;
+
+    try {
+      const payload = {
+        id: reserva.id,
+        codMotivoCancelacion: this.motivoSeleccionado,
+        notas: this.notasCancelacion?.trim() ?? ''
+      };
+
+      const reservaActualizada = await firstValueFrom(
+        this._reservaResource.cancelarReserva(payload)
+      );
+
+      if (reservaActualizada) {
+        const idx = this.reservas.findIndex(r => r.id === reserva.id);
+        if (idx >= 0) {
+          this.reservas[idx] = reservaActualizada;
+        }
+        this.reservasPorDia = this.agruparReservasPorDia(this.reservas);
+        this.cerrarModalCancelacion();
+        this.exitoCancelacion = $localize`Reserva cancelada correctamente.`;
+        setTimeout(() => { this.exitoCancelacion = undefined; }, 4000);
+      }
+    } catch (err) {
+      console.error('No se pudo cancelar la reserva', err);
+      this.errorCancelacion = $localize`No se pudo cancelar la reserva. Intenta nuevamente.`;
+    } finally {
+      this.cancelandoId = undefined;
+    }
+  }
+
+  get notasRestantes(): number {
+    const texto = this.notasCancelacion ?? '';
+    const max = 400;
+    return Math.max(0, max - texto.length);
+  }
 }

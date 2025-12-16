@@ -12,6 +12,7 @@ import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarReservaRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.ObtenerMenuRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.ObtenerMenuResponse;
+import ar.edu.ubp.das.backend.dto.restaurante.CancelarReservaRestResponse;
 
 import com.google.gson.Gson;
 import org.slf4j.Logger;
@@ -554,6 +555,36 @@ public class RestauranteRestClient implements RestauranteClient {
         }
         
         return null;
+    }
+
+    @Override
+    public boolean cancelarReservaRestaurante(String nroRestaurante, String codReserva) {
+        try {
+            String url = getBaseUrl() + "/restaurantes/" + nroRestaurante + "/reservas/" + codReserva + "/cancelar";
+
+            HttpHeaders headers = createHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<String> entity = new HttpEntity<>("{}", headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    entity,
+                    String.class
+            );
+
+            String body = response.getBody();
+            CancelarReservaRestResponse result = gson.fromJson(
+                    body != null ? body : "{}",
+                    CancelarReservaRestResponse.class
+            );
+
+            return result != null && Boolean.TRUE.equals(result.getExitosa());
+        } catch (Exception e) {
+            logger.error("Error al cancelar reserva en restaurante REST: {}", e.getMessage(), e);
+            return false;
+        }
     }
 }
 

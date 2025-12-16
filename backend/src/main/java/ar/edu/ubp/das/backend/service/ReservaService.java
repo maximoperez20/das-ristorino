@@ -242,4 +242,27 @@ public class ReservaService {
     private String obtenerCodigoEstado(String nomEstado) {
         return reservaRepository.obtenerCodigoEstado(nomEstado);
     }
+
+    public boolean cancelarReserva(String nroReserva, String codMotivo, String notas) {
+        // Buscar cod_reserva_sucursal para cancelar primero en el restaurante externo
+        String codReservaSucursal = reservaRepository.obtenerCodReservaSucursal(nroReserva);
+
+        // Necesitamos el restaurante para elegir el cliente correcto (REST vs SOAP, URL, etc.)
+        String nroRestaurante = reservaRepository.obtenerNroRestaurantePorReserva(nroReserva);
+
+        // Si tenemos código externo, intentamos cancelarlo allí primero
+        if (codReservaSucursal != null && !codReservaSucursal.isBlank()) {
+            if (nroRestaurante == null || nroRestaurante.isBlank()) {
+                return false; // No podemos determinar el cliente correcto
+            }
+            RestauranteClient client = restauranteClientFactory.getClient(nroRestaurante);
+            boolean externoOk = client.cancelarReservaRestaurante(nroRestaurante, codReservaSucursal);
+            if (!externoOk) {
+                return false; // no cancelamos en Ristorino si falla afuera
+            }
+        }
+
+        // Si no hay código externo o ya se canceló afuera, cancelar en Ristorino
+        return reservaRepository.cancelarReserva(nroReserva, codMotivo, notas);
+    }
 }

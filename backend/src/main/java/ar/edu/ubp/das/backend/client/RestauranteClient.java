@@ -110,5 +110,13 @@ public interface RestauranteClient {
     /* Menu de sucursales restaurantes */
     ObtenerMenuResponse obtenerMenu(ObtenerMenuRequest request);
 
+        /**
+         * Cancela una reserva en el sistema del restaurante externo.
+         * @param nroRestaurante ID del restaurante externo (para resolver URL/protocolo)
+         * @param codReserva Código de reserva del sistema del restaurante (cod_reserva_sucursal)
+         * @return true si el restaurante confirmó la cancelación; false en caso contrario
+         */
+        boolean cancelarReservaRestaurante(String nroRestaurante, String codReserva);
+
 }
 

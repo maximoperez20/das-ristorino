@@ -3,9 +3,11 @@ package ar.edu.ubp.das.backend.repository;
 import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.CostoReservaDto;
 import ar.edu.ubp.das.backend.dto.EstadoReservaDto;
+import ar.edu.ubp.das.backend.dto.ExisteReservaDto;
 import ar.edu.ubp.das.backend.dto.RegistrarReservaRistorinoDto;
 import ar.edu.ubp.das.backend.components.SimpleJdbcCallFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.SqlOutParameter;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -99,12 +101,12 @@ public class ReservaRepository {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("id", id);
         
-        Map<String, Object> result = jdbcCallFactory.executeWithOutputs("sp_ExisteReserva", "dbo", params);
-        if (result != null && result.containsKey("existe")) {
-            Integer count = (Integer) result.get("existe");
-            return count != null && count > 0;
-        }
-        return false;
+        List<ExisteReservaDto> results = jdbcCallFactory.executeQuery(
+                "sp_ExisteReserva", "dbo", params, "resultado", ExisteReservaDto.class);
+        
+        return results != null && !results.isEmpty() 
+                && results.get(0).getExiste() != null 
+                && results.get(0).getExiste() > 0;
     }
     
     /**
@@ -191,6 +193,33 @@ public class ReservaRepository {
                 .addValue("cod_reserva_sucursal", codReservaSucursal);
         jdbcCallFactory.execute("sp_ActualizarCodReservaSucursal", "dbo", params);
     }
+
+    /**
+     * Obtener el nro_restaurante asociado a la reserva.
+     */
+    public String obtenerNroRestaurantePorReserva(String nroReserva) {
+        String sql = "SELECT nro_restaurante FROM reservas_restaurantes WHERE nro_reserva = ?";
+
+        try {
+            return jdbcCallFactory.getJdbcTemplate().queryForObject(sql, String.class, nroReserva);
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
+        }
+    }
+
+    /**
+     * Obtener el código de reserva del sistema del restaurante (cod_reserva_sucursal).
+     */
+    public String obtenerCodReservaSucursal(String nroReserva) {
+        String sql = "SELECT cod_reserva_sucursal FROM reservas_restaurantes WHERE nro_reserva = ?";
+
+        try {
+            // Retorna null si la columna está en null o si no hay registros
+            return jdbcCallFactory.getJdbcTemplate().queryForObject(sql, String.class, nroReserva);
+        } catch (EmptyResultDataAccessException ex) {
+            return null;
+        }
+    }
     
     /**
      * Obtener código de estado por nombre de estado
@@ -205,4 +234,27 @@ public class ReservaRepository {
         }
         return null;
     }
+
+    /**
+     * Cancelar una reserva
+     * @param nro_reserva Número de reserva
+     * @param cod_motivo_cancelacion Código del motivo de cancelación
+     * @param notas Notas adicionales
+     */
+
+    public boolean cancelarReserva(String nro_reserva, String cod_motivo_cancelacion, String notas) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("nro_reserva", nro_reserva)
+                .addValue("cod_motivo_cancelacion", cod_motivo_cancelacion)
+                .addValue("notas", notas);
+        
+        Map<String, Object> result = jdbcCallFactory.executeWithOutputs(
+                "sp_cancelar_reserva", 
+                "dbo", 
+                params
+        );
+        
+        return result != null && result.size() > 0;
+    }
+
 }

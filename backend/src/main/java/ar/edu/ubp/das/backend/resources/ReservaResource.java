@@ -2,6 +2,7 @@ package ar.edu.ubp.das.backend.resources;
 
 import ar.edu.ubp.das.backend.dto.ActualizarReservaDto;
 import ar.edu.ubp.das.backend.dto.CambiarEstadoDto;
+import ar.edu.ubp.das.backend.dto.CancelarReservaDto;
 import ar.edu.ubp.das.backend.dto.ConfirmarReservaDto;
 import ar.edu.ubp.das.backend.dto.ConfirmarReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.CrearReservaDto;
@@ -233,4 +234,54 @@ public class ReservaResource {
             return ResponseHelper.internalServerError("Error al confirmar reserva: " + e.getMessage());
         }
     }
+    
+    @PutMapping("/{id}/cancelar")
+    public ResponseEntity<?> cancelarReserva(
+            @PathVariable String id, 
+            @Valid @RequestBody CancelarReservaDto cancelarReservaDto,
+            Authentication authentication) {
+        try {
+            if (authentication == null || !(authentication.getPrincipal() instanceof Jwt)) {
+                logger.warn("Intento de cancelar reserva sin autenticación válida");
+                return ResponseHelper.unauthorized("Debe estar autenticado para cancelar una reserva");
+            }
+            
+            Jwt jwt = (Jwt) authentication.getPrincipal();
+            String nroCliente = jwt.getClaimAsString("nroCliente");
+            
+            if (nroCliente == null || nroCliente.isEmpty()) {
+                logger.warn("Token JWT no contiene nroCliente");
+                return ResponseHelper.badRequest("Token inválido: falta nroCliente");
+            }
+            
+            if (!reservaService.existeReserva(id)) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            boolean cancelado = reservaService.cancelarReserva(
+                    id, 
+                    cancelarReservaDto.getCodMotivoCancelacion(), 
+                    cancelarReservaDto.getNotas()
+            );
+            
+            if (cancelado) {
+                return reservaService.obtenerReservaPorId(id)
+                        .<ResponseEntity<?>>map(ResponseEntity::ok)
+                        .orElseGet(() -> {
+                            logger.warn("Reserva cancelada pero no se pudo obtener: {}", id);
+                            return ResponseHelper.internalServerError("No se pudo recuperar la reserva cancelada");
+                        });
+            } else {
+                logger.warn("No se pudo cancelar la reserva: {}", id);
+                return ResponseHelper.internalServerError("No se pudo cancelar la reserva");
+            }
+        } catch (RuntimeException e) {
+            logger.warn("Error al cancelar reserva {}: {}", id, e.getMessage());
+            return ResponseHelper.badRequest(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error inesperado al cancelar reserva: {}", id, e);
+            return ResponseHelper.internalServerError("Error al cancelar la reserva: " + e.getMessage());
+        }
+    }
+    
 }

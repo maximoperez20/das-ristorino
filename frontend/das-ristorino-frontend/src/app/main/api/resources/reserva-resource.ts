@@ -5,6 +5,7 @@ import { IReserva } from '../models/i-reserva';
 import { IConfirmarReservaRequest } from '../models/i-confirmar-reserva-request';
 import { IConfirmarReservaResponse } from '../models/i-confirmar-reserva-response';
 import { environment } from '../../../../environments/environment';
+import { ICancelarReservaRequest } from '../models/i-cancelar-reserva-request';
 
 @Injectable()
 @ResourceParams({
@@ -33,5 +34,11 @@ export class ReservaResource extends Resource {
     method: ResourceRequestMethod.Get,
   })
   declare obtenerReservaPorId: IResourceMethodObservable<string, IReserva>;
+
+  @ResourceAction({
+    path: '/{id}/cancelar',
+    method: ResourceRequestMethod.Put,
+  })
+  declare cancelarReserva: IResourceMethodObservable<ICancelarReservaRequest, IReserva>;
 
 }
