@@ -9,11 +9,12 @@ import { FormularioReservaComponent } from '../formulario-reserva/formulario-res
 import { AuthService } from '../../../core/services/auth-service';
 import { IDominioPreferencia } from '../../api/models/i-dominio-preferencia';
 import { IHorariosDisponiblesResponse } from '../../api/models/i-horario-disponible';
+import { MenuSucursalComponent } from '../menu-sucursal/menu-sucursal';
 
 @Component({
   selector: 'app-detalle-restaurante',
   standalone: true,
-  imports: [NgClass, HorariosDisponiblesComponent, PromocionComponent, FormularioReservaComponent],
+  imports: [NgClass, HorariosDisponiblesComponent, PromocionComponent, FormularioReservaComponent, MenuSucursalComponent],
   templateUrl: './detalle-restaurante.html',
   styleUrls: ['./detalle-restaurante.scss'],
 })

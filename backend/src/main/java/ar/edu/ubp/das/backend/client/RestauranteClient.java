@@ -8,6 +8,7 @@ import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
+import ar.edu.ubp.das.backend.dto.MenuDto;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -115,5 +116,7 @@ public interface RestauranteClient {
     boolean cancelarReserva(String nroReserva);
 
     boolean modificarReserva( ModificarReservaJsonDto modificarReservaDto);
-}
 
+    List<MenuDto> obtenerMenusPorSucursal(String nroRestaurante, String nroSucursal);
+
+}

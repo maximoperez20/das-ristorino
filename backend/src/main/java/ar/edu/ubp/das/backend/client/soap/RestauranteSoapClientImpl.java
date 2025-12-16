@@ -15,6 +15,7 @@ import ar.edu.ubp.das.backend.dto.soap.GetHorariosDisponiblesSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.NotificarClickSoapDto;
 import ar.edu.ubp.das.backend.dto.soap.RegistrarContenidoSoapDto;
 import ar.edu.ubp.das.backend.dto.restaurante.ModificarReservaJsonDto;
+import ar.edu.ubp.das.backend.dto.MenuDto;
 
 import ar.edu.ubp.das.backend.utils.SOAPClient;
 import com.google.gson.Gson;
@@ -483,6 +484,42 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             return resp.get("exitosa") != null && (Boolean) resp.get("exitosa");
         } catch (Exception e) {
             logger.error("Error al modificar reserva vía SOAP: {}", e.getMessage(), e);
+            throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<MenuDto> obtenerMenusPorSucursal(String nroRestaurante, String nroSucursal) {
+        try {
+            Map<String, Object> jsonData = new HashMap<>();
+            jsonData.put("nroRestaurante", nroRestaurante);
+            jsonData.put("nroSucursal", nroSucursal);
+
+            String jsonString = gson.toJson(jsonData);
+            SOAPClient soapClient = createSoapClient("menusPorSucursalRequest");
+            Map<String, Object> parameters = createSoapParameters(jsonString);
+
+            String jsonResponseStr = soapClient.extractJsonResponse("menusPorSucursalResponse", parameters);
+
+            Map<String, Object> resp = parseJsonToMap(jsonResponseStr);
+            
+            // Parsear la lista de menús de forma segura usando TypeToken
+            if (resp.get("menus") != null) {
+                TypeToken<List<MenuDto>> listType = new TypeToken<List<MenuDto>>(){};
+                return gson.fromJson(gson.toJson(resp.get("menus")), listType.getType());
+            }
+            
+            return new ArrayList<>();
+
+
+            // Si no hay clave de menus, parsear el array directo
+            // if (resp.get("menus") != null) {
+            //     TypeToken<List<MenuDto>> listType = new TypeToken<List<MenuDto>>(){};
+            //     List<MenuDto> menus = gson.fromJson(jsonResponseStr, listType.getType());
+            //     return menus != null ? menus : new ArrayList<>();
+            // }
+        } catch (Exception e) {
+            logger.error("Error al obtener menus por sucursal vía SOAP: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación SOAP: " + e.getMessage(), e);
         }
     }

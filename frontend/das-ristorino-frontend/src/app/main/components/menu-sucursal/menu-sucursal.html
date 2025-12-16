@@ -1,0 +1,24 @@
+<div class="menu-sucursal">
+  @if (menus.length > 0) {
+    <div class="menu-sucursal-list row">
+      @for (menu of menus; track menu.nroMenu) {
+        <div class="menu-sucursal w-50 col-6 my-2">
+          <h3>{{ menu.nomMenu }}</h3>
+          <div class="platos-container d-flex flex-column gap-2">
+            @for (plato of menu.platos; track plato.nroPlato) {
+              <div class="plato-item d-flex justify-content-between">
+                <span class="plato-nombre">{{ plato.nomPlato }}</span>
+                <span class="plato-precio">{{ 'Precio no disponible' }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+  @else {
+    <div class="menu-sucursal-empty">
+      <span>{{ 'No hay menús disponibles' }}</span>
+    </div>
+  }
+</div>

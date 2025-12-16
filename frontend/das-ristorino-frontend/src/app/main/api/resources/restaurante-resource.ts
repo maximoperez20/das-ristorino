@@ -5,6 +5,7 @@ import { IRestaurante } from '../models/i-restaurante';
 import { IHorariosDisponiblesResponse } from '../models/i-horario-disponible';
 import { IBusquedaNLPRequest } from '../models/i-busqueda-nlp-request';
 import { IBusquedaNLPResultado } from '../models/i-busqueda-nlp-resultado';
+import { IMenu } from '../models/i-menu';
 import { environment } from '../../../../environments/environment';
 
 @Injectable()
@@ -44,4 +45,13 @@ export class RestauranteResource extends Resource{
   })
   declare buscarRestaurantesPorNLP: IResourceMethodObservable<IBusquedaNLPRequest, IBusquedaNLPResultado>;
 
+
+  @ResourceAction({
+    path: '/{!nroRestaurante}/sucursales/{!nroSucursal}/menus',
+    method: ResourceRequestMethod.Get,
+  })
+  declare obtenerMenusPorSucursal: IResourceMethodObservable<{ 
+    nroRestaurante: string; 
+    nroSucursal: string; 
+  }, IMenu[]>;
 }

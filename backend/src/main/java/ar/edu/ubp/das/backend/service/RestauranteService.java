@@ -8,6 +8,7 @@ import ar.edu.ubp.das.backend.dto.RestauranteDetalleDto;
 import ar.edu.ubp.das.backend.dto.SucursalDto;
 import ar.edu.ubp.das.backend.repository.RestauranteRepository;
 import org.springframework.stereotype.Service;
+import ar.edu.ubp.das.backend.dto.MenuDto;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -101,4 +102,18 @@ public class RestauranteService {
         return horarios;
     }
     
+    public List<MenuDto> obtenerMenusPorSucursal(String nroRestaurante, String nroSucursal) {
+
+
+        String codSucursalRestaurante = restauranteRepository.obtenerCodSucursalRestaurante(nroRestaurante, nroSucursal);
+        
+        if (codSucursalRestaurante == null || codSucursalRestaurante.trim().isEmpty()) {
+            throw new RuntimeException("La sucursal " + nroSucursal + 
+                                     " no está sincronizada con el sistema del restaurante. " +
+                                     "cod_sucursal_restaurante no está configurado.");
+        }
+
+        RestauranteClient client = restauranteClientFactory.getClient(nroRestaurante);
+        return client.obtenerMenusPorSucursal(nroRestaurante, codSucursalRestaurante);
+    }
 }

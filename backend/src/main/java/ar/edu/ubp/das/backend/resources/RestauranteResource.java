@@ -6,6 +6,7 @@ import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
 import ar.edu.ubp.das.backend.dto.RestauranteDto;
 import ar.edu.ubp.das.backend.dto.RestauranteDetalleDto;
 import ar.edu.ubp.das.backend.dto.SucursalDto;
+import ar.edu.ubp.das.backend.dto.MenuDto;
 import ar.edu.ubp.das.backend.dto.response.HorariosDisponiblesResponse;
 import ar.edu.ubp.das.backend.resources.util.ResponseHelper;
 import ar.edu.ubp.das.backend.service.BusquedaNLPService;
@@ -156,6 +157,21 @@ public class RestauranteResource {
         } catch (Exception e) {
             logger.error("Error inesperado al consultar horarios disponibles", e);
             return ResponseHelper.internalServerError("Error al consultar horarios disponibles: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/{nroRestaurante}/sucursales/{nroSucursal}/menus")
+    public ResponseEntity<?> getMenusPorSucursal(
+        @PathVariable String nroRestaurante,
+        @PathVariable String nroSucursal
+    ) {
+        try {
+            List<MenuDto> menus = restauranteService.obtenerMenusPorSucursal(nroRestaurante, nroSucursal);
+            return ResponseEntity.ok(menus);
+        } catch (RuntimeException e) {
+            String errorMessage = e.getMessage();
+            logger.warn("Error al consultar menus por sucursal: {}", errorMessage);
+            return ResponseHelper.error(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

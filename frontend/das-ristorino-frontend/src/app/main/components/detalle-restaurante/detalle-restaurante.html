@@ -166,6 +166,13 @@
                 </div>
             </div>
 
+            <!-- Menú de la Sucursal -->
+            @if (sucursalSeleccionada && nroRestaurante) {
+                <app-menu-sucursal
+                    [nroRestaurante]="nroRestaurante"
+                    [nroSucursal]="sucursalSeleccionada.nroSucursal"
+                />
+            }
             <!-- Horarios Disponibles -->
             @if (sucursalSeleccionada && nroRestaurante) {
                 <div class="section-divider"></div>
