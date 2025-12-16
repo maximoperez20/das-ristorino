@@ -81,6 +81,20 @@
             </div>
 
             <div class="mb-3">
+              <label for="observaciones" class="form-label" i18n>
+                <i class="bi bi-chat-dots"></i> Observaciones
+              </label>
+              <textarea
+                class="form-control"
+                id="observaciones"
+                [(ngModel)]="observaciones"
+                name="observaciones"
+                rows="3"
+                placeholder="Escribe aqui cualquier detalle adicional"
+              ></textarea>
+            </div>
+
+            <div class="mb-3">
               <label for="especialidadesAlimentarias" class="form-label" i18n>
                 Especialidades alimentarias
               </label>        
@@ -97,6 +111,8 @@
                 </div>
               }
             </div>
+
+            
 
             @if (error) {
               <div class="alert alert-danger" role="alert">

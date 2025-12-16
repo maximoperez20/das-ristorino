@@ -124,7 +124,7 @@ public class ReservaService {
                 codEstadoPendiente,  // Estado inicial: Pendiente
                 costoReserva,
                 request.getPreferenciasReserva(),
-                null,  // notas
+                request.getObservaciones(),  // observaciones --> notas
                 null   // codReservaSucursal
         );
         

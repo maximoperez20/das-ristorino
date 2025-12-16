@@ -21,6 +21,7 @@ public class RegistrarReservaRistorinoDto {
     private Integer cantMenores;
     private String codEstado;
     private BigDecimal costoReserva;
+    private String observaciones;
     private List<Integer> preferenciasReserva;
     private String notas;
     private String codReservaSucursal;
@@ -135,6 +136,14 @@ public class RegistrarReservaRistorinoDto {
     
     public void setCostoReserva(BigDecimal costoReserva) {
         this.costoReserva = costoReserva;
+    }
+
+    public String getObservaciones() {
+        return observaciones;
+    }
+
+    public void setObservaciones(String observaciones) {
+        this.observaciones = observaciones;
     }
     
     public List<Integer> getPreferenciasReserva() {

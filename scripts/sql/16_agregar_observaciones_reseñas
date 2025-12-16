@@ -1,0 +1,66 @@
+
+ALTER TABLE reservas_restaurantes
+ADD observaciones NVARCHAR(400) NULL;
+GO
+
+
+
+CREATE OR ALTER PROCEDURE sp_RegistrarReservaRistorino
+    @nro_reserva VARCHAR(36) OUTPUT,
+    @nro_restaurante VARCHAR(36),
+    @nro_sucursal VARCHAR(36),
+    @cod_zona VARCHAR(36),
+    @fecha_reserva DATE,
+    @hora_desde TIME(0),
+    @nro_cliente VARCHAR(36),
+    @cant_adultos SMALLINT,
+    @cant_menores SMALLINT,
+    @cod_estado VARCHAR(36),
+    @costo_reserva DECIMAL(12,2),
+    @notas NVARCHAR(400) = NULL,
+    @cod_reserva_sucursal VARCHAR(36) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @codigo_legible VARCHAR(20);
+    EXEC sp_GenerarCodigoReserva @codigo_legible OUTPUT;
+    
+    SET @nro_reserva = @codigo_legible;
+    
+    INSERT INTO reservas_restaurantes (
+        nro_reserva,
+        nro_restaurante,
+        nro_sucursal,
+        cod_zona,
+        fecha_reserva,
+        hora_desde,
+        nro_cliente,
+        cant_adultos,
+        cant_menores,
+        cancelada,
+        fecha_hora_registro,
+        cod_estado,
+        costo_reserva,
+        notas,
+        cod_reserva_sucursal
+    )
+    VALUES (
+        @nro_reserva,
+        @nro_restaurante,
+        @nro_sucursal,
+        @cod_zona,
+        @fecha_reserva,
+        @hora_desde,
+        @nro_cliente,
+        @cant_adultos,
+        @cant_menores,
+        0,
+        SYSDATETIME(),
+        @cod_estado,
+        @costo_reserva,
+        @notas,
+        @cod_reserva_sucursal
+    );
+END;
+GO

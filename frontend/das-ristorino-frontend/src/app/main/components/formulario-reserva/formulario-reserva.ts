@@ -31,6 +31,7 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
   loading = false;
   error: string | null = null;
   especialidadesAlimentariasSeleccionadas: number[] = [];
+  observaciones: string | null = null;
 
   private _reservaResource = inject(ReservaResource);
   private _auth = inject(AuthService);
@@ -98,6 +99,7 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
       horaDesde: horaDesde,
       cantAdultos: this.cantAdultos,
       cantMenores: this.cantMenores,
+      observaciones: this.observaciones,
       preferenciasReserva: Array.isArray(this.especialidadesAlimentariasSeleccionadas) 
         ? this.especialidadesAlimentariasSeleccionadas 
         : []
