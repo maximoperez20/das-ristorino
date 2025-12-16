@@ -89,7 +89,8 @@ public interface RestauranteClient {
             LocalDate fechaReserva,
             java.time.LocalTime horaDesde,
             Integer cantAdultos,
-            Integer cantMenores
+            Integer cantMenores,
+            String observaciones
     );
 
     /**

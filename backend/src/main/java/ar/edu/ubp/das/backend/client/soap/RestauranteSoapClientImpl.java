@@ -351,7 +351,8 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             LocalDate fechaReserva,
             LocalTime horaDesde,
             Integer cantAdultos,
-            Integer cantMenores) {
+            Integer cantMenores,
+            String observaciones) {
         try {
             // Construir request usando DTO
             RegistrarReservaRequest request = new RegistrarReservaRequest();
@@ -367,6 +368,7 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             request.setHoraDesde(horaDesde);
             request.setCantAdultos(cantAdultos);
             request.setCantMenores(cantMenores);
+            request.setObservaciones(observaciones);
             
             String jsonString = gson.toJson(request);
 

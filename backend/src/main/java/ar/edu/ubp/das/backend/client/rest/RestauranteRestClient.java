@@ -419,7 +419,8 @@ public class RestauranteRestClient implements RestauranteClient {
             LocalDate fechaReserva,
             LocalTime horaDesde,
             Integer cantAdultos,
-            Integer cantMenores) {
+            Integer cantMenores,
+            String observaciones) {
         try {
             String url = getBaseUrl() + "/restaurantes/" + nroRestaurante + "/reservas";
 
@@ -437,6 +438,7 @@ public class RestauranteRestClient implements RestauranteClient {
             request.setHoraDesde(horaDesde);
             request.setCantAdultos(cantAdultos);
             request.setCantMenores(cantMenores);
+            request.setObservaciones(observaciones);
 
             String jsonBody = gson.toJson(request);
 
