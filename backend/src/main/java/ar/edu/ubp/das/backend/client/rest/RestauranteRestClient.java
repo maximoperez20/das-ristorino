@@ -31,6 +31,8 @@ import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoJsonDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickJsonDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchJsonDto;
 import ar.edu.ubp.das.backend.dto.restaurante.MarcarPublicadoJsonDto;
+import ar.edu.ubp.das.backend.dto.restaurante.ModificarReservaJsonDto;
+import ar.edu.ubp.das.backend.dto.MenuDto;
 import java.util.List;
 import java.util.Map; // Necesario para parsear respuestas dinámicas
 
@@ -465,6 +467,24 @@ public class RestauranteRestClient implements RestauranteClient {
             logger.error("Error al registrar reserva vía REST: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación REST: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public List<MenuDto> obtenerMenusPorSucursal(String nroRestaurante, String nroSucursal) {
+        // REST no soporta esta funcionalidad por ahora
+        return new ArrayList<>(); // Lista vacía
+    }
+
+    @Override
+    public boolean modificarReserva(ModificarReservaJsonDto modificarReservaDto) {
+        // REST no soporta esta funcionalidad por ahora
+        return false;
+    }
+
+    @Override
+    public boolean cancelarReserva(String codReserva) {
+        // REST no soporta esta funcionalidad por ahora
+        return false;
     }
 }
 
