@@ -468,12 +468,19 @@ public class RestauranteRestClient implements RestauranteClient {
     }
 
     @Override
-    public int cancelarReserva(String nroRestaurante, String nroReserva) {
+    public int cancelarReserva(String nroRestaurante, String nroReserva, String motivoCancelacion) {
         try {
             String url = getBaseUrl() + "/restaurantes/" + nroRestaurante + "/reservas/" + nroReserva + "/cancelar";
 
+            // Crear objeto con la propiedad motivoCancelacion (sin pre-serializar a String)
+            Map<String, Object> body = new java.util.HashMap<>();
+            if (motivoCancelacion != null && !motivoCancelacion.trim().isEmpty()) {
+                body.put("motivoCancelacion", motivoCancelacion);
+            }
+
             HttpHeaders headers = createHeaders();
-            HttpEntity<String> entity = new HttpEntity<>(headers);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+            
 
             ResponseEntity<String> response = restTemplate.exchange(
                     url,

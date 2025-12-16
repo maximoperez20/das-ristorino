@@ -118,6 +118,6 @@ public interface RestauranteClient {
      * @param nroReserva Código de la reserva en el restaurante
      * @return 1 si se canceló exitosamente, 0 si no se encontró
      */
-    int cancelarReserva(String nroRestaurante, String nroReserva);
+    int cancelarReserva(String nroRestaurante, String nroReserva, String motivoCancelacion);
 }
 

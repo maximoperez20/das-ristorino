@@ -2,6 +2,7 @@ package ar.edu.ubp.das.backend.resources;
 
 import ar.edu.ubp.das.backend.dto.ActualizarReservaDto;
 import ar.edu.ubp.das.backend.dto.CambiarEstadoDto;
+import ar.edu.ubp.das.backend.dto.CancelarReservaConMotivo;
 import ar.edu.ubp.das.backend.dto.ConfirmarReservaDto;
 import ar.edu.ubp.das.backend.dto.ConfirmarReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.CrearReservaDto;
@@ -143,9 +144,9 @@ public class ReservaResource {
     }
 
     @GetMapping("/cancelar/{nroReserva}")
-    public ResponseEntity<?> cancelarReserva(@PathVariable String nroReserva) {
+    public ResponseEntity<?> cancelarReserva(@PathVariable String nroReserva,@RequestBody(required = false) CancelarReservaConMotivo motivoCancelacion) {
         try {
-            boolean cancelado = reservaService.cancelarReserva(nroReserva);
+            boolean cancelado = reservaService.cancelarReserva(nroReserva, motivoCancelacion != null ? motivoCancelacion.getMotivoCancelacion() : null);
             if (cancelado) {
                 return ResponseEntity.noContent().build();
             } else {

@@ -438,12 +438,12 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
         }
     }
     @Override
-    public int cancelarReserva(String nroRestaurante, String nroReserva) {
+    public int cancelarReserva(String nroRestaurante, String nroReserva, String motivoCancelacion) {
         try {
             // Usar DTO tipado en lugar de HashMap
-            CancelarReservaJsonDto jsonDto = new CancelarReservaJsonDto(nroReserva);
+            CancelarReservaJsonDto jsonDto = new CancelarReservaJsonDto(nroReserva, motivoCancelacion);
             String jsonString = gson.toJson(jsonDto);
-
+            logger.info("CancelarReservaJsonDto enviado vía SOAP: {}", jsonString);
             SOAPClient soapClient = createSoapClient("cancelarReservaRequest");
             Map<String, Object> parameters = createSoapParameters(jsonString);
 

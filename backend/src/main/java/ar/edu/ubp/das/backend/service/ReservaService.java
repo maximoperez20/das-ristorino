@@ -244,7 +244,7 @@ public class ReservaService {
         return reservaRepository.obtenerCodigoEstado(nomEstado);
     }
 
-    public boolean cancelarReserva(String nroReserva){
+    public boolean cancelarReserva(String nroReserva, String motivoCancelacion) {
         Optional<DatosCancelarReservaDto> datosReserva = reservaRepository.obtenerDatosCancelarReservaDto(nroReserva);
         if (datosReserva.isEmpty()) {
             throw new RuntimeException("Reserva no encontrada");
@@ -252,7 +252,7 @@ public class ReservaService {
         DatosCancelarReservaDto reserva = datosReserva.get();
 
         RestauranteClient client = restauranteClientFactory.getClient(reserva.getNroRestaurante());
-        client.cancelarReserva(reserva.getNroRestaurante(), reserva.getCodReservaSucursal());
+        client.cancelarReserva(reserva.getNroRestaurante(), reserva.getCodReservaSucursal(), motivoCancelacion);
         
         reservaRepository.cancelarReserva(nroReserva);
         
