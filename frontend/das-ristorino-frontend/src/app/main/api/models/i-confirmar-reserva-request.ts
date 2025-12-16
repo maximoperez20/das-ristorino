@@ -7,5 +7,6 @@ export interface IConfirmarReservaRequest {
   cantAdultos: number;
   cantMenores: number;
   preferenciasReserva: number[];
+  observacionesReserva: string | null;
 }
 

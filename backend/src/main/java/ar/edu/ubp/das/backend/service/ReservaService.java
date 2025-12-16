@@ -123,7 +123,7 @@ public class ReservaService {
                 codEstadoPendiente,  // Estado inicial: Pendiente
                 costoReserva,
                 request.getPreferenciasReserva(),
-                null,  // notas
+                request.getObservacionesReserva(),  // notas
                 null   // codReservaSucursal
         );
         
@@ -145,7 +145,8 @@ public class ReservaService {
                     request.getFechaReserva(),
                     request.getHoraDesde(),
                     request.getCantAdultos(),
-                    request.getCantMenores()
+                    request.getCantMenores(),
+                    request.getObservacionesReserva()
             );
             
             // Si se registró exitosamente en el restaurante, actualizar el código de reserva del restaurante

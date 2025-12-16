@@ -31,6 +31,7 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
   loading = false;
   error: string | null = null;
   especialidadesAlimentariasSeleccionadas: number[] = [];
+  observacionesReserva: string | null = null;
 
   private _reservaResource = inject(ReservaResource);
   private _auth = inject(AuthService);
@@ -100,7 +101,8 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
       cantMenores: this.cantMenores,
       preferenciasReserva: Array.isArray(this.especialidadesAlimentariasSeleccionadas) 
         ? this.especialidadesAlimentariasSeleccionadas 
-        : []
+        : [],
+      observacionesReserva: this.observacionesReserva
     }).subscribe({
       next: (response) => {
         this.loading = false;
@@ -219,6 +221,12 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
     } else {
       this.especialidadesAlimentariasSeleccionadas = this.especialidadesAlimentariasSeleccionadas.filter(e => e !== especialidad);
     }
+  }
+
+  get observacionesRestantes(): number {
+    const texto = this.observacionesReserva ?? '';
+    const max = 400;
+    return Math.max(0, max - texto.length);
   }
 }
 

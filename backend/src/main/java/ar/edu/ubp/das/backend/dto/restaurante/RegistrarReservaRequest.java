@@ -14,6 +14,7 @@ public class RegistrarReservaRequest {
     private LocalTime horaDesde;
     private Integer cantAdultos;
     private Integer cantMenores;
+    private String observacionesReserva;
 
     public RegistrarReservaRequest() {}
 
@@ -87,6 +88,13 @@ public class RegistrarReservaRequest {
 
     public void setCantMenores(Integer cantMenores) {
         this.cantMenores = cantMenores;
+    }
+
+    public String getObservacionesReserva() {
+        return observacionesReserva;
+    }
+    public void setObservacionesReserva(String observacionesReserva) {
+        this.observacionesReserva = observacionesReserva;
     }
 }
 

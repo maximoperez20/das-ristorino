@@ -98,6 +98,17 @@
               }
             </div>
 
+             <div class="mb-3">
+              <label for="observacionesReserva" class="form-label" i18n>
+                Observaciones (opcional)
+              </label>                                
+              <textarea id="observacionesReserva" name="observacionesReserva" class="form-control" rows="3" [(ngModel)]="observacionesReserva" [maxLength]="400"></textarea>
+              <div class="form-text">
+                <span i18n>Te quedan</span> {{ observacionesRestantes }} <span i18n>caracteres</span>
+              </div>
+            
+            </div>
+
             @if (error) {
               <div class="alert alert-danger" role="alert">
                 <i class="bi bi-exclamation-triangle"></i> {{ error }}

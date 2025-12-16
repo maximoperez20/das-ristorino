@@ -34,6 +34,8 @@ public class ConfirmarReservaDto {
     @NotNull(message = "Las preferencias de reserva son obligatorias")
     private List<Integer> preferenciasReserva;
 
+    private String observacionesReserva;
+
     public ConfirmarReservaDto() {}
 
     public String getNroRestaurante() {
@@ -98,6 +100,14 @@ public class ConfirmarReservaDto {
 
     public void setPreferenciasReserva(List<Integer> preferenciasReserva) {
         this.preferenciasReserva = preferenciasReserva;
+    }
+
+    public String getObservacionesReserva() {
+        return observacionesReserva;
+    }
+
+    public void setObservacionesReserva(String observacionesReserva) {
+        this.observacionesReserva = observacionesReserva;
     }
 }
 
