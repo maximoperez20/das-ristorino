@@ -158,7 +158,7 @@
                         <button 
                           class="btn btn-danger btn-sm" 
                           type="button"
-                          (click)="cancelarReserva(reserva.id)">
+                          (click)="abrirModalCancelarReserva(reserva.id)">
                             Cancelar Reserva
                         </button>
                       </div>
@@ -182,4 +182,13 @@
   (visibleChange)="onModalVisibleChange($event)"
   (reservaModificada)="onReservaModificada()">
 </app-formulario-modificar-reserva>
+}
+
+@if (mostrarModalCancelarReserva && reservaSeleccionadaParaCancelar) {
+<app-cancelar-reserva
+  [visible]="mostrarModalCancelarReserva"
+  [nroReserva]="reservaSeleccionadaParaCancelar.id"
+  (visibleChange)="onModalCancelarVisibleChange($event)"
+  (reservaCancelada)="onReservaCancelada()"
+/>
 }

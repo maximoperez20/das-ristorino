@@ -35,6 +35,9 @@ import ar.edu.ubp.das.backend.dto.restaurante.ModificarReservaJsonDto;
 import ar.edu.ubp.das.backend.dto.MenuDto;
 import java.util.List;
 import java.util.Map; // Necesario para parsear respuestas dinámicas
+import java.util.HashMap;
+import com.google.gson.reflect.TypeToken;
+
 
 /**
  * Implementación REST de RestauranteClient.
@@ -482,9 +485,24 @@ public class RestauranteRestClient implements RestauranteClient {
     }
 
     @Override
-    public boolean cancelarReserva(String codReserva) {
-        // REST no soporta esta funcionalidad por ahora
-        return false;
+    public boolean cancelarReserva(String nroRestaurante, String codReserva, String razonCancelacion) {
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("razonCancelacion", razonCancelacion);
+
+        try {
+            String url = getBaseUrl() + "/restaurantes/" + nroRestaurante + "/reservas/" + codReserva + "/cancelar";
+            HttpHeaders headers = createHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(gson.toJson(requestBody), headers);
+            
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+            
+            TypeToken<Map<String, Object>> typeToken = new TypeToken<Map<String, Object>>(){};
+            Map<String, Object> result = gson.fromJson(response.getBody(), typeToken.getType());
+
+            return result.get("exitosa") != null && (Boolean) result.get("exitosa");
+        } catch (Exception e) {
+            logger.error("Error al cancelar reserva vía REST: {}", e.getMessage(), e);
+            throw new RuntimeException("Error en comunicación REST: " + e.getMessage(), e);
+        }
     }
 }
-

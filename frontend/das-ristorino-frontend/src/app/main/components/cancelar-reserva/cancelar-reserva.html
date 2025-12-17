@@ -1,0 +1,42 @@
+<div class="modal-wrapper" [hidden]="!visible">
+  <div class="modal-backdrop" (click)="cerrar()"></div>
+  <div class="modal-container">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4 class="modal-title" i18n>
+          <i class="bi bi-x-circle"></i> Cancelar Reserva
+        </h4>
+        <button type="button" class="btn-close" (click)="cerrar()"></button>
+      </div>
+
+      <div class="modal-body">
+        <form (ngSubmit)="confirmarCancelacionReserva()">
+          <div class="mb-3">
+            <label for="razonCancelacion" class="form-label" i18n>
+              <i class="bi bi-exclamation-triangle"></i> Razón de cancelación <span class="text-danger">*</span>
+            </label>
+            <textarea name="razonCancelacion" id="razonCancelacion" class="form-control" [(ngModel)]="razonCancelacion" required></textarea>
+          </div>
+
+          @if (error) {
+            <div class="alert alert-danger" role="alert">
+              <i class="bi bi-exclamation-triangle"></i> {{ error }}
+            </div>
+          }
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="cerrar()" [disabled]="loading" i18n>
+              Cancelar
+            </button>
+            <button 
+              type="submit" 
+              class="btn btn-primary" >
+                <i class="bi bi-check-circle"></i> <span i18n>Confirmar Cancelación</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+

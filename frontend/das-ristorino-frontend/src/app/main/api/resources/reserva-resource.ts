@@ -31,9 +31,9 @@ export class ReservaResource extends Resource {
 
   @ResourceAction({
     path: '/cancelar/{!nroReserva}',
-    method: ResourceRequestMethod.Get,
+    method: ResourceRequestMethod.Post,
   })
-  declare cancelarReserva: IResourceMethodObservable<{ nroReserva: string }, boolean>;
+  declare cancelarReserva: IResourceMethodObservable<{ nroReserva: string, razonCancelacion: string }, boolean>;
 
   @ResourceAction({
     path: '/{!nroReserva}',

@@ -10,12 +10,24 @@ public class CancelarReservaJsonDto {
     
     @JsonProperty("codReserva")
     private String codReserva;
+
+    @JsonProperty("razonCancelacion")
+    private String razonCancelacion;
+
+    public String getRazonCancelacion() {
+        return razonCancelacion;
+    }
+
+    public void setRazonCancelacion(String razonCancelacion) {
+        this.razonCancelacion = razonCancelacion;
+    }
     
     public CancelarReservaJsonDto() {
     }
     
-    public CancelarReservaJsonDto(String codReserva) {
+    public CancelarReservaJsonDto(String codReserva, String razonCancelacion) {
         this.codReserva = codReserva;
+        this.razonCancelacion = razonCancelacion;
     }
     
     public String getCodReserva() {

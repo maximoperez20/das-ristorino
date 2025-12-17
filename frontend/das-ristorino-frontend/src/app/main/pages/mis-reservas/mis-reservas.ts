@@ -4,15 +4,17 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { IReserva } from '../../api/models/i-reserva';
 import { IModificarReservaRequest } from '../../api/models/i-modificar-reserva-request';
 import { IHorariosDisponiblesResponse } from '../../api/models/i-horario-disponible';
-import { HorarioSeleccionado } from '../../components/horarios-disponibles/horarios-disponibles';
 import { AuthService } from '../../../core/services/auth-service';
 import { DateUtilsService } from '../../../core/services/date-utils.service';
 import { ReservaResource } from '../../api/resources/reserva-resource';
 import { RestauranteResource } from '../../api/resources/restaurante-resource';
 import { PreferenciaResource } from '../../api/resources/preferencia-resource';
 import { AppMessageService } from '../../../core/services/app-message-service';
-import { FormularioModificarReservaComponent } from '../../components/formulario-modificar-reserva/formulario-modificar-reserva';
 import { IDominioPreferencia } from '../../api/models/i-dominio-preferencia';
+import { HorarioSeleccionado } from '../../components/horarios-disponibles/horarios-disponibles';
+import { FormularioModificarReservaComponent } from '../../components/formulario-modificar-reserva/formulario-modificar-reserva';
+import { CancelarReservaComponent } from '../../components/cancelar-reserva/cancelar-reserva';
+
 interface ReservaPorDia {
   fecha: Date;
   fechaKey: string; // YYYY-MM-DD para agrupar
@@ -23,7 +25,7 @@ interface ReservaPorDia {
 @Component({
   selector: 'app-mis-reservas',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormularioModificarReservaComponent],
+  imports: [CommonModule, RouterLink, FormularioModificarReservaComponent, CancelarReservaComponent],
   templateUrl: './mis-reservas.html',
   styleUrls: ['./mis-reservas.scss'],
 })
@@ -42,6 +44,8 @@ export class MisReservasPage implements OnInit {
   mostrarModalModificarReserva: boolean = false;
   reservaSeleccionadaParaModificar: IReserva | null = null;
 
+  mostrarModalCancelarReserva: boolean = false;
+  reservaSeleccionadaParaCancelar: IReserva | null = null;
 
   private _auth = inject(AuthService);
   private _router = inject(Router);
@@ -293,18 +297,41 @@ export class MisReservasPage implements OnInit {
     return filtroActivoNormalizado === filtroNormalizado;
   }
 
-  cancelarReserva(nroReserva: string): void {
-    this._reservaResource.cancelarReserva({ nroReserva }).subscribe({
-      next: (response: boolean) => {
-        if (response) {
-          this._messageService.showSuccess('Reserva cancelada exitosamente');
-          this.reservasPorDia = this.agruparReservasPorDia(this.reservas.filter(reserva => reserva.id !== nroReserva));
-        } else {
-          this._messageService.showError('Error al cancelar reserva');
-        }
+  abrirModalCancelarReserva(nroReserva: string): void {
+    const reserva = this.reservas.find(r => r.id === nroReserva);
+    if (reserva) {
+      this.reservaSeleccionadaParaCancelar = reserva;
+      this.mostrarModalCancelarReserva = true;
+    }
+  }
+
+  onModalCancelarVisibleChange(visible: boolean): void {
+    this.mostrarModalCancelarReserva = visible;
+    if (!visible) {
+      this.reservaSeleccionadaParaCancelar = null;
+    }
+  }
+
+  onReservaCancelada(): void {
+    this._reservaResource.obtenerMisReservas().subscribe({
+      next: (reservas: IReserva[]) => {
+        this.reservas = reservas;
+        this.reservasPorDia = this.agruparReservasPorDia(this.reservas);
       }
     });
-  } 
+  }
+  // cancelarReserva(nroReserva: string): void {
+  //   this._reservaResource.cancelarReserva({ nroReserva }).subscribe({
+  //     next: (response: boolean) => {
+  //       if (response) {
+  //         this._messageService.showSuccess('Reserva cancelada exitosamente');
+  //         this.reservasPorDia = this.agruparReservasPorDia(this.reservas.filter(reserva => reserva.id !== nroReserva));
+  //       } else {
+  //         this._messageService.showError('Error al cancelar reserva');
+  //       }
+  //     }
+  //   });
+  // } 
 
   modificarReserva(nroReserva: string): void {
 

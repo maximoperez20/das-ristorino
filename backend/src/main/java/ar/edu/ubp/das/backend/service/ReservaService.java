@@ -67,7 +67,7 @@ public class ReservaService {
         return reservaRepository.update(actualizarReservaDto, id);
     }
     
-    public boolean cancelarReserva(String nroReserva) {
+    public boolean cancelarReserva(String nroReserva, String razonCancelacion) {
         DatosCancelarReservaDto datosCancelarReserva = reservaRepository.obtenerDatosCancelacionReserva(nroReserva);
         if (datosCancelarReserva == null) {
             throw new RuntimeException("No se encontraron datos de cancelación de reserva");
@@ -79,7 +79,7 @@ public class ReservaService {
         logger.info("Nro restaurante: {}", nroRestaurante);
         logger.info("Nro reserva restaurante: {}", nroReservaRestaurante);
         RestauranteClient client = restauranteClientFactory.getClient(nroRestaurante);
-        client.cancelarReserva(nroReservaRestaurante);
+        client.cancelarReserva(nroRestaurante, nroReservaRestaurante, razonCancelacion);
 
         reservaRepository.cancelarReserva(nroReserva);
 
@@ -115,7 +115,7 @@ public class ReservaService {
         );
         logger.info("Nro restaurante: {}", nroRestaurante);
         logger.info("Nro reserva restaurante: {}", nroReservaRestaurante);
-        
+
         RestauranteClient client = restauranteClientFactory.getClient(nroRestaurante);
         client.modificarReserva(modificarReservaJsonDto);
         return reservaRepository.modificarReserva(nroReserva, modificarReservaDto);

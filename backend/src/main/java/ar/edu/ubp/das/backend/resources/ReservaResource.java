@@ -1,6 +1,5 @@
 package ar.edu.ubp.das.backend.resources;
 
-import ar.edu.ubp.das.backend.dto.ActualizarReservaDto;
 import ar.edu.ubp.das.backend.dto.CambiarEstadoDto;
 import ar.edu.ubp.das.backend.dto.ConfirmarReservaDto;
 import ar.edu.ubp.das.backend.dto.ConfirmarReservaResponseDto;
@@ -8,6 +7,8 @@ import ar.edu.ubp.das.backend.dto.CrearReservaDto;
 import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
 import ar.edu.ubp.das.backend.dto.ReservaResponseDto;
 import ar.edu.ubp.das.backend.dto.ModificarReservaDto;
+import ar.edu.ubp.das.backend.dto.CancelarReservaRequestDto;
+
 import ar.edu.ubp.das.backend.exception.HorarioNoDisponibleException;
 import ar.edu.ubp.das.backend.resources.util.ResponseHelper;
 import ar.edu.ubp.das.backend.service.ReservaService;
@@ -22,6 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.web.bind.annotation.RequestBody;
 import java.util.List;
 
 @RestController
@@ -115,10 +117,16 @@ public class ReservaResource {
         }
     }
 
-    @GetMapping("/cancelar/{nroReserva}")
-    public ResponseEntity<?> cancelarReserva(@PathVariable String nroReserva) {
+    @PostMapping("/cancelar/{nroReserva}")
+    public ResponseEntity<?> cancelarReserva(@PathVariable String nroReserva, @RequestBody CancelarReservaRequestDto cancelarReservaDto) {
+
+        String razonCancelacion = cancelarReservaDto.getRazonCancelacion();
+        if (razonCancelacion == null || razonCancelacion.trim().isEmpty()) {
+            razonCancelacion = "Sin razón especificada";
+        }
+
         try {
-            boolean cancelada = reservaService.cancelarReserva(nroReserva);
+            boolean cancelada = reservaService.cancelarReserva(nroReserva, razonCancelacion);
             return ResponseEntity.ok(cancelada);
         } catch (Exception e) {
             return ResponseHelper.internalServerError("Error al cancelar la reserva: " + e.getMessage());

@@ -113,7 +113,7 @@ public interface RestauranteClient {
      * @param nroReserva UUID de la reserva
      * @return Número de filas actualizadas en el sistema del restaurante
      */
-    boolean cancelarReserva(String nroReserva);
+    boolean cancelarReserva(String nroRestaurante, String nroReserva, String razonCancelacion);
 
     boolean modificarReserva( ModificarReservaJsonDto modificarReservaDto);
 

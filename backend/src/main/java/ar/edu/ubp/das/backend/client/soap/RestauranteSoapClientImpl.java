@@ -440,10 +440,10 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
     }
 
     @Override
-    public boolean cancelarReserva(String nroReserva) {
+    public boolean cancelarReserva(String nroRestaurante, String nroReserva, String razonCancelacion) {
         try {
             // Usar DTO tipado en lugar de HashMap
-            CancelarReservaJsonDto jsonDto = new CancelarReservaJsonDto(nroReserva);
+            CancelarReservaJsonDto jsonDto = new CancelarReservaJsonDto(nroReserva, razonCancelacion);
             String jsonString = gson.toJson(jsonDto);
 
             logger.info("JSON a enviar: {}", jsonString);
