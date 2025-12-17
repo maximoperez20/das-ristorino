@@ -63,6 +63,11 @@ public class PromocionRepository {
             // requiere_codigo puede ser NULL
             boolean requiereCodigo = rs.getBoolean("requiere_codigo");
             promocion.setRequiereCodigo(rs.wasNull() ? false : requiereCodigo);
+            // proposito_corto puede ser NULL
+            String propositoCorto = rs.getString("proposito_corto");
+            if (!rs.wasNull()) {
+                promocion.setPropositoCorto(propositoCorto);
+            }
             return promocion;
         }
     };
@@ -95,7 +100,8 @@ public class PromocionRepository {
                     "CAST(NULL AS INT) AS min_personas, " +
                     "CAST(NULL AS INT) AS max_personas, " +
                     "cr.cod_contenido_restaurante AS codigo_promocion, " +
-                    "CAST(0 AS BIT) AS requiere_codigo " +
+                    "CAST(0 AS BIT) AS requiere_codigo, " +
+                    "cr.proposito_corto " +
                     "FROM contenidos_restaurantes cr WHERE cr.nro_contenido = ?";
         List<PromocionDto> promociones = jdbcTemplate.query(sql, promocionRowMapper, nroContenido);
         return promociones.isEmpty() ? Optional.empty() : Optional.of(promociones.get(0));

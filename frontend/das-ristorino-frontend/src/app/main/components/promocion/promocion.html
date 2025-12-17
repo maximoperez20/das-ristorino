@@ -49,6 +49,14 @@
           </span>
         </div>
       }
+      @if (promocion?.propositoCorto) {
+        <div class="info-item mt-2">
+          <span class="badge" [ngClass]="obtenerClaseBadgeProposito(promocion?.propositoCorto)">
+            {{ promocion?.propositoCorto }}
+          </span>
+        </div>
+      }
+
     </div>
 
     <button 

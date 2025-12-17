@@ -137,6 +137,26 @@ public class ContenidoService {
             logger.warn("No se encontró nroContenido en el contenido SOAP. Se generará un código AI_ automático.");
         }
 
+        // Extraer proposito_corto del SOAP
+        String propositoCorto = null;
+        Object propositoObj = contenidoSoap.get("propositoCorto");
+        if (propositoObj == null) {
+            propositoObj = contenidoSoap.get("proposito_corto");
+        }
+        if (propositoObj != null) {
+            if (propositoObj instanceof String) {
+                propositoCorto = ((String) propositoObj).trim();
+                if (propositoCorto.isEmpty()) {
+                    propositoCorto = null;
+                }
+            } else {
+                propositoCorto = propositoObj.toString().trim();
+                if (propositoCorto.isEmpty()) {
+                    propositoCorto = null;
+                }
+            }
+        }
+
         String nroSucursalFinal = request.getNroSucursal();
 
         String prompt = construirPromptCompleto(
@@ -158,7 +178,8 @@ public class ContenidoService {
                 nroSucursalFinal,
                 request.getNroIdioma(),
                 contenidoGenerado,
-                codContenidoRestaurante
+                codContenidoRestaurante,
+                propositoCorto
         ).orElseThrow(() -> new RuntimeException("Error al guardar el contenido generado en la base de datos"));
 
         logger.info("Contenido generado y guardado exitosamente. nroContenido: {}", resultado.getNroContenido());

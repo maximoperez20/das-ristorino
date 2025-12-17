@@ -6,6 +6,7 @@ import { PromocionResource } from '../../api/resources/promocion-resource';
 import { ActivatedRoute } from '@angular/router';  // ✅ import normal
 import { BannerHomeComponent } from '../../components/banner-home/banner-home'; 
 
+
 @Component({
   selector: 'app-promociones',
   imports: [CommonModule, PromocionComponent, BannerHomeComponent],
@@ -26,6 +27,7 @@ export class PromocionesPage implements OnInit {
       const data = this._route.snapshot.data as { promociones?: IPromocion[] };
       if (data && Array.isArray(data.promociones) && data.promociones.length > 0) {
         this.promocionesLista = data.promociones;
+        console.log('Promociones cargadas desde el resolver de la ruta:', this.promocionesLista);
         this.agrupadas = [];
         for (let i = 0; i < this.promocionesLista.length; i += 3) {
           this.agrupadas.push(this.promocionesLista.slice(i, i + 3));

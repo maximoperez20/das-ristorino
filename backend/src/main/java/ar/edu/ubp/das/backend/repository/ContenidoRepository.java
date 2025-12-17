@@ -221,9 +221,10 @@ public class ContenidoRepository {
             String nroSucursal,
             Integer nroIdioma,
             String contenidoGenerado,
-            String codContenidoRestaurante) {
+            String codContenidoRestaurante,
+            String propositoCorto) {
 
-        String sql = "EXEC sp_GuardarContenidoGenerado ?, ?, ?, ?, ?";
+        String sql = "EXEC sp_GuardarContenidoGenerado ?, ?, ?, ?, ?, ?";
         
         try {
             List<ContenidoGeneradoDto> result = jdbcTemplate.query(
@@ -257,7 +258,8 @@ public class ContenidoRepository {
                 nroSucursal,
                 nroIdioma,
                 contenidoGenerado,
-                codContenidoRestaurante
+                codContenidoRestaurante,
+                propositoCorto
             );
             
             return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));

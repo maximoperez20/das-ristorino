@@ -47,6 +47,8 @@ public class PromocionDto {
     private String codigoPromocion; // Código único para aplicar la promoción
     
     private Boolean requiereCodigo = false;
+
+    private String propositoCorto; // Nuevo: propósito corto del contenido
     
     // Nuevo: costo por click y sucursal asociada (si aplica)
     private java.math.BigDecimal costoClick;
@@ -174,6 +176,14 @@ public class PromocionDto {
     
     public void setRequiereCodigo(Boolean requiereCodigo) {
         this.requiereCodigo = requiereCodigo;
+    }
+
+    public String getPropositoCorto() {
+        return propositoCorto;
+    }
+
+    public void setPropositoCorto(String propositoCorto) {
+        this.propositoCorto = propositoCorto;
     }
 
     public java.math.BigDecimal getCostoClick() {

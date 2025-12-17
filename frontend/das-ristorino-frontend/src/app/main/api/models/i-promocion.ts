@@ -14,4 +14,5 @@ export interface IPromocion {
   maxPersonas: number;
   codigoPromocion: string;
   requiereCodigo: boolean;
+  propositoCorto: string | null;
 }
