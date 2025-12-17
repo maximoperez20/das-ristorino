@@ -4,7 +4,7 @@ import ar.edu.ubp.das.backend.dto.ConfirmarResenaDto;
 
 import ar.edu.ubp.das.backend.dto.ResenasSucursalesDto;
 import ar.edu.ubp.das.backend.resources.util.ResponseHelper;
-import ar.edu.ubp.das.backend.service.LanguageService;
+
 import ar.edu.ubp.das.backend.service.ResenaSucursalService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -23,11 +23,10 @@ import java.util.List;
 public class ResenasSucursalesResource {
     private static final Logger logger = LoggerFactory.getLogger(ResenasSucursalesResource.class);
 
-    private final LanguageService languageService;
+    
     private final ResenaSucursalService resenaSucursalService;
 
-    public ResenasSucursalesResource(LanguageService languageService, ResenaSucursalService resenaSucursalService) {
-        this.languageService = languageService;
+    public ResenasSucursalesResource(ResenaSucursalService resenaSucursalService) {
         this.resenaSucursalService = resenaSucursalService;
     }
 
@@ -62,7 +61,7 @@ public class ResenasSucursalesResource {
             if(clienteIdFromToken == null ||clienteIdFromToken.isEmpty()) {
                 return ResponseHelper.unauthorized("NroCliente no presente en el token"); 
             }
-
+        
 
             resenaSucursalService.insertarResenaSucursal(clienteIdFromToken, request);
 

@@ -15,8 +15,8 @@ public class RegistrarReservaRequest {
     private LocalTime horaDesde;
     private Integer cantAdultos;
     private Integer cantMenores;
-    private String observacionesReserva;
     private BigDecimal costoReserva;
+    private String observacionesReserva; //nuevo campo para observaciones del cliente
 
     public RegistrarReservaRequest() {}
 
@@ -92,17 +92,18 @@ public class RegistrarReservaRequest {
         this.cantMenores = cantMenores;
     }
 
-    public String getObservacionesReserva() {
-        return observacionesReserva;
-    }
-    public void setObservacionesReserva(String observacionesReserva) {
-        this.observacionesReserva = observacionesReserva;
-    }
     public BigDecimal getCostoReserva() {
         return costoReserva;
     }
     public void setCostoReserva(BigDecimal costoReserva) {
         this.costoReserva = costoReserva;
+    }
+
+    public String getObservacionesReserva() {
+        return observacionesReserva;
+    }
+    public void setObservacionesReserva(String observacionesReserva) {
+        this.observacionesReserva = observacionesReserva;
     }
 }
 

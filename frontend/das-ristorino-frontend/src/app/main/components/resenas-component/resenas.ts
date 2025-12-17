@@ -27,7 +27,7 @@ export class ResenasComponent implements OnInit, OnChanges {
   ngOnInit(): void {
     
     if (this.nroRestaurante && this.nroSucursal) {
-      this.cargarResenas();
+      //this.cargarResenas();
     }
   }
 

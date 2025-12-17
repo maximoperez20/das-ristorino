@@ -93,15 +93,15 @@ public interface RestauranteClient {
             LocalDate fechaReserva,
             java.time.LocalTime horaDesde,
             Integer cantAdultos,
-            Integer cantMenores,
-            String observaciones,
-            BigDecimal costoReserva
+            Integer cantMenores,            
+            BigDecimal costoReserva,
+            String observaciones
     );
 
     /**
      * Obtiene el último contenido PUBLICADO (publicado = 1) del restaurante.
      * Retorna: nroContenido, contenidoAPublicar, imagenAPublicar (URL|null), costoClick, nroSucursal, publicado
-     * Retorna null si no hay contenidos publicados.
+     * Retorna null si no hay contenidos pub.
      */
     java.util.Map<String, Object> obtenerContenidos(String nroRestaurante, String nroSucursal);
 

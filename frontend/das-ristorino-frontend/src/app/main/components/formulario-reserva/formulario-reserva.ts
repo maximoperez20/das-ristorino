@@ -106,7 +106,7 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
     }).subscribe({
       next: (response) => {
         this.loading = false;
-        const mensaje = $localize`Reserva confirmada exitosamente. Código:` + ' ' + response.codigoReserva;
+        const mensaje = $localize`Reserva confirmada exitosamente!. Código:` + ' ' + response.codigoReserva;
         this._messageService.showSuccess(mensaje);
         this.reservaConfirmada.emit();
         this.cerrar();
@@ -225,7 +225,7 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
 
   get observacionesRestantes(): number {
     const texto = this.observacionesReserva ?? '';
-    const max = 400;
+    const max = 255;
     return Math.max(0, max - texto.length);
   }
 }

@@ -1,0 +1,7 @@
+
+RISTORINO
+
+
+01. Agregar campos en la base de datos del ristorino 
+02. Modificar procedure almacenado para guardar notas de la reserva
+03. 

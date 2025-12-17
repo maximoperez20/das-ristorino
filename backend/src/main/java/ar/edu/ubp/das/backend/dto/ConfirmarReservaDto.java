@@ -31,10 +31,12 @@ public class ConfirmarReservaDto {
     @Min(value = 0, message = "La cantidad de menores no puede ser negativa")
     private Integer cantMenores;
 
-    @NotNull(message = "Las preferencias de reserva son obligatorias")
+    @NotNull(message = "Las preferencias de reserva son obligatorias. Por favor indique")
     private List<Integer> preferenciasReserva;
 
     private String observacionesReserva;
+    
+    
 
     public ConfirmarReservaDto() {}
 

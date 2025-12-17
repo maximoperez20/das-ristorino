@@ -2,8 +2,8 @@ export interface IConfirmarReservaRequest {
   nroRestaurante: string;
   nroSucursal: string;
   codZona: string;
-  fechaReserva: string; // ISO date format: YYYY-MM-DD
-  horaDesde: string; // Time format: HH:mm
+  fechaReserva: string;
+  horaDesde: string; 
   cantAdultos: number;
   cantMenores: number;
   preferenciasReserva: number[];

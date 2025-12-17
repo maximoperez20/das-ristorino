@@ -392,7 +392,7 @@ public class RestauranteRestClient implements RestauranteClient {
             }
             return 0;
         } catch (Exception e) {
-            logger.error("Error al marcar publicados vía REST: {}", e.getMessage(), e);
+            logger.error("Error al marcar publicados REST: {}", e.getMessage(), e);
             throw new RuntimeException("Error en comunicación REST: " + e.getMessage(), e);
         }
     }
@@ -424,9 +424,9 @@ public class RestauranteRestClient implements RestauranteClient {
             LocalDate fechaReserva,
             LocalTime horaDesde,
             Integer cantAdultos,
-            Integer cantMenores,
-            String observaciones,
-            BigDecimal costoReserva) {
+            Integer cantMenores,            
+            BigDecimal costoReserva, 
+            String observaciones) {
         try {
             String url = getBaseUrl() + "/restaurantes/" + nroRestaurante + "/reservas";
 
@@ -443,9 +443,9 @@ public class RestauranteRestClient implements RestauranteClient {
             request.setFechaReserva(fechaReserva);
             request.setHoraDesde(horaDesde);
             request.setCantAdultos(cantAdultos);
-            request.setCantMenores(cantMenores);
-            request.setObservacionesReserva(observaciones);
+            request.setCantMenores(cantMenores);        
             request.setCostoReserva(costoReserva);
+            request.setObservacionesReserva(observaciones); // nuevo campo para observaciones del cliente
 
             // Gson está configurado con TypeAdapter para BigDecimal -> String en JSON
             // Esto evita que se serialice como Double y se pierda precisión

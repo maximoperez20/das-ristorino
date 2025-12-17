@@ -56,7 +56,7 @@ public class RegistrarReservaRistorinoDto {
         this.codReservaSucursal = codReservaSucursal;
     }
     
-    // Getters y setters
+    // Get y set
     public String getNroRestaurante() {
         return nroRestaurante;
     }

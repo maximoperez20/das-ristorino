@@ -348,9 +348,9 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             LocalDate fechaReserva,
             LocalTime horaDesde,
             Integer cantAdultos,
-            Integer cantMenores,
-            String observaciones,
-            BigDecimal costoReserva) {
+            Integer cantMenores,            
+            BigDecimal costoReserva,
+            String observaciones) {
         try {
             // Construir request usando DTO
             RegistrarReservaRequest request = new RegistrarReservaRequest();

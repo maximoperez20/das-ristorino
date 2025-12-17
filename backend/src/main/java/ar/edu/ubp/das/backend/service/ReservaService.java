@@ -123,11 +123,11 @@ public class ReservaService {
                 codEstadoPendiente,  // Estado inicial: Pendiente
                 costoReserva,
                 request.getPreferenciasReserva(),
-                request.getObservacionesReserva(),  // notas
+                request.getObservacionesReserva(),  // son las observaciones del cliente en la reserva
                 null   // codReservaSucursal
         );
         
-        // Registrar primero en Ristorino con estado Pendiente
+        // Registrar primero en Ristorino Pendiente
         String codigoReserva = reservaRepository.registrarReservaRistorino(reservaDto);
         
         try {
@@ -145,9 +145,9 @@ public class ReservaService {
                     request.getFechaReserva(),
                     request.getHoraDesde(),
                     request.getCantAdultos(),
-                    request.getCantMenores(),
-                    request.getObservacionesReserva(),
-                    costoReserva
+                    request.getCantMenores(),                    
+                    costoReserva,
+                    request.getObservacionesReserva() //nuevo campo para observaciones del cliente
             );
             
             // Si se registró exitosamente en el restaurante, actualizar el código de reserva del restaurante
