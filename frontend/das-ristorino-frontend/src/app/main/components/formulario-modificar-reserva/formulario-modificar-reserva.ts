@@ -37,7 +37,7 @@ export class FormularioModificarReservaComponent implements OnInit, OnChanges {
   horarios: IHorario[] = [];
 
   zonaSeleccionada: string | null = null;
-  horaSeleccionada: string | null = null; // ✅ Agregar esta propiedad
+  horaSeleccionada: string | null = null;
   fechaSeleccionada: string | null = null;
 
   cantAdultos: number = 0;
@@ -62,18 +62,15 @@ export class FormularioModificarReservaComponent implements OnInit, OnChanges {
       this.obtenerPreferenciasAlimentarias(this.reservaSeleccionada);
     }
 
-    // Inicializar propiedades separadas desde la reserva
     this.cantAdultos = this.reservaSeleccionada.cant_adultos ?? 1;
     this.cantMenores = this.reservaSeleccionada.cant_menores ?? 0;
     
-    // ✅ Inicializar la hora seleccionada desde la reserva
     const fechaHora = this.reservaSeleccionada.fecha_hora.split('T');
     this.fechaSeleccionada = fechaHora[0];
     if (fechaHora[1]) {
       this.horaSeleccionada = fechaHora[1];
     }
     
-    // ✅ Inicializar la zona seleccionada
     this.zonaSeleccionada = this.reservaSeleccionada.codZona;
   }
 
@@ -87,16 +84,11 @@ export class FormularioModificarReservaComponent implements OnInit, OnChanges {
   onZonaSeleccionada(codZona: string): void {
     this.zonaSeleccionada = codZona;
     this.horarios = this.disponibilidadRestaurante?.zonas.find(zona => zona.codZona === codZona)?.horarios ?? [];
-    // ✅ Resetear la hora seleccionada cuando cambia la zona
     if (this.horarios.length > 0) {
       this.horaSeleccionada = this.horarios[0].horaDesde;
     } else {
       this.horaSeleccionada = null;
     }
-  }
-
-  getHoraSeleccionada(): string {
-    return this.reservaSeleccionada.fecha_hora.split('T')[1] ?? '';
   }
   
   cerrar(): void {
@@ -187,8 +179,6 @@ export class FormularioModificarReservaComponent implements OnInit, OnChanges {
           const mensajeError = errorResponse.error || errorResponse.message || 
             $localize`El horario seleccionado ya no está disponible. Por favor, seleccione otro horario.`;
           
-          // this.cerrar();
-          
           this._messageService.showMessage({
             text: mensajeError,
             title: $localize`Horario no disponible`,
@@ -209,11 +199,6 @@ export class FormularioModificarReservaComponent implements OnInit, OnChanges {
   formatearFechaLegible(fecha: Date): string {
     return this._dateUtils.formatearFechaLegible(fecha);
   }
-
-  // get totalPersonas(): number {
-  //   return this.cantAdultos + this.cantMenores;
-  // }
-
   
   /**
    * Obtiene los horarios disponibles para la reserva
@@ -228,30 +213,19 @@ export class FormularioModificarReservaComponent implements OnInit, OnChanges {
       fecha: fecha,
     }).subscribe({
       next: (response: IHorariosDisponiblesResponse) => {
-        // ✅ ASIGNAR el resultado a la propiedad del componente
         this.disponibilidadRestaurante = response;
-        
-        // Ahora puedes procesar los datos
         this.zonasDisponibles = response.zonas?.map(zona => ({
           codZona: zona.codZona,
           nomZona: zona.nomZona,
         })) ?? [];
         
-        // Seleccionar la zona de la reserva actual
         this.zonaSeleccionada = reserva.codZona;
-        
-        // Cargar los horarios de la zona seleccionada
         this.horarios = response.zonas?.find(zona => zona.codZona === this.zonaSeleccionada)?.horarios ?? [];
-        
-        console.log('Horarios disponibles cargados:', response);
       },
-      error: (err) => {
-        console.error('Error al obtener horarios disponibles:', err);
+      error: () => {
         this.disponibilidadRestaurante = null;
         this.zonasDisponibles = [];
         this.horarios = [];
-        // Opcional: mostrar mensaje de error
-        // this._messageService.showError('Error al cargar horarios disponibles');
       }
     });
   }
@@ -261,9 +235,7 @@ export class FormularioModificarReservaComponent implements OnInit, OnChanges {
    * Asigna el resultado a this.especialidadesAlimentariasDisponibles
    */
   obtenerPreferenciasAlimentarias(reserva: IReserva): void {
-    // Validar que nroRestaurante existe
     if (!reserva.nroRestaurante || reserva.nroRestaurante.trim() === '') {
-      console.error('nroRestaurante no está disponible');
       this.especialidadesAlimentariasDisponibles = [];
       return;
     }
@@ -273,16 +245,11 @@ export class FormularioModificarReservaComponent implements OnInit, OnChanges {
     }).subscribe({
       next: (response: IDominioPreferencia[]) => {
         this.especialidadesAlimentariasDisponibles = response;
-        
-        // Cargar las preferencias ya seleccionadas de la reserva
         if (reserva.preferenciasValores && Array.isArray(reserva.preferenciasValores)) {
           this.especialidadesAlimentariasSeleccionadas = [...reserva.preferenciasValores];
         }
-        
-        console.log('Especialidades alimentarias cargadas:', response);
       },
-      error: (err) => {
-        console.error('Error al obtener especialidades alimentarias:', err);
+      error: () => {
         this.especialidadesAlimentariasDisponibles = [];
       }
     });

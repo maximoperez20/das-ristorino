@@ -1,8 +1,6 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-// import type { IReserva } from "../../api/models/i-reserva";
 import { ReservaResource } from '../../api/resources/reserva-resource';
 import { AppMessageService } from '../../../core/services/app-message-service';
 
@@ -14,7 +12,7 @@ import { AppMessageService } from '../../../core/services/app-message-service';
   styleUrls: ['./cancelar-reserva.scss'],
 })
 
-export class CancelarReservaComponent implements OnInit, OnChanges {
+export class CancelarReservaComponent implements OnChanges {
   @Input() nroReserva!: string;
   @Input() visible: boolean = false;
   @Output() visibleChange = new EventEmitter<boolean>();
@@ -28,9 +26,6 @@ export class CancelarReservaComponent implements OnInit, OnChanges {
   private _cdr = inject(ChangeDetectorRef);
   private _messageService = inject(AppMessageService);
 
-  ngOnInit(): void {
-    // Inicialización si es necesaria
-  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible'] && this.visible) {

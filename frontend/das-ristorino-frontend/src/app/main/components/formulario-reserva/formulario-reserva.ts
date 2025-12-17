@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ReservaResource } from '../../api/resources/reserva-resource';
@@ -16,7 +16,7 @@ import type { IHorariosDisponiblesResponse } from '../../api/models/i-horario-di
   templateUrl: './formulario-reserva.html',
   styleUrls: ['./formulario-reserva.scss'],
 })
-export class FormularioReservaComponent implements OnInit, OnChanges {
+export class FormularioReservaComponent implements OnChanges {
   @Input() horarioSeleccionado!: HorarioSeleccionado;
   @Input() nroRestaurante!: string;
   @Input() nroSucursal!: string;
@@ -39,8 +39,6 @@ export class FormularioReservaComponent implements OnInit, OnChanges {
   private _cdr = inject(ChangeDetectorRef);
   private _dateUtils = inject(DateUtilsService);
 
-  ngOnInit(): void {
-  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible']) {
