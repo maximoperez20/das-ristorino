@@ -277,6 +277,16 @@ export class MisReservasPage implements OnInit {
     const filtroNormalizado = this.normalizarEstado(filtro);
     return filtroActivoNormalizado === filtroNormalizado;
   }
+
+  /**
+   * Define si una reserva es cancelable considerando estado y fecha
+   */
+  puedeCancelar(reserva: IReserva): boolean {
+    if (!reserva) return false;
+    const estado = this.normalizarEstado(reserva.estado);
+    const yaPaso = this.esReservaPasada(reserva.fecha_hora);
+    return !yaPaso && estado !== 'CANCELADA' && estado !== 'FINALIZADA';
+  }
   /**
    * Cancelar una reserva
    */
@@ -302,6 +312,8 @@ export class MisReservasPage implements OnInit {
 
   confirmarCancelacion(): void {
     if (!this.reservaSeleccionadaParaCancelar) return;
+    this.mostrarModalCancelacion = false;
+
     this._reservaResource.cancelarReserva({ nroReserva: this.reservaSeleccionadaParaCancelar, motivoCancelacion: this.notasCancelacion }).subscribe({
       next: () => {
         // Refrescar la página para ver los cambios

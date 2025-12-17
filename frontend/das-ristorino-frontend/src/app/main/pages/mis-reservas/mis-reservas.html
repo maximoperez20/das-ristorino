@@ -148,9 +148,7 @@
                       </div>
                     }
 
-                    @if (!esReservaPasada(reserva.fecha_hora) 
-                            && reserva.estado !== 'Cancelada' 
-                            && reserva.estado !== 'Finalizada') {
+                    @if (puedeCancelar(reserva)) {
 
                         <div class="d-grid mt-3">
                           <button 
