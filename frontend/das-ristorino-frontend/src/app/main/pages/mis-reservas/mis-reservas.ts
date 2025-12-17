@@ -2,16 +2,10 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { IReserva } from '../../api/models/i-reserva';
-import { IModificarReservaRequest } from '../../api/models/i-modificar-reserva-request';
-import { IHorariosDisponiblesResponse } from '../../api/models/i-horario-disponible';
 import { AuthService } from '../../../core/services/auth-service';
 import { DateUtilsService } from '../../../core/services/date-utils.service';
 import { ReservaResource } from '../../api/resources/reserva-resource';
-import { RestauranteResource } from '../../api/resources/restaurante-resource';
-import { PreferenciaResource } from '../../api/resources/preferencia-resource';
 import { AppMessageService } from '../../../core/services/app-message-service';
-import { IDominioPreferencia } from '../../api/models/i-dominio-preferencia';
-import { HorarioSeleccionado } from '../../components/horarios-disponibles/horarios-disponibles';
 import { FormularioModificarReservaComponent } from '../../components/formulario-modificar-reserva/formulario-modificar-reserva';
 import { CancelarReservaComponent } from '../../components/cancelar-reserva/cancelar-reserva';
 
@@ -34,11 +28,6 @@ export class MisReservasPage implements OnInit {
   reservas: IReserva[] = [];
   reservasPorDia: ReservaPorDia[] = [];
   filtroActivo: string | undefined = undefined;
-  horarioSeleccionado?: HorarioSeleccionado | undefined;
-  especialidadesAlimentariasSeleccionadas: IDominioPreferencia[] = [];
-  especialidadesAlimentariasDisponibles: IDominioPreferencia[] = [];
-  horariosDisponibles: IHorariosDisponiblesResponse | null = null;
-  zonasDisponibles: {codZona: string, nomZona: string}[] = [];
 
   
   mostrarModalModificarReserva: boolean = false;
@@ -52,8 +41,6 @@ export class MisReservasPage implements OnInit {
   private _route = inject(ActivatedRoute);
   private _dateUtils = inject(DateUtilsService);
   private _reservaResource = inject(ReservaResource);
-  private _restauranteResource = inject(RestauranteResource);
-  private _preferenciaResource = inject(PreferenciaResource);
   private _messageService = inject(AppMessageService);
   
   ngOnInit(): void {
@@ -317,50 +304,11 @@ export class MisReservasPage implements OnInit {
       next: (reservas: IReserva[]) => {
         this.reservas = reservas;
         this.reservasPorDia = this.agruparReservasPorDia(this.reservas);
+      },
+      error: () => {
+        this._messageService.showError('Error al actualizar la lista de reservas');
       }
     });
-  }
-  // cancelarReserva(nroReserva: string): void {
-  //   this._reservaResource.cancelarReserva({ nroReserva }).subscribe({
-  //     next: (response: boolean) => {
-  //       if (response) {
-  //         this._messageService.showSuccess('Reserva cancelada exitosamente');
-  //         this.reservasPorDia = this.agruparReservasPorDia(this.reservas.filter(reserva => reserva.id !== nroReserva));
-  //       } else {
-  //         this._messageService.showError('Error al cancelar reserva');
-  //       }
-  //     }
-  //   });
-  // } 
-
-  modificarReserva(nroReserva: string): void {
-
-  }
-
-  abrirModalModificarReserva(): void {
-
-  }
-
-  confirmarModificacionReserva(reserva: IReserva): void {
-    // const data: IModificarReservaRequest = {
-    //   nroRestaurante: reserva.nro_restaurante,
-    //   nroSucursal: reserva.nro_sucursal,
-    //   codZona: reserva.cod_zona,
-    //   fechaReserva: reserva.fecha_hora,
-    //   cantAdultos: reserva.cant_adultos ?? 0,
-    //   cantMenores: reserva.cant_menores ?? 0,
-    //   preferenciasReserva: reserva.preferenciasValores ?? []
-    // };
-
-    // this._reservaResource.modificarReserva({ nroReserva: reserva.id, data }).subscribe({
-    //   next: (response: boolean) => {
-    //     if (response) {
-    //       this._messageService.showSuccess('Reserva modificada exitosamente');
-    //     } else {
-    //       this._messageService.showError('Error al modificar reserva');
-    //     }
-    //   }
-    // });
   }
 
   onClickReserva(reserva: IReserva): void {

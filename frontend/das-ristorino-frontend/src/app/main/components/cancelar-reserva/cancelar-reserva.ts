@@ -29,11 +29,15 @@ export class CancelarReservaComponent implements OnInit, OnChanges {
   private _messageService = inject(AppMessageService);
 
   ngOnInit(): void {
+    // Inicialización si es necesaria
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['visible']) {
-      // Forzar detección de cambios
+    if (changes['visible'] && this.visible) {
+      // Resetear formulario cuando se abre el modal
+      this.razonCancelacion = '';
+      this.error = null;
+      this.loading = false;
       this._cdr.detectChanges();
     }
   }
@@ -44,8 +48,18 @@ export class CancelarReservaComponent implements OnInit, OnChanges {
   }
   
   confirmarCancelacionReserva(): void {
+    if (!this.razonCancelacion.trim()) {
+      this.error = 'La razón de cancelación es obligatoria';
+      return;
+    }
+
     this.loading = true;
-    this._reservaResource.cancelarReserva({ nroReserva: this.nroReserva, razonCancelacion: this.razonCancelacion }).subscribe({
+    this.error = null;
+    
+    this._reservaResource.cancelarReserva({ 
+      nroReserva: this.nroReserva, 
+      razonCancelacion: this.razonCancelacion.trim() 
+    }).subscribe({
       next: (response: boolean) => {
         this.loading = false;
         if (response) {
@@ -53,8 +67,14 @@ export class CancelarReservaComponent implements OnInit, OnChanges {
           this.reservaCancelada.emit();
           this.cerrar();
         } else {
+          this.error = 'Error al cancelar la reserva. Por favor, intente nuevamente.';
           this._messageService.showError('Error al cancelar reserva');
         }
+      },
+      error: () => {
+        this.loading = false;
+        this.error = 'Error al cancelar la reserva. Por favor, intente nuevamente.';
+        this._messageService.showError('Error al cancelar reserva');
       }
     });
   }

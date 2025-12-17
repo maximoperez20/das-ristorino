@@ -30,8 +30,14 @@
             </button>
             <button 
               type="submit" 
-              class="btn btn-primary" >
-                <i class="bi bi-check-circle"></i> <span i18n>Confirmar Cancelación</span>
+              class="btn btn-primary"
+              [disabled]="loading || !razonCancelacion.trim()">
+                @if (loading) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                } @else {
+                  <i class="bi bi-check-circle"></i>
+                }
+                <span i18n>Confirmar Cancelación</span>
             </button>
           </div>
         </form>
