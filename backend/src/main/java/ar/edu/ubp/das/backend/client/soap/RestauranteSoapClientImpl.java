@@ -366,6 +366,7 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             request.setCantAdultos(cantAdultos);
             request.setCantMenores(cantMenores);
             request.setObservacionesReserva(observaciones);
+            request.setCostoReserva(costoReserva);
             
             String jsonString = gson.toJson(request);
 
