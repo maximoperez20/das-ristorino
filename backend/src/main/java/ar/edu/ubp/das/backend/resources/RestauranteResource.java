@@ -158,4 +158,17 @@ public class RestauranteResource {
             return ResponseHelper.internalServerError("Error al consultar horarios disponibles: " + e.getMessage());
         }
     }
+
+    @GetMapping("/{nroRestaurante}/sucursales/{nroSucursal}/info")
+    public ResponseEntity<SucursalDto> getSucursalInfo(
+            @PathVariable String nroRestaurante,
+            @PathVariable String nroSucursal) {
+
+        SucursalDto sucursal = restauranteService.obtenerInfoSucursal(nroRestaurante, nroSucursal);
+        if (sucursal != null) {
+            return ResponseEntity.ok(sucursal);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

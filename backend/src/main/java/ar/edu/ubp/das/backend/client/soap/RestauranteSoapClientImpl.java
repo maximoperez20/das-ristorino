@@ -2,6 +2,7 @@ package ar.edu.ubp.das.backend.client.soap;
 
 import ar.edu.ubp.das.backend.client.RestauranteClient;
 import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
+import ar.edu.ubp.das.backend.dto.SucursalDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClicksBatchRequest;
@@ -569,6 +570,36 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
         } catch (Exception e) {
             logger.error("Error al cancelar reserva en restaurante SOAP: {}", e.getMessage(), e);
             return false;
+        }
+    }
+
+    @Override
+    public SucursalDto obtenerInfoSucursal(String nroRestaurante, String nroSucursal) {
+        try {
+            Map<String, Object> jsonData = new HashMap<>();
+            jsonData.put("nroRestaurante", nroRestaurante);
+            jsonData.put("nroSucursal", nroSucursal);
+
+            String jsonString = gson.toJson(jsonData);
+
+            SOAPClient soapClient = new SOAPClient.SOAPClientBuilder()
+                    .wsdlUrl(getWsdlUrl())
+                    .namespace(namespace)
+                    .serviceName(serviceName)
+                    .portName(portName)
+                    .operationName("obtenerInfoSucursalRequest")
+                    .build();
+
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("jsonData", jsonString);
+
+            String jsonResponseStr = soapClient.extractJsonResponse("obtenerInfoSucursalResponse", parameters);
+
+            SucursalDto sucursal = gson.fromJson(jsonResponseStr, SucursalDto.class);
+            return sucursal;
+        } catch (Exception e) {
+            logger.error("Error al obtener info de sucursal vía SOAP: {}", e.getMessage(), e);
+            return null;
         }
     }
 }

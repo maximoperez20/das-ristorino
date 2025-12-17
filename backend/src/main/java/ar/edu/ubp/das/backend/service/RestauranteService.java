@@ -100,5 +100,27 @@ public class RestauranteService {
         
         return horarios;
     }    
+
+    public SucursalDto obtenerInfoSucursal(String nroRestaurante, String nroSucursal) {
+        
+        if (!restauranteRepository.existeRestaurante(nroRestaurante)) {
+            throw new RuntimeException("Restaurante no encontrado: " + nroRestaurante);
+        }
+        
+        if (!restauranteRepository.existeSucursal(nroRestaurante, nroSucursal)) {
+            throw new RuntimeException("Sucursal no encontrada: " + nroSucursal + 
+                                     " para el restaurante: " + nroRestaurante);
+        }
+        
+        String codSucursalRestaurante = restauranteRepository.obtenerCodSucursalRestaurante(nroRestaurante, nroSucursal);
+        
+        if (codSucursalRestaurante == null || codSucursalRestaurante.trim().isEmpty()) {
+            throw new RuntimeException("La sucursal " + nroSucursal + 
+                                     " no está sincronizada con el sistema del restaurante. " +
+                                     "cod_sucursal_restaurante no está configurado.");
+        }
+        RestauranteClient client = restauranteClientFactory.getClient(nroRestaurante);        
+        
+        return client.obtenerInfoSucursal(nroRestaurante, codSucursalRestaurante);}
     
 }

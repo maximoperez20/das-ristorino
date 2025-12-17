@@ -15,6 +15,7 @@ public class SucursalDto {
     private String telefonos;
     private Integer capacidad;
     private Integer minToleranciaReserva; // en minutos
+    private boolean permiteTakeout;
     
     // Constructores
     public SucursalDto() {}
@@ -98,6 +99,13 @@ public class SucursalDto {
     
     public void setMinToleranciaReserva(Integer minToleranciaReserva) {
         this.minToleranciaReserva = minToleranciaReserva;
+    }
+
+    public boolean isPermiteTakeout() {
+        return permiteTakeout;
+    }
+    public void setPermiteTakeout(boolean permiteTakeout) {
+        this.permiteTakeout = permiteTakeout;
     }
 }
 

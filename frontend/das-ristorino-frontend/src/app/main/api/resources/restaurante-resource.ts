@@ -44,4 +44,13 @@ export class RestauranteResource extends Resource{
   })
   declare buscarRestaurantesPorNLP: IResourceMethodObservable<IBusquedaNLPRequest, IBusquedaNLPResultado>;
 
+  @ResourceAction({ 
+    path: '/{!nroRestaurante}/sucursales/{!nroSucursal}/info',
+    method: ResourceRequestMethod.Get,
+  })
+  declare obtenerInfoSucursal: IResourceMethodObservable<{ 
+    nroRestaurante: string; 
+    nroSucursal: string; 
+  }, any>;
+
 }

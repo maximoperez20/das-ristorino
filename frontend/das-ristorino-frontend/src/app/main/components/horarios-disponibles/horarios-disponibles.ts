@@ -18,6 +18,7 @@ export interface HorarioSeleccionado {
   selector: 'horarios-disponibles',
   standalone: true,
   imports: [CommonModule],
+  providers: [RestauranteResource],
   templateUrl: './horarios-disponibles.html',
   styleUrls: ['./horarios-disponibles.scss'],
 })
@@ -33,6 +34,7 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
   loading = false;
   error: string | null = null;
   horarioSeleccionadoActual: { zona: IZona; horario: IHorario } | null = null;
+  permiteTakeout: boolean = false;
 
   private _restauranteResource = inject(RestauranteResource);
   private _dateUtils = inject(DateUtilsService);
@@ -54,6 +56,15 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
     if (this.nroRestaurante && this.nroSucursal && this.fechaActual) {
       this.cargarHorarios();
     }
+    
+    // Cargar permiteTakeout independientemente de la fecha
+    if (this.nroRestaurante && this.nroSucursal) {
+      console.log('Llamando a obtenerPermiteTakeout con:', {
+        nroRestaurante: this.nroRestaurante,
+        nroSucursal: this.nroSucursal
+      });
+      this.obtenerPermiteTakeout();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -67,6 +78,7 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
     if (hasAllInputs && shouldReload) {
       this.cargarHorarios();
     }
+    this.obtenerPermiteTakeout();
   }
 
   cargarHorarios(): void {
@@ -188,5 +200,23 @@ export class HorariosDisponiblesComponent implements OnInit, OnChanges {
       return `(${$localize`1 reservado`})`;
     }
     return `(${yaReservados} ${$localize`reservados`})`;
+  }
+
+  obtenerPermiteTakeout(): void {
+    console.log('Ejecutando obtenerPermiteTakeout...');
+    this._restauranteResource.obtenerInfoSucursal({
+      nroRestaurante: this.nroRestaurante,
+      nroSucursal: this.nroSucursal,
+    }).subscribe({
+      next: (data) => {
+        console.log('Respuesta de obtenerInfoSucursal:', data);
+        this.permiteTakeout = data.permiteTakeout ?? false;
+        console.log('permiteTakeout asignado:', this.permiteTakeout);
+      },
+      error: (err) => {
+        console.error('Error al obtener info de sucursal:', err);
+        this.permiteTakeout = false;
+      }
+    });
   }
 }

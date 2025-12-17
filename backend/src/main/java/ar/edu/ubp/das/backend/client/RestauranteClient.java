@@ -9,6 +9,7 @@ import ar.edu.ubp.das.backend.dto.restaurante.ObtenerMenuRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.ObtenerMenuResponse;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
+import ar.edu.ubp.das.backend.dto.SucursalDto;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -121,5 +122,13 @@ public interface RestauranteClient {
          */
         boolean cancelarReservaRestaurante(String nroRestaurante, String codReserva);
 
+        /**
+         * Obtiene la información de una sucursal específica de un restaurante.
+         *
+         * @param nroRestaurante UUID del restaurante
+         * @param nroSucursal UUID de la sucursal
+         * @return Información de la sucursal, o null si no se encuentra
+         */
+        SucursalDto obtenerInfoSucursal(String nroRestaurante, String nroSucursal);
 }
 

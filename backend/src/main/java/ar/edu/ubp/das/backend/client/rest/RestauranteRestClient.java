@@ -2,6 +2,7 @@ package ar.edu.ubp.das.backend.client.rest;
 
 import ar.edu.ubp.das.backend.client.RestauranteClient;
 import ar.edu.ubp.das.backend.dto.HorarioDisponibleDto;
+import ar.edu.ubp.das.backend.dto.SucursalDto;
 import ar.edu.ubp.das.backend.dto.restaurante.ClienteDto;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickRequest;
 import ar.edu.ubp.das.backend.dto.restaurante.NotificarClickResponse;
@@ -592,5 +593,31 @@ public class RestauranteRestClient implements RestauranteClient {
             return false;
         }
     }
-}
 
+    @Override
+    public SucursalDto obtenerInfoSucursal(String nroRestaurante, String nroSucursal) {
+        try {
+            String url = getBaseUrl() + "/restaurantes/" + nroRestaurante + "/sucursales/" + nroSucursal + "/info";
+
+            HttpHeaders headers = createHeaders();
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    String.class
+            );
+
+            String responseBody = response.getBody();
+            SucursalDto sucursal = gson.fromJson(
+                    responseBody != null ? responseBody : "{}",
+                    SucursalDto.class
+            );
+            return sucursal;
+        } catch (Exception e) {
+            logger.error("Error al obtener info de sucursal vía REST: {}", e.getMessage(), e);
+            return null;
+        }       
+    }
+}

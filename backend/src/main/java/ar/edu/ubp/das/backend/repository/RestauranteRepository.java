@@ -401,4 +401,10 @@ public class RestauranteRepository {
             return null;
         }
     }
+
+    public Optional<SucursalDto> obtenerInfoSucursal(String nroRestaurante, String nroSucursal) {
+        String sql = "EXEC sp_ObtenerInfoSucursal ?, ?";
+        List<SucursalDto> sucursales = jdbcTemplate.query(sql, sucursalRowMapper, nroRestaurante, nroSucursal);
+        return sucursales.isEmpty() ? Optional.empty() : Optional.of(sucursales.get(0));
+    }
 }
