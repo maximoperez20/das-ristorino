@@ -28,7 +28,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Base64;
 import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoJsonDto;
@@ -424,7 +424,8 @@ public class RestauranteRestClient implements RestauranteClient {
             LocalTime horaDesde,
             Integer cantAdultos,
             Integer cantMenores,
-            String observaciones) {
+            String observaciones,
+            BigDecimal costoReserva) {
         try {
             String url = getBaseUrl() + "/restaurantes/" + nroRestaurante + "/reservas";
 
@@ -443,7 +444,10 @@ public class RestauranteRestClient implements RestauranteClient {
             request.setCantAdultos(cantAdultos);
             request.setCantMenores(cantMenores);
             request.setObservacionesReserva(observaciones);
+            request.setCostoReserva(costoReserva);
 
+            // Gson está configurado con TypeAdapter para BigDecimal -> String en JSON
+            // Esto evita que se serialice como Double y se pierda precisión
             String jsonBody = gson.toJson(request);
 
             HttpHeaders headers = createHeaders();

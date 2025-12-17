@@ -146,7 +146,8 @@ public class ReservaService {
                     request.getHoraDesde(),
                     request.getCantAdultos(),
                     request.getCantMenores(),
-                    request.getObservacionesReserva()
+                    request.getObservacionesReserva(),
+                    costoReserva
             );
             
             // Si se registró exitosamente en el restaurante, actualizar el código de reserva del restaurante

@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -347,7 +348,8 @@ public class RestauranteSoapClientImpl implements RestauranteClient {
             LocalTime horaDesde,
             Integer cantAdultos,
             Integer cantMenores,
-            String observaciones) {
+            String observaciones,
+            BigDecimal costoReserva) {
         try {
             // Construir request usando DTO
             RegistrarReservaRequest request = new RegistrarReservaRequest();

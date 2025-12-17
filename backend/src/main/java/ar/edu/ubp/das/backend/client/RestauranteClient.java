@@ -12,6 +12,7 @@ import ar.edu.ubp.das.backend.dto.restaurante.RegistrarContenidoResponse;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.math.BigDecimal;
 
 /**
  * Interfaz común para comunicación con restaurantes.
@@ -92,7 +93,8 @@ public interface RestauranteClient {
             java.time.LocalTime horaDesde,
             Integer cantAdultos,
             Integer cantMenores,
-            String observaciones
+            String observaciones,
+            BigDecimal costoReserva
     );
 
     /**

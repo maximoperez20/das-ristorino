@@ -1,5 +1,6 @@
 package ar.edu.ubp.das.backend.dto.restaurante;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -15,6 +16,7 @@ public class RegistrarReservaRequest {
     private Integer cantAdultos;
     private Integer cantMenores;
     private String observacionesReserva;
+    private BigDecimal costoReserva;
 
     public RegistrarReservaRequest() {}
 
@@ -95,6 +97,12 @@ public class RegistrarReservaRequest {
     }
     public void setObservacionesReserva(String observacionesReserva) {
         this.observacionesReserva = observacionesReserva;
+    }
+    public BigDecimal getCostoReserva() {
+        return costoReserva;
+    }
+    public void setCostoReserva(BigDecimal costoReserva) {
+        this.costoReserva = costoReserva;
     }
 }
 
