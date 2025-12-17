@@ -155,7 +155,7 @@
                         <div class="d-grid mt-3">
                           <button 
                             class="btn btn-outline-danger btn-sm"
-                            (click)="cancelarReserva(reserva.id)"
+                            (click)="onCancelarReservaClick(reserva.id)"
                             i18n>
                             <i class="bi bi-x-circle me-1"></i>
                             Cancelar reserva
@@ -174,3 +174,28 @@
     }
   </div>
 </div>
+
+<!-- Modal de cancelación -->
+@if (mostrarModalCancelacion && reservaSeleccionadaParaCancelar) {
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show d-block" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" i18n>Cancelar reserva</h5>
+          <button type="button" class="btn-close" aria-label="Close" (click)="cerrarModalCancelacion()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" for="notas" i18n>Motivo de cancelación</label>
+            <textarea id="notas" class="form-control" rows="3" [(ngModel)]="notasCancelacion" [maxLength]="400"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="cerrarModalCancelacion()" i18n>Cancelar</button>
+          <button type="button" class="btn btn-danger" (click)="confirmarCancelacion()" [disabled]="notasCancelacion.length > 400" i18n>Confirmar cancelación</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

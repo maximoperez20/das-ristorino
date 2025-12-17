@@ -5,6 +5,8 @@ import { IReserva } from '../../api/models/i-reserva';
 import { AuthService } from '../../../core/services/auth-service';
 import { DateUtilsService } from '../../../core/services/date-utils.service';
 import { ReservaResource } from '../../api/resources/reserva-resource';
+import { FormsModule } from '@angular/forms';
+
 
 interface ReservaPorDia {
   fecha: Date;
@@ -16,7 +18,7 @@ interface ReservaPorDia {
 @Component({
   selector: 'app-mis-reservas',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './mis-reservas.html',
   styleUrls: ['./mis-reservas.scss'],
 })
@@ -25,6 +27,9 @@ export class MisReservasPage implements OnInit {
   reservas: IReserva[] = [];
   reservasPorDia: ReservaPorDia[] = [];
   filtroActivo: string | undefined = undefined;
+  mostrarModalCancelacion: boolean = false;
+  reservaSeleccionadaParaCancelar: string | null = null;
+  notasCancelacion: string = '';
 
   private _auth = inject(AuthService);
   private _router = inject(Router);
@@ -275,8 +280,29 @@ export class MisReservasPage implements OnInit {
   /**
    * Cancelar una reserva
    */
-  cancelarReserva(nroReserva: string): void {
-    this._reservaResource.cancelarReserva({ codReserva: nroReserva }).subscribe({
+  onCancelarReservaClick(nroReserva: string): void {
+    // this._reservaResource.cancelarReserva({ codReserva: nroReserva }).subscribe({
+    //   next: () => {
+    //     // Refrescar la página para ver los cambios
+    //     window.location.reload();
+    //   },
+    //   error: (err) => {
+    //     console.error('Error al cancelar la reserva:', err);
+    //     alert($localize`Ocurrió un error al cancelar la reserva. Por favor, intenta nuevamente más tarde.`);
+    //   }
+    // });
+    this.reservaSeleccionadaParaCancelar = nroReserva;
+    this.mostrarModalCancelacion = true;
+  }
+
+  cerrarModalCancelacion(): void {
+    this.mostrarModalCancelacion = false;
+    this.reservaSeleccionadaParaCancelar = null;
+  }
+
+  confirmarCancelacion(): void {
+    if (!this.reservaSeleccionadaParaCancelar) return;
+    this._reservaResource.cancelarReserva({ nroReserva: this.reservaSeleccionadaParaCancelar, motivoCancelacion: this.notasCancelacion }).subscribe({
       next: () => {
         // Refrescar la página para ver los cambios
         window.location.reload();
@@ -286,5 +312,7 @@ export class MisReservasPage implements OnInit {
         alert($localize`Ocurrió un error al cancelar la reserva. Por favor, intenta nuevamente más tarde.`);
       }
     });
-}   
+
+  
+  }
 }

@@ -143,8 +143,8 @@ public class ReservaResource {
         }
     }
 
-    @GetMapping("/cancelar/{nroReserva}")
-    public ResponseEntity<?> cancelarReserva(@PathVariable String nroReserva,@RequestBody(required = false) CancelarReservaConMotivo motivoCancelacion) {
+    @PutMapping(value = "/cancelar/{nroReserva}", consumes = "application/json")
+    public ResponseEntity<?> cancelarReserva(@PathVariable String nroReserva, @RequestBody(required = false) CancelarReservaConMotivo motivoCancelacion) {
         try {
             boolean cancelado = reservaService.cancelarReserva(nroReserva, motivoCancelacion != null ? motivoCancelacion.getMotivoCancelacion() : null);
             if (cancelado) {
